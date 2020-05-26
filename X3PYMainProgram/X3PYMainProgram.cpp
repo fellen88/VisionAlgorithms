@@ -12,7 +12,7 @@ void DisCallBack(std::string* strData, int iCmd, LPVOID pThis)
 }
 int test()
 {
-  x3::Object<ISimple> obj1("94071767-ba6b-4769-9eb4-PoseEstimationPlugin");     // 给定类ID创建对象
+  x3::Object<ISimple> obj1("94071767-ba6b-4769-9eb4-PoseEstimation");     // 给定类ID创建对象
 	std::string strOut;
 	int iTID;
 	obj1->disPatchChar(0, iTID, "12", strOut, DisCallBack, NULL);
@@ -33,10 +33,10 @@ void LoadDLL()
 {
 	// 多个插件文件名，以NULL结尾
 	const char* plugins[] = {
-		"X3PYExamplePligin.pln", "PoseEstimationPlugin.pln", "plsimple.pln", NULL
+		"PoseEstimation.pln", NULL
 	};
 	const char* strID[] = {
-		"94071767-ba6b-4769-9eb4-X3PYExamplePlugin", "94071767-ba6b-4769-9eb4-PoseEstimationPlugin", "94071767-ba6b-4769-9eb4-2ebf469289f3", NULL
+	  "94071767-ba6b-4769-9eb4-PoseEstimation", NULL
 	};
 	// 自动加载和卸载插件，插件在程序文件的plugins子目录下
 	x3::AutoLoadPlugins autoload(plugins, strID, "plugins");

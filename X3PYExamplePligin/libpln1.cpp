@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include <module/plugininc.h>
 #include "libpln1.h"
+
 #include "../pose_estimation/pose_estimation.h"
 #pragma comment (lib, "../x64/debug/plugins/grasp_pose_estimation.lib")
-
 PoseEstimation *pose_estimation_ = GetInstance();
 
 CSimpleA::CSimpleA()
@@ -34,11 +34,12 @@ int CSimpleA::disPatchChar(BYTE ucType, int& iInstanID, std::string strInData, s
 	int b = 1;
 	std::string strdata;
 	iInstanID = 0;
+
 	switch (ucType)
 	{
 	case 0:
 		strOutData = pose_estimation_->Compute();
-		(*pCallback)(&strOutData, 12, lpPara);
+		//(*pCallback)(&strOutData, 12, lpPara);
 		break;
 	case 1:
 		strOutData = "case 1";

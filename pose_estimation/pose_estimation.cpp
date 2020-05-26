@@ -5,6 +5,11 @@
 #define __DLLEXPORT
 #include "pose_estimation.h"
 
+PoseEstimation::PoseEstimation()
+{
+	p_registration_ = ::GetRegistration3D();
+}
+
 std::string PoseEstimation::Compute()
 {
 	//if (p_registration_->SetParameters())

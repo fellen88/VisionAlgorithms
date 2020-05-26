@@ -4,7 +4,7 @@
 #include <module/classmacro.h>
 #include "isimple.h"
 typedef  void(*lpCALLBACK) (std::string *, int, LPVOID);
-const char* const g_clsidSimple = "94071767-ba6b-4769-9eb4-PoseEstimationPlugin";
+const char* const g_clsidSimple = "94071767-ba6b-4769-9eb4-PoseEstimation";
 class CSimpleA : public ISimple
 {
 	X3BEGIN_CLASS_DECLARE(CSimpleA, g_clsidSimple)
