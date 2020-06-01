@@ -3,7 +3,7 @@
 #include "features.h"
 #include <math.h>
 
-void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr transformed_cloud, Eigen::Matrix4f &SAC_transform, bool downsample)
+void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &SAC_transform, bool downsample)
 {
   //为了一致性和速度，下采样
   PointCloud::Ptr source_filtered(new PointCloud); //创建点云指针
@@ -42,7 +42,7 @@ void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::P
 	sac_ia.setTargetFeatures(target_fpfh);
 	//sac_ia.setNumberOfSamples(20);  //设置每次迭代计算中使用的样本数量（可省）,可节省时间
 	sac_ia.setCorrespondenceRandomness(10); //设置计算协方差时选择多少近邻点，该值越大，协防差越精确，但是计算效率越低.(可省)
-	sac_ia.align(*transformed_cloud);
+	sac_ia.align(*output);
 
 	SAC_transform = sac_ia.getFinalTransformation();
 
@@ -62,8 +62,8 @@ void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::P
 	view->addPointCloud(target_filtered, target_cloud_color, "target_cloud_v1", v1);
 	view->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "sources_cloud_v1");
 
-	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>aligend_cloud_color(transformed_cloud, 255, 0, 0);
-	view->addPointCloud(transformed_cloud, aligend_cloud_color, "aligend_cloud_v2", v2);
+	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>aligend_cloud_color(output, 255, 0, 0);
+	view->addPointCloud(output, aligend_cloud_color, "aligend_cloud_v2", v2);
 	view->addPointCloud(target_filtered, target_cloud_color, "target_cloud_v2", v2);
 	view->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "aligend_cloud_v2");
 	view->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "target_cloud_v2");
@@ -190,6 +190,18 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
     //PCL_INFO ("Press q to clear the screen.\n");
     viewer->spin ();
   }
+}
+
+void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt)
+{
+	SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, 0.05);
+	LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, 0.05);
+	final_transform = icp_transform * sac_transform;
+}
+
+Eigen::Matrix4f Registration3D::GetTransformation()
+{
+	return final_transform;
 }
 
 IRegistration3D* GetRegistration3D()

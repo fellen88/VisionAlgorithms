@@ -12,11 +12,7 @@ class  __DLL_INTERFACE PoseEstimation
 {
 	public:
 	IRegistration3D *p_registration_;
-	/*Eigen::Matrix4f final_transform;
-	Eigen::Matrix4f sac_transform;
-	Eigen::Matrix4f icp_transform;
-	PointCloud::Ptr sac_output;
-	PointCloud::Ptr icp_output;
+	/*
 	PointCloud::Ptr object_model;*/
 
 	PoseEstimation();
@@ -27,4 +23,4 @@ class  __DLL_INTERFACE PoseEstimation
 	std::string Compute();
 };
 
-__DLL_INTERFACE  PoseEstimation *GetInstance();
+__DLL_INTERFACE  PoseEstimation *GetPoseEstimation();

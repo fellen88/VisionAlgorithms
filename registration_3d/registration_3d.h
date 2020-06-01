@@ -16,8 +16,16 @@ class Registration3D : public IRegistration3D, public Features
 
   bool DEBUG_VISUALIZER;
 
+	Eigen::Matrix4f final_transform;
+	Eigen::Matrix4f sac_transform;
+	Eigen::Matrix4f icp_transform;
+	PointCloud::Ptr sac_output;
+	PointCloud::Ptr icp_output;
+
   void SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr transformed_cloud, Eigen::Matrix4f &SAC_transform, bool downsample);
   void LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, bool downsample);
+	void ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt);
+	Eigen::Matrix4f GetTransformation();
 };
 
 #endif

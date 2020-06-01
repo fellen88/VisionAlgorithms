@@ -1,13 +1,12 @@
 ﻿// pose_estimation.cpp : 定义 DLL 应用程序的导出函数。
 //
-
 #include "stdafx.h"
 #define __DLLEXPORT
 #include "pose_estimation.h"
 
 PoseEstimation::PoseEstimation()
 {
-	p_registration_ = ::GetRegistration3D();
+	p_registration_ = GetRegistration3D();
 }
 
 std::string PoseEstimation::Compute()
@@ -20,10 +19,10 @@ std::string PoseEstimation::Compute()
 			//p_registration_->Show(object_model, "object model");
 		}
 	}
-		return "pose_estimation node test ok!";
+		return "pose_estimation node output";
 }
 
-__DLL_INTERFACE PoseEstimation * GetInstance()
+__DLL_INTERFACE PoseEstimation * GetPoseEstimation()
 {
 	//LOG(INFO) << "GetInstance()";
   PoseEstimation* p_pose_estimation_ = new PoseEstimation(); 
