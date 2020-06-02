@@ -23,10 +23,10 @@
 
 namespace x3 {
 
-static LoadModuleHelper* s_plugins[20] = { NULL };
+static LoadModuleHelper* s_plugins[40] = { NULL };
 static int s_nplugin = 0;
-static const char* g_strID[20] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+static const char* g_strID[40] = { NULL/*, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL*/ };
 
 #if !defined(X3_EXCLUDE_CREATEOBJECT) && !defined(CREATEOBJECTIMPL)
 #define CREATEOBJECTIMPL
@@ -41,7 +41,7 @@ bool createObject(const char* clsid, long iid, IObject** p)
 {
     typedef bool (*F)(const char*, long, IObject**);
 	int i = 0;
-	for (i = 0; i < 20 - 1 && clsid[i]; i++)
+	for (i = 0; i < 40 - 1 && clsid[i]; i++)
 	{
 		if (0 == strcmp(g_strID[i], clsid))
 		{
@@ -54,14 +54,14 @@ bool createObject(const char* clsid, long iid, IObject** p)
 }
 #endif // CREATEOBJECTIMPL
 
-int loadPlugins(const char* const* plugins, const char* folder = PLUGIN_PATH)
+int loadPlugins(const char* const* plugins, const char* const*  folder)
 {
     HMODULE basemod = GetModuleHandleA(SELF_MODULE_NAME);
 
-    for (int i = 0; s_nplugin < 20 - 1 && plugins[i]; ++i)
+    for (int i = 0; s_nplugin < 40 - 1 && plugins[i]; ++i)
     {
         LoadModuleHelper* p = new LoadModuleHelper();
-        if (p->load(plugins[i], basemod, folder))
+        if (p->load(plugins[i], basemod, folder[i]))
         {
             s_plugins[s_nplugin++] = p;
         }
@@ -91,13 +91,13 @@ void unloadPlugins()
  */
 struct AutoLoadPlugins
 {
-	AutoLoadPlugins(const char* const* plugins, const char* const* strID, const char* folder = PLUGIN_PATH)
+	AutoLoadPlugins(const char* const* plugins, const char* const* strID, const char* const* folder )
     {
 		//for (int i = 0; i < iCnt; i++)
 		//{
 		//	s_nAdd[i] = clsids[i];
 		//}
-		for (int i = 0; i < 20 - 1 && strID[i]; ++i)
+		for (int i = 0; i < 40 - 1 && strID[i]; ++i)
 		{
 			g_strID[i] = strID[i];
 		}

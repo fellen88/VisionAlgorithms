@@ -3,7 +3,7 @@
 #include "libpln1.h"
 
 #include "../pose_estimation/pose_estimation.h"
-#pragma comment (lib, "../x64/debug/plugins/grasp_pose_estimation.lib")
+#pragma comment (lib, "grasp_pose_estimation.lib")
 PoseEstimation *pose_estimation_ = GetPoseEstimation();
 
 int CSimpleA::disPatchChar(BYTE ucType, int& iInstanID, std::string strInData, std::string & strOutData, lpCALLBACK pCallback, LPVOID lpPara)   const

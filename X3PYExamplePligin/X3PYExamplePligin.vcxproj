@@ -77,7 +77,7 @@
     <IncludePath>$(SolutionDir)Library\interface\core;$(SolutionDir)FindDll;$(IncludePath)</IncludePath>
     <TargetName>PoseEstimation</TargetName>
     <TargetExt>.pln</TargetExt>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\PoseEstimation\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -118,6 +118,7 @@
       <OutputFile>$(OutDir)\PoseEstimation.pln</OutputFile>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
