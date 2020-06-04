@@ -10,6 +10,13 @@
 #include <windows.h>
 
 
+// Google glog
+#include "glog/logging.h"
+#pragma comment(lib,"glog.lib")
+
+//OpenCV
+//#include <opencv2/opencv.hpp>
+
 // 在此处引用程序需要的其他标头
 // PCL
 //点/点云

@@ -10,3 +10,7 @@
 #include <windows.h>
 
 // 在此处引用程序需要的其他标头
+
+// Google glog
+#include "glog/logging.h"
+#pragma comment(lib,"glog.lib")

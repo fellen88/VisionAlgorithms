@@ -6,6 +6,7 @@
 
 PoseEstimation::PoseEstimation()
 {
+	p_camera_data_ = GetCameraData();
 	p_registration_ = GetRegistration3D();
 }
 

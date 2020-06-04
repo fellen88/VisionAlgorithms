@@ -2,5 +2,15 @@
 //
 
 #include "stdafx.h"
+#include "camera_data.h"
 
+void CameraData::test()
+{
 
+}
+
+ICameraData* GetCameraData()
+{
+	ICameraData* p_iregistration = new CameraData();
+	return p_iregistration;
+}
