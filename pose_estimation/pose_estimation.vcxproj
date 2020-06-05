@@ -97,6 +97,7 @@
       <ForcedIncludeFiles>
       </ForcedIncludeFiles>
       <DisableSpecificWarnings>4819</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

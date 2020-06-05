@@ -1,6 +1,11 @@
 ﻿// dllmain.cpp : 定义 DLL 应用程序的入口点。
 #include "stdafx.h"
 
+void FatalMessageDump(const char* data, int size)
+{
+	
+}
+
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
                        LPVOID lpReserved
@@ -14,11 +19,17 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 			google::FlushLogFilesUnsafe(google::GLOG_INFO);
 			google::SetStderrLogging(google::GLOG_INFO);
 			google::SetLogFilenameExtension("log_");
-			LOG(INFO) << "camera_data dll attached ";
+			google::InstallFailureSignalHandler();
+		
+		  google::InstallFailureWriter(&FatalMessageDump);
+			LOG(INFO) << "camera_data dll attach ";
+			break;
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
     case DLL_PROCESS_DETACH:
-        break;
+			LOG(INFO) << "camera_data dll detach ";
+			google::ShutdownGoogleLogging();
+      break;
     }
     return TRUE;
 }

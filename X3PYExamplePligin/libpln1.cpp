@@ -4,7 +4,7 @@
 
 #include "../pose_estimation/pose_estimation.h"
 #pragma comment (lib, "grasp_pose_estimation.lib")
-PoseEstimation *pose_estimation_ = GetPoseEstimation();
+PoseEstimation *pose_estimation_ = new PoseEstimation();
 
 int CSimpleA::disPatchChar(BYTE ucType, int& iInstanID, std::string strInData, std::string & strOutData, lpCALLBACK pCallback, LPVOID lpPara)   const
 {
