@@ -15,4 +15,25 @@
 
 // Google glog
 #include "glog/logging.h"
-#pragma comment(lib,"glog.lib")
+
+//OpenCV
+#include "opencv2/opencv.hpp"
+
+//PCL
+//点/点云
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+
+//pcd文件输入/输出
+#include <pcl/io/pcd_io.h>
+
+#include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/visualization/histogram_visualizer.h> //直方图的可视化
+#include <pcl/visualization/pcl_plotter.h>
+
+//pcl类型名简化
+typedef pcl::PointXYZ PointT;
+typedef pcl::PointCloud<PointT> PointCloud;
+typedef pcl::PointNormal PointNormalT;
+typedef pcl::PointCloud<PointNormalT> PointCloudWithNormals;
+typedef pcl::PointCloud<pcl::Normal> pointnormal;

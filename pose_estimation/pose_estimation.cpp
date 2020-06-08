@@ -20,7 +20,7 @@ std::string PoseEstimation::Compute()
 			//p_registration_->Show(object_model, "object model");
 		}
 	}
-	p_camera_data_->test();
+	//p_camera_data_->test();
 		return "pose_estimation node output";
 }
 
