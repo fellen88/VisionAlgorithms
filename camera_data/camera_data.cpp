@@ -39,7 +39,7 @@ CameraData::CameraData()
 
 CameraData::~CameraData()
 {
-	  // 解除文件映射，关闭内存映射文件对象句柄
+	// 解除文件映射，关闭内存映射文件对象句柄
 	::UnmapViewOfFile(pcolorBuffer);
 	::CloseHandle(hcolorMap);
 	::UnmapViewOfFile(pdepthBuffer);
@@ -64,7 +64,7 @@ int CameraData::ucharToMat(uchar *p2, cv::Mat& src, int flag)
 	return flag;
 }
 
-bool CameraData::GetImages()
+bool CameraData::GetSharedMemImages()
 {
 	if (false == isOpenFileMapping)
 	{
@@ -119,21 +119,38 @@ bool CameraData::DepthtoPointCloud()
 	return true;
 }
 
-bool CameraData::Load3DModel(const PointCloud::Ptr object_model, std::string name)
+bool CameraData::LoadPointCloud(PointCloud::Ptr object_model, std::string file_name)
 {
 	pcl::PCDReader reader;
-	if (reader.read(name, *object_model)  < 0)
+	if (reader.read(file_name, *object_model)  < 0)
 	{
 		return false;
 	}
 	return true;
 }
 
-void CameraData::Show(const PointCloud::Ptr pointcloud, std::string name)
+bool CameraData::LoadImage(cv::Mat image, std::string file_name)
 {
-	boost::shared_ptr<pcl::visualization::PCLVisualizer> view(new pcl::visualization::PCLVisualizer(name));
+	image = cv::imread(file_name);
+
+	if (image.data == NULL)
+	{
+		return false;
+	}
+	return true;
+}
+
+void CameraData::ShowPointCloud(const PointCloud::Ptr pointcloud, std::string window_name)
+{
+	boost::shared_ptr<pcl::visualization::PCLVisualizer> view(new pcl::visualization::PCLVisualizer(window_name));
 	view->addPointCloud(pointcloud);
   view->spin ();
+}
+
+void CameraData::ShowImage(const cv::Mat image, std::string window_name)
+{
+	cv::imshow(window_name, image);
+	cv::waitKey(0);
 }
 
 void CameraData::test()

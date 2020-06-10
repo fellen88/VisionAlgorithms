@@ -8,26 +8,27 @@ PoseEstimation::PoseEstimation()
 {
 	p_camera_data_ = GetCameraData();
 	p_registration_ = GetRegistration3D();
+	
+	pose_flag = false;
 }
 
-std::string PoseEstimation::Compute()
+PoseEstimation::~PoseEstimation()
 {
-	//if (p_registration_->SetParameters())
+}
+
+std::string PoseEstimation::GetTransformation(std::string parameters)
+{
+	if (false == p_camera_data_->SetParameters())
 	{
-		//if (p_registration_->RecieveImage() && p_registration_->Load3DModel(object_model))
-		{
-			//p_registration_->Load3DModel(object_model, "test.pcd");
-			//p_registration_->Show(object_model, "object model");
-		}
+		pose_flag = false;
+		return "pose_flag false";
 	}
-	//p_camera_data_->test();
-		return "pose_estimation node output";
+	return parameters + "has been passed to plugin!";
 }
 
-__DLL_INTERFACE PoseEstimation * GetPoseEstimation()
+IPoseEstimation * GetPoseEstimation()
 {
-	//LOG(INFO) << "GetInstance()";
-  PoseEstimation* p_pose_estimation_ = new PoseEstimation(); 
-  //p_pose_estimation_->Init();
+  IPoseEstimation* p_pose_estimation_ = new PoseEstimation(); 
   return p_pose_estimation_;
 }
+

@@ -21,6 +21,7 @@ class CameraData :public ICameraData
 	HANDLE hpictureMap;
 
 	bool isOpenFileMapping;
+	bool DebugVisualization;
 
 	enum CameraState
 	{
@@ -41,11 +42,13 @@ class CameraData :public ICameraData
 	~CameraData();
 
 	int ucharToMat(uchar *p2, cv::Mat& src, int flag);
-	bool DebugVisualization;
-	bool GetImages();
+
+	bool GetSharedMemImages();
 	bool SetParameters();
 	bool DepthtoPointCloud();
-	bool Load3DModel(const PointCloud::Ptr object_model, std::string name);
-	void Show(const PointCloud::Ptr pointcloud, std::string name);
+	bool LoadPointCloud(PointCloud::Ptr object_model, std::string file_name);
+	bool LoadImage(cv::Mat image, std::string file_name);
+	void ShowPointCloud(const PointCloud::Ptr pointcloud, std::string window_name);
+	void ShowImage(const cv::Mat image, std::string window_name);
 };
 

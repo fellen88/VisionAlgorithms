@@ -15,7 +15,7 @@ int test()
   x3::Object<ISimple> obj1("94071767-ba6b-4769-9eb4-PoseEstimation");     // 给定类ID创建对象
 	std::string strOut;
 	int iTID;
-	obj1->disPatchChar(0, iTID, "12", strOut, DisCallBack, NULL);
+	obj1->disPatchChar(0, iTID, "pose_estimation node input!", strOut, DisCallBack, NULL);
 	printf(" %s\r\n", strOut.c_str());
 	//x3::Object<ISimple> obj(clsidSimple);     // 给定类ID创建对象
 	//while (true)

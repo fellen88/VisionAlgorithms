@@ -2,9 +2,9 @@
 #include <module/plugininc.h>
 #include "libpln1.h"
 
-#include "../pose_estimation/pose_estimation.h"
+#include "../pose_estimation/ipose_estimation.h"
 #pragma comment (lib, "grasp_pose_estimation.lib")
-PoseEstimation *pose_estimation_ = new PoseEstimation();
+IPoseEstimation *pose_estimation_ = GetPoseEstimation();
 
 int CSimpleA::disPatchChar(BYTE ucType, int& iInstanID, std::string strInData, std::string & strOutData, lpCALLBACK pCallback, LPVOID lpPara)   const
 {
@@ -14,7 +14,7 @@ int CSimpleA::disPatchChar(BYTE ucType, int& iInstanID, std::string strInData, s
 	switch (ucType)
 	{
 	case 0:
-		strOutData = pose_estimation_->Compute();
+		strOutData = pose_estimation_->GetTransformation(strInData);
 		break;
 	case 1:
 		strOutData = "case 1";
