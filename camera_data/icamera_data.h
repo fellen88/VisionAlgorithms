@@ -1,6 +1,16 @@
 #pragma once
 #include "stdafx.h"
 
+struct JsonOutType
+{
+	bool success;
+	int json_int;
+	float json_float;
+	double json_double;
+	bool json_bool;
+	std::string json_string;
+};
+
 class ICameraData
 {
 	public:
@@ -12,6 +22,8 @@ class ICameraData
 	virtual bool LoadImage(cv::Mat image, std::string file_name) = 0;
 	virtual void ShowPointCloud(const PointCloud::Ptr pointcloud, std::string window_name) = 0;
 	virtual void ShowImage(const cv::Mat image, std::string window_name) = 0;
+ 	virtual JsonOutType ReadJsonFile(std::string file_name, std::string key_name, const char* out_type) = 0;
+	virtual JsonOutType ReadJsonString(std::string json_string, std::string key_name, const char* out_type) = 0;
 
 	virtual void test() = 0;
 };

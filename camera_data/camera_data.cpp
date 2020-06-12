@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+#include <fstream>
 #include "camera_data.h"
 
 #define COLORMEMORYNAME "color"
@@ -9,11 +10,13 @@
 #define CAMERASTATE "cameraState"
 #define PICTURESTATE "pictureState"
 
+std::string JsonFilePath = "plugins//PoseEstimation//pose_estimation.json";
+
 CameraData::CameraData()
 {
 	LOG(INFO) << "CameraData() ";
-	WIDTH = 848;
-	HEIGHT = 480;
+	image_width_= 848;
+	image_height_ = 480;
 	
 	cameraStateBuffer = nullptr;
 	pictureStateBuffer = nullptr;
@@ -84,15 +87,15 @@ bool CameraData::GetSharedMemImages()
 		picture = PictureState::READING;
 		memcpy(pictureStateBuffer, &picture, sizeof(PictureState));
 
-		uchar *p1 = (uchar*)malloc(sizeof(uchar)*HEIGHT*WIDTH * 3);
-		memcpy(p1, pcolorBuffer, sizeof(uchar)*HEIGHT*WIDTH * 3);
-		cv::Mat color(cv::Size(WIDTH, HEIGHT), CV_8UC3);
+		uchar *p1 = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_* 3);
+		memcpy(p1, pcolorBuffer, sizeof(uchar)*image_height_*image_width_* 3);
+		cv::Mat color(cv::Size(image_width_, image_height_), CV_8UC3);
 		ucharToMat(p1, color, 0);
 		cv::imshow("color", color);
 
-		uchar *p2 = (uchar*)malloc(sizeof(uchar)*HEIGHT*WIDTH * 3);
-		memcpy(p2, pdepthBuffer, sizeof(uchar)*HEIGHT*WIDTH * 3);
-		cv::Mat depth(cv::Size(WIDTH, HEIGHT), CV_8UC3);
+		uchar *p2 = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_* 3);
+		memcpy(p2, pdepthBuffer, sizeof(uchar)*image_height_*image_width_* 3);
+		cv::Mat depth(cv::Size(image_width_, image_height_), CV_8UC3);
 		ucharToMat(p2, depth, 0);
 		cv::imshow("depth", depth);
 
@@ -105,10 +108,6 @@ bool CameraData::GetSharedMemImages()
 	return true;
 }
 
-bool CameraData::SetParameters()
-{
-	return false;
-}
 
 bool CameraData::DepthtoPointCloud()
 {
@@ -152,6 +151,117 @@ void CameraData::ShowImage(const cv::Mat image, std::string window_name)
 	cv::imshow(window_name, image);
 	cv::waitKey(0);
 }
+
+JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name, const char* out_type)
+{
+	JsonOutType json_out_type;
+	Json::Value json_object;
+	Json::Reader reader;
+	ifstream json_file;
+	json_file.open(file_name, ios::binary);
+
+	if (!reader.parse(json_file, json_object))
+	{
+		cout << "json open error: " << GetLastError << endl;
+		json_file.close();
+		json_out_type.success = false;
+		return json_out_type;
+	}
+	else if(0 == strcmp(out_type, "string"))
+	{
+		if (!json_object[key_name].isNull())
+    {
+			std::string strValue= json_object[key_name].asString(); 
+			std::cout << strValue<< std::endl; 
+    }
+		json_file.close();
+		return json_out_type;
+	}
+	return json_out_type;
+}
+
+JsonOutType CameraData::ReadJsonString(std::string json_string, std::string key_name, const char * out_type)
+{
+	JsonOutType json_out_type;
+	Json::Value json_object;
+	Json::Reader reader;
+	if (!reader.parse(json_string, json_object))
+	{
+		LOG(ERROR) << "read json string failed";
+		json_out_type.success = false;
+		return json_out_type;
+	}
+	else if(0 == strcmp(out_type, "string"))
+	{
+		if (!json_object[key_name].isNull())
+    {
+			std::string strValue= json_object[key_name].asString(); 
+			std::cout << strValue<< std::endl; 
+    }
+		return json_out_type;
+	}
+	return json_out_type;
+}
+ 
+bool CameraData::SetParameters()
+{
+	if (ReadJsonFile(JsonFilePath, "ImageHeight", "int").success)
+	{
+		image_height_ = ReadJsonFile(JsonFilePath, "ImageHeight", "int").json_int;
+	}
+	else
+	{
+		LOG(ERROR) << "set ImageHeight from json error";
+		return false;
+	}
+	if(ReadJsonFile(JsonFilePath, "ImageWidth", "int").success)
+	{
+		image_width_ = ReadJsonFile(JsonFilePath, "ImageWidth", "int").json_int;
+	}
+	else
+	{
+		LOG(ERROR) << "set ImageWidth from json error";
+		return false;
+	}
+	if (ReadJsonFile(JsonFilePath, "Fx", "float").success)
+	{
+		fx_ = ReadJsonFile(JsonFilePath, "Fx", "float").json_float;
+	}
+	else
+	{
+		LOG(ERROR) << "set Fx from json error";
+		return false;
+	}
+	if(ReadJsonFile(JsonFilePath, "Fy", "float").success)
+	{
+		fy_ = ReadJsonFile(JsonFilePath, "Fy", "float").json_float;
+	}
+	else
+	{
+		LOG(ERROR) << "set Fy from json error";
+		return false;
+	}
+	if (ReadJsonFile(JsonFilePath, "Cx", "float").success)
+	{
+		cx_ = ReadJsonFile(JsonFilePath, "Cx", "float").json_float;
+	}
+	else
+	{
+		LOG(ERROR) << "set Cx from json error";
+		return false;
+	}
+	if (ReadJsonFile(JsonFilePath, "Cy", "float").success)
+	{
+		cy_ = ReadJsonFile(JsonFilePath, "Cy", "float").json_float;
+	}
+	else
+	{
+		LOG(ERROR) << "set Cy from json error";
+		return false;
+	}
+	return true;
+}
+
 
 void CameraData::test()
 {
