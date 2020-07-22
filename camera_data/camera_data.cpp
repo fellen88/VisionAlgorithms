@@ -108,7 +108,6 @@ bool CameraData::GetSharedMemImages()
 	return true;
 }
 
-
 bool CameraData::DepthtoPointCloud()
 {
 	if (1)
