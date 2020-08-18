@@ -12,7 +12,7 @@
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdParty/JsonCpp/lib;
 									  %(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>json_vc71_libmdd.lib;
+      <AdditionalDependencies>json_vc71_libmd.lib;
 	                          %(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
