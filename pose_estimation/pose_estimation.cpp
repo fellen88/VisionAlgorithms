@@ -22,7 +22,8 @@ PoseEstimation::~PoseEstimation()
 
 std::string PoseEstimation::GetTransformation(std::string parameters)
 {
-	//std::string test = p_camera_data_->ReadJsonFile(JsonFilePath, "Visualization", "string").json_string;
+	cout << "Visualization ：";
+	std::string test = p_camera_data_->ReadJsonFile(JsonFilePath, "Visualization", "string").json_string;
 	//std::string test1 = p_camera_data_->ReadJsonString(JsonString, "key", "string").json_string;
 
 	std::string output_string = "{\"pose_flag\":";
