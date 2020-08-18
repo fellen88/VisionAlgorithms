@@ -1,5 +1,4 @@
 ﻿// camera_data.cpp : 定义 DLL 应用程序的导出函数。
-//
 
 #include "stdafx.h"
 #include <fstream>
@@ -67,7 +66,7 @@ int CameraData::ucharToMat(uchar *p2, cv::Mat& src, int flag)
 	return flag;
 }
 
-bool CameraData::GetSharedMemImages()
+bool CameraData::GetSharedMemImages(cv::Mat color, cv::Mat depth, cv::Mat mask, std::string label)
 {
 	if (false == isOpenFileMapping)
 	{
@@ -108,17 +107,7 @@ bool CameraData::GetSharedMemImages()
 	return true;
 }
 
-
-bool CameraData::DepthtoPointCloud()
-{
-	if (1)
-	{
-		return false;
-	}
-	return true;
-}
-
-bool CameraData::LoadPointCloud(PointCloud::Ptr object_model, std::string file_name)
+bool CameraData::LoadPointCloud(std::string file_name, PointCloud::Ptr object_model)
 {
 	pcl::PCDReader reader;
 	if (reader.read(file_name, *object_model)  < 0)
@@ -128,7 +117,7 @@ bool CameraData::LoadPointCloud(PointCloud::Ptr object_model, std::string file_n
 	return true;
 }
 
-bool CameraData::LoadImage(cv::Mat image, std::string file_name)
+bool CameraData::Load2DImage(cv::Mat image, std::string file_name)
 {
 	image = cv::imread(file_name);
 
@@ -167,7 +156,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 		json_out_type.success = false;
 		return json_out_type;
 	}
-	else if(0 == strcmp(out_type, "string"))
+	if(0 == strcmp(out_type, "string"))
 	{
 		if (!json_object[key_name].isNull())
     {
@@ -177,6 +166,47 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 		json_file.close();
 		return json_out_type;
 	}
+	if(0 == strcmp(out_type, "int"))
+	{
+		if (!json_object[key_name].isNull())
+    {
+			int strValue = json_object[key_name].asInt(); 
+			std::cout << strValue<< std::endl; 
+    }
+		json_file.close();
+		return json_out_type;
+	}
+	if(0 == strcmp(out_type, "float"))
+	{
+		if (!json_object[key_name].isNull())
+    {
+			float strValue= json_object[key_name].asFloat(); 
+			std::cout << strValue<< std::endl; 
+    }
+		json_file.close();
+		return json_out_type;
+	}
+	if(0 == strcmp(out_type, "bool"))
+	{
+		if (!json_object[key_name].isNull())
+    {
+			bool strValue= json_object[key_name].asBool(); 
+			std::cout << strValue<< std::endl; 
+    }
+		json_file.close();
+		return json_out_type;
+	}
+	if(0 == strcmp(out_type, "double"))
+	{
+		if (!json_object[key_name].isNull())
+    {
+			double strValue= json_object[key_name].asDouble(); 
+			std::cout << strValue<< std::endl; 
+    }
+		json_file.close();
+		return json_out_type;
+	}
+
 	return json_out_type;
 }
 
@@ -205,63 +235,95 @@ JsonOutType CameraData::ReadJsonString(std::string json_string, std::string key_
  
 bool CameraData::SetParameters()
 {
-	if (ReadJsonFile(JsonFilePath, "ImageHeight", "int").success)
+	JsonOutType json_out_type = { false, 0, 0.0, 0.0, false,"" };
+	json_out_type = ReadJsonFile(JsonFilePath, "ImageHeight", "int");
+	if (json_out_type.success)
 	{
-		image_height_ = ReadJsonFile(JsonFilePath, "ImageHeight", "int").json_int;
+		image_height_ = json_out_type.json_int;
 	}
 	else
 	{
 		LOG(ERROR) << "set ImageHeight from json error";
 		return false;
 	}
-	if(ReadJsonFile(JsonFilePath, "ImageWidth", "int").success)
+
+	json_out_type = ReadJsonFile(JsonFilePath, "ImageWidth", "int");
+	if(json_out_type.success)
 	{
-		image_width_ = ReadJsonFile(JsonFilePath, "ImageWidth", "int").json_int;
+		image_width_ = json_out_type.json_int;
 	}
 	else
 	{
 		LOG(ERROR) << "set ImageWidth from json error";
 		return false;
 	}
-	if (ReadJsonFile(JsonFilePath, "Fx", "float").success)
+
+	json_out_type = ReadJsonFile(JsonFilePath, "Fx", "float");
+	if (json_out_type.success)
 	{
-		fx_ = ReadJsonFile(JsonFilePath, "Fx", "float").json_float;
+		fx_ = json_out_type.json_float;
 	}
 	else
 	{
 		LOG(ERROR) << "set Fx from json error";
 		return false;
 	}
-	if(ReadJsonFile(JsonFilePath, "Fy", "float").success)
+
+	json_out_type = ReadJsonFile(JsonFilePath, "Fy", "float");
+	if(json_out_type.success)
 	{
-		fy_ = ReadJsonFile(JsonFilePath, "Fy", "float").json_float;
+		fy_ = json_out_type.json_float;
 	}
 	else
 	{
 		LOG(ERROR) << "set Fy from json error";
 		return false;
 	}
-	if (ReadJsonFile(JsonFilePath, "Cx", "float").success)
+
+	json_out_type = ReadJsonFile(JsonFilePath, "Cx", "float");
+	if (json_out_type.success)
 	{
-		cx_ = ReadJsonFile(JsonFilePath, "Cx", "float").json_float;
+		cx_ = json_out_type.json_float;
 	}
 	else
 	{
 		LOG(ERROR) << "set Cx from json error";
 		return false;
 	}
-	if (ReadJsonFile(JsonFilePath, "Cy", "float").success)
+
+	json_out_type = ReadJsonFile(JsonFilePath, "Cy", "float");
+	if (json_out_type.success)
 	{
-		cy_ = ReadJsonFile(JsonFilePath, "Cy", "float").json_float;
+		cy_ = json_out_type.json_float;
 	}
 	else
 	{
 		LOG(ERROR) << "set Cy from json error";
 		return false;
 	}
+
+	json_out_type = ReadJsonFile(JsonFilePath, "ScaleFactor3D", "int");
+	if (json_out_type.success)
+	{
+		scale_factor_ = json_out_type.json_int;
+	}
+	else
+	{
+		LOG(ERROR) << "set ScaleFactor3D from json error";
+		return false;
+	}
+
 	return true;
 }
 
+bool CameraData::DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr pointcloud)
+{
+	if (1)
+	{
+		return false;
+	}
+	return true;
+}
 
 void CameraData::test()
 {

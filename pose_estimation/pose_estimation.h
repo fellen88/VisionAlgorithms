@@ -18,8 +18,14 @@ class PoseEstimation: public IPoseEstimation
 
 	bool pose_flag;
 	std::string pose_object;
-	/*
-	PointCloud::Ptr object_model;*/
+	
+	cv::Mat object_depth;
+	cv::Mat object_color;
+	cv::Mat object_mask;
+	std::string object_label;
+	PointCloud::Ptr object_model;
+	PointCloud::Ptr object_scan;
+	Eigen::Matrix4f object_transform;
 
 	PoseEstimation();
 	~PoseEstimation();
