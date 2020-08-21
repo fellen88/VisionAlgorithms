@@ -5,21 +5,21 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Program Files\PCL 1.9.1\include\pcl-1.9;
-									C:\Program Files\PCL 1.9.1\3rdParty\Boost\include\boost-1_68;
-									C:\Program Files\PCL 1.9.1\3rdParty\Eigen\eigen3;
-									C:\Program Files\PCL 1.9.1\3rdParty\FLANN\include;
-									C:\Program Files\PCL 1.9.1\3rdParty\Qhull\include;
-									C:\Program Files\PCL 1.9.1\3rdParty\VTK\include\vtk-8.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdParty\PCL\PCL 1.9.1\include\pcl-1.9;
+									$(SolutionDir)3rdParty\PCL\PCL 1.9.1\3rdParty\Boost\include\boost-1_68;
+									$(SolutionDir)3rdParty\PCL\PCL 1.9.1\3rdParty\Eigen\eigen3;
+									$(SolutionDir)3rdParty\PCL\PCL 1.9.1\3rdParty\FLANN\include;
+									$(SolutionDir)3rdParty\PCL\PCL 1.9.1\3rdParty\Qhull\include;
+									$(SolutionDir)3rdParty\PCL\PCL 1.9.1\3rdParty\VTK\include\vtk-8.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_SILENCE_FPOS_SEEKPOS_DEPRECATION_WARNING;NOMINMAX</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>C:\Program Files\PCL 1.9.1\lib;
-									  C:\Program Files\PCL 1.9.1\3rdParty\Boost\lib;
-									  C:\Program Files\PCL 1.9.1\3rdParty\FLANN\lib;
-									  C:\Program Files\PCL 1.9.1\3rdParty\Qhull\lib;
-									  C:\Program Files\PCL 1.9.1\3rdParty\VTK\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)3rdParty\PCL\PCL 1.9.1\lib;
+									  $(SolutionDir)3rdParty\PCL\PCL 1.9.1\3rdParty\Boost\lib;
+									  $(SolutionDir)3rdParty\PCL\PCL 1.9.1\3rdParty\FLANN\lib;
+									  $(SolutionDir)3rdParty\PCL\PCL 1.9.1\3rdParty\Qhull\lib;
+									  $(SolutionDir)3rdParty\PCL\PCL 1.9.1\3rdParty\VTK\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>pcl_common_release.lib;
 							pcl_features_release.lib;
 							pcl_filters_release.lib;

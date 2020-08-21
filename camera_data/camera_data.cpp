@@ -316,12 +316,53 @@ bool CameraData::SetParameters()
 	return true;
 }
 
-bool CameraData::DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr pointcloud)
+bool CameraData::DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr CloudMask)
 {
-	if (1)
-	{
-		return false;
-	}
+	for(int ImgWidth = 0; ImgWidth < image_width_; ImgWidth++)
+  {
+    for(int ImgHeight = 0; ImgHeight < image_height_; ImgHeight++ )
+    {
+      //获取深度图中对应点的深度值
+      float d = Depth.at<float>(ImgWidth,ImgHeight);
+
+      //有效范围内的点
+			if ((d > 0.5*scale_factor_) && (d < 1.2*scale_factor_))
+			{
+				//判断mask中是否是物体的点
+				if (Mask.empty())
+				{
+					unsigned char mask_value = Mask.at<unsigned char>(ImgWidth, ImgHeight);
+					if (mask_value == 0)
+						continue;
+				}
+				else
+				{
+					LOG(ERROR) << ("mask image pointer mask_ptr = null");
+						continue;
+				}
+				//计算这个点的空间坐标
+				pcl::PointXYZ PointWorld;
+				PointWorld.z = double(d) / scale_factor_;
+				//ROS_INFO("D = %f", d);
+				PointWorld.x = (ImgHeight - cx_)*PointWorld.z / fx_;
+				PointWorld.y = (ImgWidth - cy_)*PointWorld.z / fy_;
+				CloudMask->points.push_back(PointWorld);
+      }
+    }
+  }
+  //设置点云属性，采用无序排列方式存储点云
+  CloudMask->height = 1;
+  CloudMask->width = CloudMask->points.size();
+  LOG(INFO)<<("mask cloud size = %d", CloudMask->width);
+  if(0 == CloudMask->points.size())
+  {
+    LOG(ERROR)<<("Mask points number = 0 !!!");
+    return false;
+  }
+  //去除NaN点
+  std::vector<int> nan_indices;
+  //pcl::removeNaNFromPointCloud(*CloudMask, *CloudMask, nan_indices);
+  CloudMask->is_dense = false;
 	return true;
 }
 

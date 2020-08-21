@@ -192,6 +192,11 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
   }
 }
 
+void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f & final_transform, bool downsample)
+{
+
+}
+
 void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt)
 {
 	SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, 0.05);
