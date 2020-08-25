@@ -2,6 +2,7 @@
 #include "registration_3d.h"
 #include "features.h"
 #include <math.h>
+#include "torch/torch.h"
 
 void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &SAC_transform, bool downsample)
 {
@@ -194,14 +195,16 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
 
 void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f & final_transform, bool downsample)
 {
-
 }
 
 void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt)
 {
-	SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, 0.05);
-	LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, 0.05);
-	final_transform = icp_transform * sac_transform;
+	//SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, 0.05);
+	//LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, 0.05);
+	//final_transform = icp_transform * sac_transform;
+	torch::Tensor tensor = torch::rand({ 5,3 });
+	//tensor = tensor.cuda();
+	std::cout << tensor << std::endl;
 }
 
 Eigen::Matrix4f Registration3D::GetTransformation()
