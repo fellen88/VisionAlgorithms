@@ -27,26 +27,26 @@ std::string PoseEstimation::GetTransformation(std::string parameters)
 	//std::string test1 = p_camera_data_->ReadJsonString(JsonString, "key", "string").json_string;
 
 	std::string output_string = "{\"pose_flag\":";
-	//if (false == p_camera_data_->GetSharedMemImages(object_depth, object_color, object_mask, object_label))
-	//{
-	//	LOG(ERROR) << "GetSharedMemImages Error!";
-	//	return output_string + "\"false\"";
-	//}
-	//if (false == p_camera_data_->SetParameters())
-	//{
-	//	return output_string + "\"false\"";
-	//}
-	//if (false == p_camera_data_->DepthtoPointCloud(object_depth, object_mask, object_scan));
-	//{
-	//	return output_string + "\"false\"";
-	//}
-	//if (false == p_camera_data_->LoadPointCloud(ModelFileName, object_model))
-	//{
-	//	return output_string + "\"false\"";
-	//}
+	if (false == p_camera_data_->GetSharedMemImages(object_depth, object_color, object_mask, object_label))
+	{
+		LOG(ERROR) << "GetSharedMemImages Error!";
+		return output_string + "\"false\"";
+	}
+	if (false == p_camera_data_->SetParameters())
+	{
+		return output_string + "\"false\"";
+	}
+	if (false == p_camera_data_->DepthtoPointCloud(object_depth, object_mask, object_scan));
+	{
+		return output_string + "\"false\"";
+	}
+	if (false == p_camera_data_->LoadPointCloud(ModelFileName, object_model))
+	{
+		return output_string + "\"false\"";
+	}
 
 	p_registration_->ComputeTransformation(object_model, object_scan);
-	//object_transform = p_registration_->GetTransformation();
+	object_transform = p_registration_->GetTransformation();
 	return output_string;
 }
 
