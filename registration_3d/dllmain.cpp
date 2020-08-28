@@ -9,12 +9,20 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-			LOG(INFO) << "registration_3d dll attach ";
-			break;
+		LOG(INFO) << "registration_3d process attach ";
+		break;
     case DLL_THREAD_ATTACH:
+		//LOG(INFO) << "registration_3d thread attach ";
+		break;
     case DLL_THREAD_DETACH:
+		//LOG(INFO) << "registration_3d thread detach ";
+		break;
     case DLL_PROCESS_DETACH:
-			LOG(INFO) << "registration_3d dll detach ";
+		//FreeLibrary("ATen_cuda.dll");
+		//FreeLibrary("c10_cuda.dll");
+		//FreeLibrary("torch_cuda.dll");
+		//FreeLibrary("torchvision.dll");
+		LOG(INFO) << "registration_3d process detach ";
         break;
     }
     return TRUE;

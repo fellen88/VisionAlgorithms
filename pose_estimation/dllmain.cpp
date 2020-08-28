@@ -9,12 +9,14 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-			LOG(INFO) << "pose_estimation dll attach ";
+			LOG(INFO) << "pose_estimation process attach ";
 			break;
     case DLL_THREAD_ATTACH:
+		break;
     case DLL_THREAD_DETACH:
+		break;
     case DLL_PROCESS_DETACH:
-			LOG(INFO) << "pose_estimation dll detach";
+			LOG(INFO) << "pose_estimation process detach";
 			break;
     }
     return TRUE;

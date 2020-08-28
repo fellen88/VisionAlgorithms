@@ -33,12 +33,14 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 			google::InstallFailureSignalHandler();
 		
 		  google::InstallFailureWriter(&FatalMessageDump);
-			LOG(INFO) << "camera_data dll attach ";
+			LOG(INFO) << "camera_data process attach ";
 			break;
     case DLL_THREAD_ATTACH:
+		break;
     case DLL_THREAD_DETACH:
+		break;
     case DLL_PROCESS_DETACH:
-			LOG(INFO) << "camera_data dll detach ";
+			LOG(INFO) << "camera_data process detach ";
 			//google::ShutdownGoogleLogging();
       break;
     }

@@ -195,16 +195,43 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
 
 void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f & final_transform, bool downsample)
 {
+	LoadLibraryA("ATen_cuda.dll");
+	LoadLibraryA("c10_cuda.dll");
+	LoadLibraryA("torch_cuda.dll");
+	LoadLibraryA("torchvision.dll");
+
+	try {
+		std::cout << "CUDA:   " << torch::cuda::is_available() << std::endl;
+		std::cout << "CUDNN:  " << torch::cuda::cudnn_is_available() << endl;
+		std::cout << "GPU(s): " << torch::cuda::device_count() << std::endl;
+	}
+	catch (std::exception& ex) {
+		std::cout << ex.what() << std::endl;
+	}
+	//try {
+	//	std::cout << "List devices:" << std::endl;
+	//	for (size_t d = 0; d <= static_cast<size_t>(c10::DeviceType::COMPILE_TIME_MAX_DEVICE_TYPES); d++) {
+	//		std::cout << d << ": " << c10::impl::device_guard_impl_registry[d] << std::endl;
+	//	}
+	//}
+	//catch (std::exception& ex) {
+	//	std::cout << ex.what() << std::endl;
+	//}
+	torch::Tensor tensor = torch::rand({ 5,5 });
+	tensor = tensor.cuda();
+	std::cout << tensor << std::endl;
 }
 
 void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt)
 {
-	//SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, 0.05);
-	//LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, 0.05);
-	//final_transform = icp_transform * sac_transform;
-	torch::Tensor tensor = torch::rand({ 5,3 });
-	//tensor = tensor.cuda();
-	std::cout << tensor << std::endl;
+	SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, 0.05);
+	LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, 0.05);
+	final_transform = icp_transform * sac_transform;
+}
+
+void Registration3D::ComputeTransformation_GPU(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt)
+{
+	DCP(cloud_src, cloud_tgt, sac_output, sac_transform, 0.05);
 }
 
 Eigen::Matrix4f Registration3D::GetTransformation()

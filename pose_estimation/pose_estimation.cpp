@@ -45,9 +45,12 @@ std::string PoseEstimation::GetTransformation(std::string parameters)
 	//	return output_string + "\"false\"";
 	//}
 
-	p_registration_->ComputeTransformation(object_model, object_scan);
+	//p_registration_->ComputeTransformation(object_model, object_scan);
 	//object_transform = p_registration_->GetTransformation();
-	return output_string;
+
+	p_registration_->ComputeTransformation_GPU(object_model, object_scan);
+
+	return output_string + "\"true\"";
 }
 
 IPoseEstimation * GetPoseEstimation()
