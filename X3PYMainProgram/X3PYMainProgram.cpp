@@ -39,7 +39,7 @@ void LoadDLL()
 	  "94071767-ba6b-4769-9eb4-PoseEstimation", NULL
 	};
 	const char* path[] = {
-		"plugins\\PoseEstimation"
+		"plugins\\DCP"
 	};
 	// 自动加载和卸载插件，插件在程序文件的plugins子目录下
 	x3::AutoLoadPlugins autoload(plugins, strID, path);
