@@ -3,6 +3,7 @@
 #include "features.h"
 #include <math.h>
 #include "torch/torch.h"
+#include "torch/script.h"
 
 void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &SAC_transform, bool downsample)
 {
@@ -208,18 +209,47 @@ void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr 
 	catch (std::exception& ex) {
 		std::cout << ex.what() << std::endl;
 	}
-	//try {
-	//	std::cout << "List devices:" << std::endl;
-	//	for (size_t d = 0; d <= static_cast<size_t>(c10::DeviceType::COMPILE_TIME_MAX_DEVICE_TYPES); d++) {
-	//		std::cout << d << ": " << c10::impl::device_guard_impl_registry[d] << std::endl;
-	//	}
-	//}
-	//catch (std::exception& ex) {
-	//	std::cout << ex.what() << std::endl;
-	//}
-	torch::Tensor tensor = torch::rand({ 5,5 });
+	try {
+		std::cout << "List devices:" << std::endl;
+		for (size_t d = 0; d <= static_cast<size_t>(c10::DeviceType::COMPILE_TIME_MAX_DEVICE_TYPES); d++) {
+			std::cout << d << ": " << c10::impl::device_guard_impl_registry[d] << std::endl;
+		}
+	}
+	catch (std::exception& ex) {
+		std::cout << ex.what() << std::endl;
+	}
+	torch::Tensor tensor = torch::rand({ 3, 3 });
 	tensor = tensor.cuda();
 	std::cout << tensor << std::endl;
+
+	int gpu_id = 0;
+	torch::Device device(torch::cuda::is_available() ? torch::kCUDA : torch::kCPU, gpu_id);
+	torch::jit::script::Module module;
+	torch::NoGradGuard no_grad;
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>); // 创建点云（指针）
+
+	try {
+		// Deserialize the ScriptModule from a file using torch::jit::load().
+		module = torch::jit::load("plugins//DCP//libtorch_model//dcp.pt", device);
+		//gpu optimize
+		module.eval();
+	}
+	catch (const c10::Error& e) {
+		std::cerr << "error loading the model\n";
+	}
+
+	// Create a vector of inputs.
+	at::Tensor src_tensor = torch::rand({ 3, 1024 });
+	at::Tensor tgt_tensor = src_tensor;
+	src_tensor = src_tensor.to(device);
+	tgt_tensor = tgt_tensor.to(device);
+	std::vector<torch::jit::IValue> inputs;
+	inputs.push_back(src_tensor);
+	inputs.push_back(tgt_tensor);
+
+	// Execute the model and turn its output into a tensor.
+	at::Tensor output_tensor = module.forward(inputs).toTensor();
+	std::cout << output_tensor.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << '\n';
 }
 
 void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt)
