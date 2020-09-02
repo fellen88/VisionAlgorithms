@@ -4,7 +4,7 @@
 
 #include "../pose_estimation/ipose_estimation.h"
 #pragma comment (lib, "grasp_pose_estimation.lib")
-IPoseEstimation *pose_estimation_ = GetPoseEstimation();
+
 
 int CSimpleA::disPatchChar(BYTE ucType, int& iInstanID, std::string strInData, std::string & strOutData, lpCALLBACK pCallback, LPVOID lpPara)   const
 {
@@ -14,8 +14,11 @@ int CSimpleA::disPatchChar(BYTE ucType, int& iInstanID, std::string strInData, s
 	switch (ucType)
 	{
 	case 0:
+		{
+		IPoseEstimation *pose_estimation_ = GetPoseEstimation();
 		strOutData = pose_estimation_->GetTransformation(strInData);
 		break;
+		}
 	case 1:
 		strOutData = "case 1";
 		break;

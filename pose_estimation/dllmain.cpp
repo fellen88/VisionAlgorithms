@@ -12,7 +12,9 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 			LOG(INFO) << "pose_estimation dll attach ";
 			break;
     case DLL_THREAD_ATTACH:
+		break;
     case DLL_THREAD_DETACH:
+		break;
     case DLL_PROCESS_DETACH:
 			LOG(INFO) << "pose_estimation dll detach";
 			break;

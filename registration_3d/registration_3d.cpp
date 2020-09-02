@@ -3,6 +3,12 @@
 #include "features.h"
 #include <math.h>
 
+Registration3D::Registration3D():
+	sac_output(new pcl::PointCloud<pcl::PointXYZ>),
+	icp_output(new pcl::PointCloud<pcl::PointXYZ>)
+{
+}
+
 void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &SAC_transform, bool downsample)
 {
   //为了一致性和速度，下采样
@@ -11,7 +17,7 @@ void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::P
   pcl::VoxelGrid<PointT> grid; //VoxelGrid 把一个给定的点云，聚集在一个局部的3D网格上,并下采样和滤波点云数据
   if (downsample) //下采样
   {
-    grid.setLeafSize (0.002, 0.002, 0.002); //设置体元网格的叶子大小
+    grid.setLeafSize (0.05, 0.05, 0.05); //设置体元网格的叶子大小
         //下采样 源点云
     grid.setInputCloud (cloud_src); //设置输入点云
     grid.filter (*source_filtered); //下采样和滤波，并存储在src中
@@ -24,6 +30,8 @@ void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::P
     source_filtered = cloud_src; //直接复制
     target_filtered = cloud_tgt;
   }
+  ////保存到PCD文件
+  //pcl::io::savePCDFileASCII("model.pcd", *source_filtered);
 
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
 	fpfhFeature::Ptr source_fpfh;
@@ -89,7 +97,7 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
   pcl::VoxelGrid<PointT> grid; //VoxelGrid 把一个给定的点云，聚集在一个局部的3D网格上,并下采样和滤波点云数据
   if (downsample) //下采样
   {
-    grid.setLeafSize (0.001, 0.001, 0.001); //设置体元网格的叶子大小
+    grid.setLeafSize (0.05, 0.05, 0.05); //设置体元网格的叶子大小
         //下采样 源点云
     grid.setInputCloud (cloud_src); //设置输入点云
     grid.filter (*src); //下采样和滤波，并存储在src中
@@ -170,7 +178,7 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
     }*/
   }
 
- PCL_INFO ("Iteration Nr. %d.\n", NumIteration); //命令行显示迭代的次数
+ //PCL_INFO ("Iteration Nr. %d.\n", NumIteration); //命令行显示迭代的次数
   targetToSource = Ti.inverse(); //计算从目标点云到源点云的变换矩阵
   pcl::transformPointCloud (*cloud_tgt, *output, targetToSource); //将目标点云 变换回到 源点云帧
 
@@ -199,8 +207,16 @@ void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr 
 
 void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt)
 {
-	SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, 0.05);
-	LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, 0.05);
+	{
+		pcl::ScopeTime scope_time("*SAC_IA");//计算算法运行时间
+		SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, true);
+	}
+	{
+		pcl::ScopeTime scope_time("*LM_ICP");//计算算法运行时间
+		LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, true );
+
+	}
+
 	final_transform = icp_transform * sac_transform;
 }
 
