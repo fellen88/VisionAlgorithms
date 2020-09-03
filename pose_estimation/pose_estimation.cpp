@@ -5,14 +5,14 @@
 #include "pose_estimation.h"
 
 std::string ModelFileName = "plugins//PoseEstimation//object_model.pcd";
-std::string JsonFilePath = "plugins//PoseEstimation//pose_estimation.json";
-std::string JsonString = "{\"key\":\"value\",\"array\":[{\"arraykey\":1},{\"arraykey\":2}]}"; 
+std::string JsonFileName = "plugins//PoseEstimation//pose_estimation.json";
+//std::string TestJsonString = "{\"key\":\"value\",\"array\":[{\"arraykey\":1},{\"arraykey\":2}]}"; 
 
 PoseEstimation::PoseEstimation():
 	object_model(new pcl::PointCloud<pcl::PointXYZ>),
 	object_scan(new pcl::PointCloud<pcl::PointXYZ>)
 {
-	p_camera_data_ = GetCameraData();
+	p_realsense_ = GetCameraData();
 	p_registration_ = GetRegistration3D();
 
 	pose_flag = false;
@@ -22,35 +22,41 @@ PoseEstimation::~PoseEstimation()
 {
 }
 
-std::string PoseEstimation::GetTransformation(std::string parameters)
+std::string PoseEstimation::GetTransformation(std::string input_string)
 {
 	cout << "Visualization ：";
-	std::string test = p_camera_data_->ReadJsonFile(JsonFilePath, "Visualization", "string").json_string;
-	//std::string test1 = p_camera_data_->ReadJsonString(JsonString, "key", "string").json_string;
+	bool debug_visualization = p_realsense_->ReadJsonString(input_string, "Visualization", "bool").json_bool;
 	std::string output_string = "{\"pose_flag\":";
 
-	if (false == p_camera_data_->SetParameters())
+	if (false == p_realsense_->SetParameters(JsonFileName))
 	{
 		LOG(ERROR) << "SetParameters Error!";
 		return output_string + "\"false\"" + "}";
 	}
 
-	//if (false == p_camera_data_->GetSharedMemImages(object_depth, object_color, object_mask, object_label))
-	//{
-	//	LOG(ERROR) << "GetSharedMemImages Error!";
-	//	return output_string + "\"false\"" + "}";
-	//}
-
-	if (false == p_camera_data_->LoadPointCloud(ModelFileName, object_model))
+	if (false == p_realsense_->GetSharedMemImages(object_depth, object_color, object_mask, object_label))
 	{
+		LOG(ERROR) << "GetSharedMemImages Error!";
+		return output_string + "\"false\"" + "}";
+	}
+
+	if (false == p_realsense_->LoadPointCloud(ModelFileName, object_model))
+	{
+		LOG(ERROR) << "LoadPointCloud Error!";
 		return output_string + "\"false\"" + "}";
 	}
 	
-	//if (false == p_camera_data_->DepthtoPointCloud(object_depth, object_mask, object_scan));
+	//if (false == p_realsense_->DepthtoPointCloud(object_depth, object_mask, object_scan));
 	//{
+	//	LOG(ERROR) << "DepthtoPointCloud Error!";
 	//	return output_string + "\"false\"" + "}";
 	//}
-	//p_camera_data_->ShowPointCloud(object_model, "object");
+	//if (debug_visualization)
+	{
+		p_realsense_->ShowImage(object_color, "object_color");
+		p_realsense_->ShowImage(object_color, "object_depth");
+		p_realsense_->ShowPointCloud(object_model, "object_model");
+	}
 
 	p_registration_->ComputeTransformation(object_model, object_model);
 	object_transform = p_registration_->GetTransformation();

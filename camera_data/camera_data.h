@@ -49,7 +49,7 @@ class CameraData :public ICameraData
 	int ucharToMat(uchar *p2, cv::Mat& src, int flag);
 
 	bool GetSharedMemImages(cv::Mat color, cv::Mat depth, cv::Mat mask, std::string label);
-	bool SetParameters();
+	bool SetParameters(std::string JsonFilePath);
 	bool LoadPointCloud(std::string file_name, PointCloud::Ptr object_model);
 	bool Load2DImage(cv::Mat image, std::string file_name);
 	void ShowPointCloud(const PointCloud::Ptr pointcloud, std::string window_name);

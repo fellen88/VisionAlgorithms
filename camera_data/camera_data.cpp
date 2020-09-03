@@ -7,19 +7,12 @@
 #define COLORMEMORYNAME L"color"
 #define DEPTHMEMORYNAME L"depth"
 
-std::string JsonFilePath = "plugins//PoseEstimation//camera_data.json";
-
 CameraData::CameraData()
 {
 	LOG(INFO) << "CameraData::CameraData() ";
-	image_width_= 1280;
-	image_height_ = 720;
 	
-	cameraStateBuffer = nullptr;
-	pictureStateBuffer = nullptr;
 	pcolorBuffer = nullptr;                                   // 共享内存指针
 	pdepthBuffer = nullptr;                                   // 共享内存指针
-
 	isOpenFileMapping = false;
 
 	hcolorMap = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)COLORMEMORYNAME);
@@ -78,16 +71,17 @@ bool CameraData::GetSharedMemImages(cv::Mat image_color, cv::Mat image_depth, cv
 	memcpy(p1, pcolorBuffer, sizeof(uchar)*image_height_*image_width_* 3);
 	cv::Mat color(cv::Size(image_width_, image_height_), CV_8UC3);
 	Uchar2Mat(p1, color);
-	//cv::imshow("color", color);
+	image_color = color;
+	//cv::imshow("color", image_color);
 
 	uchar *p2 = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_);
 	memcpy(p2, pdepthBuffer, sizeof(uchar)*image_height_*image_width_);
 	cv::Mat depth(cv::Size(image_width_, image_height_), CV_8UC1);
 	Uchar2Mat(p2, depth);
-	//cv::imshow("depth", depth);
+	image_depth = depth;
+	//cv::imshow("depth", image_depth);
     //cv::waitKey(-1);
 
-	cv::waitKey(1);
 	delete[] p1;
 	delete[] p2;
 	
@@ -117,15 +111,28 @@ bool CameraData::Load2DImage(cv::Mat image, std::string file_name)
 
 void CameraData::ShowPointCloud(const PointCloud::Ptr pointcloud, std::string window_name)
 {
-	boost::shared_ptr<pcl::visualization::PCLVisualizer> view(new pcl::visualization::PCLVisualizer(window_name));
-	view->addPointCloud(pointcloud);
-    view->spin ();
+	if (nullptr != pointcloud)
+	{
+		boost::shared_ptr<pcl::visualization::PCLVisualizer> view(new pcl::visualization::PCLVisualizer(window_name));
+		view->addPointCloud(pointcloud);
+		view->spin ();
+	}
+	else
+	{
+		LOG(ERROR) << window_name << " is a nullptr pointlcoud!";
+	}
 }
 
 void CameraData::ShowImage(const cv::Mat image, std::string window_name)
 {
-	cv::imshow(window_name, image);
-	cv::waitKey(0);
+	if (!image.empty())
+	{
+		cv::imshow(window_name, image);
+		cv::waitKey(0);
+	}
+	else {
+		LOG(ERROR) << window_name << " is empty image!";
+	}
 }
 
 JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name, const char* out_type)
@@ -220,7 +227,7 @@ JsonOutType CameraData::ReadJsonString(std::string json_string, std::string key_
 	return json_out_type;
 }
  
-bool CameraData::SetParameters()
+bool CameraData::SetParameters(std::string JsonFilePath)
 {
 	JsonOutType json_out_type = { false, 0, 0.0, 0.0, false,"" };
 	json_out_type = ReadJsonFile(JsonFilePath, "ImageHeight", "int");
