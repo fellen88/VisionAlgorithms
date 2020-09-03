@@ -17,6 +17,7 @@ class PoseEstimation: public IPoseEstimation
 	IRegistration3D *p_registration_;
 
 	bool pose_flag;
+	bool debug_visualization;
 	std::string pose_object;
 	
 	cv::Mat object_depth;

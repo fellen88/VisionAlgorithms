@@ -23,7 +23,7 @@
 									  $(SolutionDir)3rdParty\PCL\PCL 1.9.1\3rdParty\VTK\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>pcl_common_debug.lib;
 							<!-- pcl_features_debug.lib; -->
-							<!-- pcl_filters_debug.lib; -->
+							pcl_filters_debug.lib;
 							<!-- pcl_io_ply_debug.lib; -->
 							pcl_io_debug.lib;
 							<!-- pcl_kdtree_debug.lib; -->

@@ -58,7 +58,7 @@ void Uchar2Mat(uchar* p, cv::Mat &src) {
 	return;
 }
 
-bool CameraData::GetSharedMemImages(cv::Mat image_color, cv::Mat image_depth, cv::Mat mask, std::string label)
+bool CameraData::GetSharedMemImages(cv::Mat &image_color, cv::Mat& image_depth, cv::Mat& mask, std::string label)
 {
 	if (false == isOpenFileMapping)
 	{
@@ -71,7 +71,7 @@ bool CameraData::GetSharedMemImages(cv::Mat image_color, cv::Mat image_depth, cv
 	memcpy(p1, pcolorBuffer, sizeof(uchar)*image_height_*image_width_* 3);
 	cv::Mat color(cv::Size(image_width_, image_height_), CV_8UC3);
 	Uchar2Mat(p1, color);
-	image_color = color;
+	image_color = color.clone();
 	//cv::imshow("color", image_color);
 
 	uchar *p2 = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_);
@@ -81,6 +81,8 @@ bool CameraData::GetSharedMemImages(cv::Mat image_color, cv::Mat image_depth, cv
 	image_depth = depth;
 	//cv::imshow("depth", image_depth);
     //cv::waitKey(-1);
+
+	mask = cv::Mat::ones(cv::Size(image_width_, image_height_), CV_8UC1);
 
 	delete[] p1;
 	delete[] p2;
@@ -155,7 +157,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 		if (!json_object[key_name].isNull())
     {
 			json_out_type.json_string = json_object[key_name].asString();
-			std::cout << json_out_type.json_string << std::endl;
+			//std::cout << json_out_type.json_string << std::endl;
     }
 		json_file.close();
 		return json_out_type;
@@ -165,7 +167,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 		if (!json_object[key_name].isNull())
     {
 			json_out_type.json_int = json_object[key_name].asInt(); 
-			std::cout << json_out_type.json_int << std::endl; 
+			//std::cout << json_out_type.json_int << std::endl; 
     }
 		json_file.close();
 		return json_out_type;
@@ -175,7 +177,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 		if (!json_object[key_name].isNull())
     {
 			json_out_type.json_float = json_object[key_name].asFloat(); 
-			std::cout << json_out_type.json_float << std::endl; 
+			//std::cout << json_out_type.json_float << std::endl; 
     }
 		json_file.close();
 		return json_out_type;
@@ -185,7 +187,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 		if (!json_object[key_name].isNull())
     {
 			json_out_type.json_bool = json_object[key_name].asBool(); 
-			std::cout << json_out_type.json_bool << std::endl; 
+			//std::cout << json_out_type.json_bool << std::endl; 
     }
 		json_file.close();
 		return json_out_type;
@@ -195,7 +197,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 		if (!json_object[key_name].isNull())
     {
 			json_out_type.json_double = json_object[key_name].asDouble(); 
-			std::cout << json_out_type.json_double << std::endl; 
+			//std::cout << json_out_type.json_double << std::endl; 
     }
 		json_file.close();
 		return json_out_type;
@@ -234,6 +236,7 @@ bool CameraData::SetParameters(std::string JsonFilePath)
 	if (json_out_type.success)
 	{
 		image_height_ = json_out_type.json_int;
+		LOG(INFO) << "ImageHeight: " << image_height_;
 	}
 	else
 	{
@@ -245,6 +248,7 @@ bool CameraData::SetParameters(std::string JsonFilePath)
 	if(json_out_type.success)
 	{
 		image_width_ = json_out_type.json_int;
+		LOG(INFO) << "ImageWidth: " << image_width_;
 	}
 	else
 	{
@@ -256,6 +260,7 @@ bool CameraData::SetParameters(std::string JsonFilePath)
 	if (json_out_type.success)
 	{
 		fx_ = json_out_type.json_float;
+		LOG(INFO) << "Fx: " <<fx_;
 	}
 	else
 	{
@@ -267,6 +272,7 @@ bool CameraData::SetParameters(std::string JsonFilePath)
 	if(json_out_type.success)
 	{
 		fy_ = json_out_type.json_float;
+		LOG(INFO) << "Fy: " <<fy_;
 	}
 	else
 	{
@@ -278,6 +284,7 @@ bool CameraData::SetParameters(std::string JsonFilePath)
 	if (json_out_type.success)
 	{
 		cx_ = json_out_type.json_float;
+		LOG(INFO) << "Cx: " <<cx_;
 	}
 	else
 	{
@@ -289,6 +296,7 @@ bool CameraData::SetParameters(std::string JsonFilePath)
 	if (json_out_type.success)
 	{
 		cy_ = json_out_type.json_float;
+		LOG(INFO) << "Cy: " <<cy_;
 	}
 	else
 	{
@@ -300,6 +308,7 @@ bool CameraData::SetParameters(std::string JsonFilePath)
 	if (json_out_type.success)
 	{
 		scale_factor_ = json_out_type.json_int;
+		LOG(INFO) << "ScaleFactor3D: " <<scale_factor_;
 	}
 	else
 	{
@@ -312,15 +321,15 @@ bool CameraData::SetParameters(std::string JsonFilePath)
 
 bool CameraData::DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr CloudMask)
 {
-	for(int ImgWidth = 0; ImgWidth < image_width_; ImgWidth++)
+	for(int rows = 0; rows < image_height_; rows++)
     {
-    for(int ImgHeight = 0; ImgHeight < image_height_; ImgHeight++ )
+    for(int cols = 0; cols < image_width_; cols++ )
     {
 		float d = 0;
 		if (!Depth.empty())
 		{
 			//获取深度图中对应点的深度值
-			d = Depth.at<float>(ImgWidth, ImgHeight);
+			d = Depth.at<uchar>(rows, cols);
 		}
 		else
 		{
@@ -329,12 +338,12 @@ bool CameraData::DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr 
 		}
 
       //有效范围内的点
-		if ((d > 0.5*scale_factor_) && (d < 1.2*scale_factor_))
+		//if ((d > 0.5*scale_factor_) && (d < 1.5*scale_factor_))
 		{
 			//判断mask中是否是物体的点
 			if (!Mask.empty())
 			{
-				unsigned char mask_value = Mask.at<unsigned char>(ImgWidth, ImgHeight);
+				unsigned char mask_value = Mask.at<unsigned char>(rows, cols);
 				if (mask_value == 0)
 					continue;
 			}
@@ -347,8 +356,8 @@ bool CameraData::DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr 
 			pcl::PointXYZ PointWorld;
 			PointWorld.z = double(d) / scale_factor_;
 			//ROS_INFO("D = %f", d);
-			PointWorld.x = (ImgHeight - cx_)*PointWorld.z / fx_;
-			PointWorld.y = (ImgWidth - cy_)*PointWorld.z / fy_;
+			PointWorld.x = (rows - cx_)*PointWorld.z / fx_;
+			PointWorld.y = (cols - cy_)*PointWorld.z / fy_;
 			CloudMask->points.push_back(PointWorld);
       }
     }
@@ -356,7 +365,7 @@ bool CameraData::DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr 
   //设置点云属性，采用无序排列方式存储点云
   CloudMask->height = 1;
   CloudMask->width = CloudMask->points.size();
-  LOG(INFO)<<("mask cloud size = %d", CloudMask->width);
+  LOG(INFO) << "mask cloud size = " << CloudMask->width;
   if(0 == CloudMask->points.size())
   {
     LOG(ERROR)<<("Mask points number = 0 !!!");
@@ -364,9 +373,9 @@ bool CameraData::DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr 
   }
   //去除NaN点
   std::vector<int> nan_indices;
-  //pcl::removeNaNFromPointCloud(*CloudMask, *CloudMask, nan_indices);
+  pcl::removeNaNFromPointCloud(*CloudMask, *CloudMask, nan_indices);
   CloudMask->is_dense = false;
-	return true;
+  return true;
 }
 
 void CameraData::test()
