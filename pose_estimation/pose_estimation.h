@@ -18,6 +18,7 @@ class PoseEstimation: public IPoseEstimation
 
 	bool pose_flag;
 	bool debug_visualization;
+	float sample_3d;
 	std::string pose_object;
 	
 	cv::Mat object_depth;

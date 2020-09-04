@@ -6,7 +6,6 @@
 
 std::string ModelFileName = "plugins//PoseEstimation//object_model.pcd";
 std::string JsonFileName = "plugins//PoseEstimation//pose_estimation.json";
-//std::string TestJsonString = "{\"key\":\"value\",\"array\":[{\"arraykey\":1},{\"arraykey\":2}]}"; 
 std::string TestOutput = "\"array\":[[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15 ,16]]}"; 
 
 PoseEstimation::PoseEstimation():
@@ -18,6 +17,7 @@ PoseEstimation::PoseEstimation():
 
 	pose_flag = false;
 	debug_visualization = false;
+	sample_3d = 0.05;
 }
 
 PoseEstimation::~PoseEstimation()
@@ -26,9 +26,11 @@ PoseEstimation::~PoseEstimation()
 
 std::string PoseEstimation::GetTransformation(std::string input_string)
 {
-	cout << "Visualization ：";
 	if(p_realsense_->ReadJsonString(input_string, "Visualization", "bool").success)
 	debug_visualization = p_realsense_->ReadJsonString(input_string, "Visualization", "bool").json_bool;
+
+	if(p_realsense_->ReadJsonString(input_string, "Sample3D", "float").success)
+	debug_visualization = p_realsense_->ReadJsonString(input_string, "Sample3D", "float").json_float;
 
 	std::string output_string = "{\"pose_flag\":";
 
@@ -63,9 +65,9 @@ std::string PoseEstimation::GetTransformation(std::string input_string)
 		p_realsense_->ShowPointCloud(object_scan, "object_scan");
 	}
 
-	//p_registration_->ComputeTransformation(object_model, object_model);
-	//object_transform = p_registration_->GetTransformation();
-	//cout << object_transform << endl;
+	p_registration_->ComputeTransformation(object_model, object_model, sample_3d);
+	object_transform = p_registration_->GetTransformation();
+	cout << object_transform << endl;
 	return output_string + "\"true\"," + TestOutput;
 }
 

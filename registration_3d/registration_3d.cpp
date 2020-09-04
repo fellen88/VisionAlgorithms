@@ -9,7 +9,7 @@ Registration3D::Registration3D():
 {
 }
 
-void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &SAC_transform, bool downsample)
+void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &SAC_transform, float downsample = 0)
 {
   //为了一致性和速度，下采样
   PointCloud::Ptr source_filtered(new PointCloud); //创建点云指针
@@ -17,7 +17,7 @@ void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::P
   pcl::VoxelGrid<PointT> grid; //VoxelGrid 把一个给定的点云，聚集在一个局部的3D网格上,并下采样和滤波点云数据
   if (downsample) //下采样
   {
-    grid.setLeafSize (0.05, 0.05, 0.05); //设置体元网格的叶子大小
+    grid.setLeafSize (downsample, downsample, downsample); //设置体元网格的叶子大小
         //下采样 源点云
     grid.setInputCloud (cloud_src); //设置输入点云
     grid.filter (*source_filtered); //下采样和滤波，并存储在src中
@@ -89,7 +89,7 @@ void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::P
 	}
 }
 
-void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, bool downsample = false)
+void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, float downsample = 0)
 {
   //为了一致性和速度，下采样
   PointCloud::Ptr src (new PointCloud); //创建点云指针
@@ -97,7 +97,7 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
   pcl::VoxelGrid<PointT> grid; //VoxelGrid 把一个给定的点云，聚集在一个局部的3D网格上,并下采样和滤波点云数据
   if (downsample) //下采样
   {
-    grid.setLeafSize (0.05, 0.05, 0.05); //设置体元网格的叶子大小
+    grid.setLeafSize (downsample, downsample, downsample); //设置体元网格的叶子大小
         //下采样 源点云
     grid.setInputCloud (cloud_src); //设置输入点云
     grid.filter (*src); //下采样和滤波，并存储在src中
@@ -200,20 +200,20 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
   }
 }
 
-void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f & final_transform, bool downsample)
+void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f & final_transform, float downsample = 0)
 {
 
 }
 
-void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt)
+void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, float downsample)
 {
 	{
 		pcl::ScopeTime scope_time("*SAC_IA");//计算算法运行时间
-		SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, true);
+		SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, downsample);
 	}
 	{
 		pcl::ScopeTime scope_time("*LM_ICP");//计算算法运行时间
-		LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, true );
+		LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, downsample);
 
 	}
 

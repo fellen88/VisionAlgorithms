@@ -145,19 +145,19 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 	ifstream json_file;
 	json_file.open(file_name, ios::binary);
 
-	if (!reader.parse(json_file, json_object))
+	if (false == reader.parse(json_file, json_object))
 	{
-		cout << "json open error: " << GetLastError << endl;
+		LOG(ERROR) << "read json file error！";
 		json_file.close();
 		json_out_type.success = false;
 		return json_out_type;
 	}
-	if(0 == strcmp(out_type, "string"))
+	else if(0 == strcmp(out_type, "string"))
 	{
 		if (!json_object[key_name].isNull())
     {
 			json_out_type.json_string = json_object[key_name].asString();
-			//std::cout << json_out_type.json_string << std::endl;
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_string;
     }
 		json_file.close();
 		return json_out_type;
@@ -167,7 +167,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 		if (!json_object[key_name].isNull())
     {
 			json_out_type.json_int = json_object[key_name].asInt(); 
-			//std::cout << json_out_type.json_int << std::endl; 
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_int;
     }
 		json_file.close();
 		return json_out_type;
@@ -177,7 +177,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 		if (!json_object[key_name].isNull())
     {
 			json_out_type.json_float = json_object[key_name].asFloat(); 
-			//std::cout << json_out_type.json_float << std::endl; 
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_float;
     }
 		json_file.close();
 		return json_out_type;
@@ -187,7 +187,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 		if (!json_object[key_name].isNull())
     {
 			json_out_type.json_bool = json_object[key_name].asBool(); 
-			//std::cout << json_out_type.json_bool << std::endl; 
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_bool;
     }
 		json_file.close();
 		return json_out_type;
@@ -197,7 +197,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 		if (!json_object[key_name].isNull())
     {
 			json_out_type.json_double = json_object[key_name].asDouble(); 
-			//std::cout << json_out_type.json_double << std::endl; 
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_double;
     }
 		json_file.close();
 		return json_out_type;
@@ -217,13 +217,49 @@ JsonOutType CameraData::ReadJsonString(std::string json_string, std::string key_
 		json_out_type.success = false;
 		return json_out_type;
 	}
-	else if(0 == strcmp(out_type, "string"))
+	else if (0 == strcmp(out_type, "string"))
 	{
 		if (!json_object[key_name].isNull())
-    {
-			std::string strValue= json_object[key_name].asString(); 
-			std::cout << strValue<< std::endl; 
-    }
+		{
+			json_out_type.json_string = json_object[key_name].asString();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_string;
+		}
+		return json_out_type;
+	}
+	if (0 == strcmp(out_type, "int"))
+	{
+		if (!json_object[key_name].isNull())
+		{
+			json_out_type.json_int = json_object[key_name].asInt();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_int;
+		}
+		return json_out_type;
+	}
+	if (0 == strcmp(out_type, "float"))
+	{
+		if (!json_object[key_name].isNull())
+		{
+			json_out_type.json_float = json_object[key_name].asFloat();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_float;
+		}
+		return json_out_type;
+	}
+	if (0 == strcmp(out_type, "bool"))
+	{
+		if (!json_object[key_name].isNull())
+		{
+			json_out_type.json_bool = json_object[key_name].asBool();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_bool;
+		}
+		return json_out_type;
+	}
+	if (0 == strcmp(out_type, "double"))
+	{
+		if (!json_object[key_name].isNull())
+		{
+			json_out_type.json_double = json_object[key_name].asDouble();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_double;
+		}
 		return json_out_type;
 	}
 	return json_out_type;
@@ -236,7 +272,6 @@ bool CameraData::SetParameters(std::string JsonFilePath)
 	if (json_out_type.success)
 	{
 		image_height_ = json_out_type.json_int;
-		LOG(INFO) << "ImageHeight: " << image_height_;
 	}
 	else
 	{
@@ -248,19 +283,15 @@ bool CameraData::SetParameters(std::string JsonFilePath)
 	if(json_out_type.success)
 	{
 		image_width_ = json_out_type.json_int;
-		LOG(INFO) << "ImageWidth: " << image_width_;
 	}
 	else
 	{
-		LOG(ERROR) << "set ImageWidth from json error";
-		return false;
 	}
 
 	json_out_type = ReadJsonFile(JsonFilePath, "Fx", "float");
 	if (json_out_type.success)
 	{
 		fx_ = json_out_type.json_float;
-		LOG(INFO) << "Fx: " <<fx_;
 	}
 	else
 	{
@@ -272,7 +303,6 @@ bool CameraData::SetParameters(std::string JsonFilePath)
 	if(json_out_type.success)
 	{
 		fy_ = json_out_type.json_float;
-		LOG(INFO) << "Fy: " <<fy_;
 	}
 	else
 	{
@@ -284,7 +314,6 @@ bool CameraData::SetParameters(std::string JsonFilePath)
 	if (json_out_type.success)
 	{
 		cx_ = json_out_type.json_float;
-		LOG(INFO) << "Cx: " <<cx_;
 	}
 	else
 	{
@@ -296,7 +325,6 @@ bool CameraData::SetParameters(std::string JsonFilePath)
 	if (json_out_type.success)
 	{
 		cy_ = json_out_type.json_float;
-		LOG(INFO) << "Cy: " <<cy_;
 	}
 	else
 	{
@@ -308,7 +336,6 @@ bool CameraData::SetParameters(std::string JsonFilePath)
 	if (json_out_type.success)
 	{
 		scale_factor_ = json_out_type.json_int;
-		LOG(INFO) << "ScaleFactor3D: " <<scale_factor_;
 	}
 	else
 	{
