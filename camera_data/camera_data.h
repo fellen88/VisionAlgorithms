@@ -6,13 +6,7 @@ class CameraData :public ICameraData
 {
   public:
 
-	int image_height_;
-	int image_width_;
-	float fx_;
-	float fy_;
-	float cx_;
-	float cy_;
-	int scale_factor_;
+
 	
 	// π≤œÌƒ⁄¥Ê÷∏’Î
 	LPVOID pcolorBuffer;                                  
@@ -48,8 +42,8 @@ class CameraData :public ICameraData
 
 	int ucharToMat(uchar *p2, cv::Mat& src, int flag);
 
-	bool GetSharedMemImages(cv::Mat color, cv::Mat depth, cv::Mat mask, std::string label);
-	bool SetParameters();
+	bool GetSharedMemImages(cv::Mat& color, cv::Mat& depth, cv::Mat& mask, std::string label);
+	bool SetParameters(std::string JsonFilePath);
 	bool LoadPointCloud(std::string file_name, PointCloud::Ptr object_model);
 	bool Load2DImage(cv::Mat image, std::string file_name);
 	void ShowPointCloud(const PointCloud::Ptr pointcloud, std::string window_name);

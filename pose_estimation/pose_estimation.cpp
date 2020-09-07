@@ -4,53 +4,71 @@
 #define __DLLEXPORT
 #include "pose_estimation.h"
 
-std::string ModelFileName = "object_model.pcd";
-std::string JsonFilePath = "plugins//PoseEstimation//pose_estimation.json";
-std::string JsonString = "{\"key\":\"value\",\"array\":[{\"arraykey\":1},{\"arraykey\":2}]}"; 
+std::string ModelFileName = "plugins//PoseEstimation//object_model.pcd";
+std::string JsonFileName = "plugins//PoseEstimation//pose_estimation.json";
+std::string TestOutput = "\"array\":[[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15 ,16]]}"; 
 
-PoseEstimation::PoseEstimation()
+PoseEstimation::PoseEstimation():
+	object_model(new pcl::PointCloud<pcl::PointXYZ>),
+	object_scan(new pcl::PointCloud<pcl::PointXYZ>)
 {
-	p_camera_data_ = GetCameraData();
+	p_realsense_ = GetCameraData();
 	p_registration_ = GetRegistration3D();
-	
+
 	pose_flag = false;
+	debug_visualization = false;
+	sample_3d = 0.05;
 }
 
 PoseEstimation::~PoseEstimation()
 {
 }
 
-std::string PoseEstimation::GetTransformation(std::string parameters)
+std::string PoseEstimation::GetTransformation(std::string input_string)
 {
-	cout << "Visualization ：";
-	std::string test = p_camera_data_->ReadJsonFile(JsonFilePath, "Visualization", "string").json_string;
-	//std::string test1 = p_camera_data_->ReadJsonString(JsonString, "key", "string").json_string;
+	if(p_realsense_->ReadJsonString(input_string, "Visualization", "bool").success)
+	debug_visualization = p_realsense_->ReadJsonString(input_string, "Visualization", "bool").json_bool;
+
+	if(p_realsense_->ReadJsonString(input_string, "Sample3D", "float").success)
+	debug_visualization = p_realsense_->ReadJsonString(input_string, "Sample3D", "float").json_float;
 
 	std::string output_string = "{\"pose_flag\":";
-	//if (false == p_camera_data_->GetSharedMemImages(object_depth, object_color, object_mask, object_label))
-	//{
-	//	LOG(ERROR) << "GetSharedMemImages Error!";
-	//	return output_string + "\"false\"";
-	//}
-	//if (false == p_camera_data_->SetParameters())
-	//{
-	//	return output_string + "\"false\"";
-	//}
-	//if (false == p_camera_data_->DepthtoPointCloud(object_depth, object_mask, object_scan));
-	//{
-	//	return output_string + "\"false\"";
-	//}
-	//if (false == p_camera_data_->LoadPointCloud(ModelFileName, object_model))
-	//{
-	//	return output_string + "\"false\"";
-	//}
 
-	//p_registration_->ComputeTransformation(object_model, object_scan);
-	//object_transform = p_registration_->GetTransformation();
+	if (false == p_realsense_->SetParameters(JsonFileName))
+	{
+		LOG(ERROR) << "SetParameters Error!";
+		return output_string + "\"false\"" + "}";
+	}
 
-	p_registration_->ComputeTransformation_GPU(object_model, object_scan);
+	if (false == p_realsense_->GetSharedMemImages(object_color, object_depth, object_mask, object_label))
+	{
+		LOG(ERROR) << "GetSharedMemImages Error!";
+		return output_string + "\"false\"" + "}";
+	}
 
-	return output_string + "\"true\"";
+	if (false == p_realsense_->LoadPointCloud(ModelFileName, object_model))
+	{
+		LOG(ERROR) << "LoadPointCloud Error!";
+		return output_string + "\"false\"" + "}";
+	}
+	
+	if (false == p_realsense_->DepthtoPointCloud(object_depth, object_mask, object_scan))
+	{
+		LOG(ERROR) << "DepthtoPointCloud Error!";
+		return output_string + "\"false\"" + "}";
+	}
+	if (debug_visualization)
+	{
+		p_realsense_->ShowImage(object_color, "object_color");
+		p_realsense_->ShowImage(object_depth, "object_depth");
+		p_realsense_->ShowPointCloud(object_model, "object_model");
+		p_realsense_->ShowPointCloud(object_scan, "object_scan");
+	}
+
+	p_registration_->ComputeTransformation(object_model, object_model, sample_3d);
+	object_transform = p_registration_->GetTransformation();
+	cout << object_transform << endl;
+	return output_string + "\"true\"," + TestOutput;
 }
 
 IPoseEstimation * GetPoseEstimation()

@@ -14,9 +14,17 @@ struct JsonOutType
 class ICameraData
 {
 	public:
-	
-	virtual bool GetSharedMemImages(cv::Mat color, cv::Mat depth, cv::Mat mask, std::string label) = 0;
-	virtual bool SetParameters() = 0;
+
+	int image_height_;
+	int image_width_;
+	float fx_;
+	float fy_;
+	float cx_;
+	float cy_;
+	int scale_factor_;
+
+	virtual bool GetSharedMemImages(cv::Mat& color, cv::Mat &depth, cv::Mat &mask, std::string label) = 0;
+	virtual bool SetParameters(std::string JsonFilePath) = 0;
 	virtual bool DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr pointcloud) = 0;
 	virtual bool LoadPointCloud(std::string file_name, PointCloud::Ptr object_model) = 0;
 	virtual bool Load2DImage(cv::Mat image, std::string file_name) = 0;

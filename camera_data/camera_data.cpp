@@ -4,38 +4,26 @@
 #include <fstream>
 #include "camera_data.h"
 
-#define COLORMEMORYNAME "color"
-#define DEPTHMEMORYNAME "depth"
-#define CAMERASTATE "cameraState"
-#define PICTURESTATE "pictureState"
-
-std::string JsonFilePath = "plugins//PoseEstimation//pose_estimation.json";
+#define COLORMEMORYNAME L"color"
+#define DEPTHMEMORYNAME L"depth"
 
 CameraData::CameraData()
 {
-	LOG(INFO) << "CameraData() ";
-	image_width_= 848;
-	image_height_ = 480;
+	LOG(INFO) << "CameraData::CameraData() ";
 	
-	cameraStateBuffer = nullptr;
-	pictureStateBuffer = nullptr;
 	pcolorBuffer = nullptr;                                   // 共享内存指针
 	pdepthBuffer = nullptr;                                   // 共享内存指针
-
 	isOpenFileMapping = false;
 
-	hcameraMap = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)CAMERASTATE);
-	hpictureMap = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)PICTURESTATE);
 	hcolorMap = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)COLORMEMORYNAME);
 	hdepthMap = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)DEPTHMEMORYNAME);
-	if (NULL != hcolorMap && NULL != hdepthMap && NULL != hcameraMap && NULL != hpictureMap)
+	if (NULL != hcolorMap && NULL != hdepthMap)
 	{
-		// 打开成功，映射对象的一个视图，得到指向共享内存的指针，显示出里面的数据
+		//打开成功，映射对象的一个视图，得到指向共享内存的指针，显示出里面的数据
 		pcolorBuffer = ::MapViewOfFile(hcolorMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 		pdepthBuffer = ::MapViewOfFile(hdepthMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-		cameraStateBuffer = ::MapViewOfFile(hcameraMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-		pictureStateBuffer = ::MapViewOfFile(hpictureMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 		isOpenFileMapping = true;
+		LOG(INFO) << "OpenFileMapping ok! ";
 	}
 }
 
@@ -46,64 +34,59 @@ CameraData::~CameraData()
 	::CloseHandle(hcolorMap);
 	::UnmapViewOfFile(pdepthBuffer);
 	::CloseHandle(hdepthMap);
-	::UnmapViewOfFile(cameraStateBuffer);
-	::CloseHandle(cameraStateBuffer);
-	::UnmapViewOfFile(pictureStateBuffer);
-	::CloseHandle(pictureStateBuffer);
 }
 
-int CameraData::ucharToMat(uchar *p2, cv::Mat& src, int flag)
-{
+void Uchar2Mat(uchar* p, cv::Mat &src) {
 	int img_width = src.cols;
 	int img_height = src.rows;
-	//cv::Mat img(Size(img_width, img_height), CV_8UC3);
-	for (int i = 0; i < img_width * img_height * 3; i++)
-	{
-		src.at<cv::Vec3b>(i / (img_width * 3), (i % (img_width * 3)) / 3)[i % 3] = p2[i];//BGR格式
-		//src.at<Vec3b>(i / (img_width * 3), (i % (img_width * 3)) / 3)[i % 3] = p2[i];//换为RGB使用
+	if (src.channels() == 3) {
+		for (int i = 0; i < img_width * img_height * 3; i++)
+		{
+			src.at<cv::Vec3b>(i / (img_width * 3), (i % (img_width * 3)) / 3)[i % 3] = p[i];//BGR格式
+
+		}
 	}
-	flag = 1;
-	return flag;
+
+	else if (src.channels() == 1)
+	{
+		for (int i = 0; i < img_width * img_height; i++)
+		{
+			src.at<uchar>(i / (img_width), i % (img_width)) = p[i];
+
+		}
+	}
+	return;
 }
 
-bool CameraData::GetSharedMemImages(cv::Mat color, cv::Mat depth, cv::Mat mask, std::string label)
+bool CameraData::GetSharedMemImages(cv::Mat &image_color, cv::Mat& image_depth, cv::Mat& mask, std::string label)
 {
 	if (false == isOpenFileMapping)
 	{
+		LOG(ERROR) << "OpenFileMapping error! ";
+		LOG(ERROR) << "hcolorMap: " << hcolorMap;
+		LOG(ERROR) << "hdepthMap: " << hdepthMap;
 		return false;
 	}
-	CameraState cameraState;
-	memcpy(&cameraState, cameraStateBuffer, sizeof(CameraState));
-	if (CameraState::DISCONNECTED == cameraState)
-	{
-		Sleep(10);
-		return false;
-	}
-	PictureState picture;
-	memcpy(&picture, pictureStateBuffer, sizeof(PictureState));
-	if (PictureState::WRITED == picture)
-	{
-		picture = PictureState::READING;
-		memcpy(pictureStateBuffer, &picture, sizeof(PictureState));
+	uchar *p1 = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_* 3);
+	memcpy(p1, pcolorBuffer, sizeof(uchar)*image_height_*image_width_* 3);
+	cv::Mat color(cv::Size(image_width_, image_height_), CV_8UC3);
+	Uchar2Mat(p1, color);
+	image_color = color.clone();
+	//cv::imshow("color", image_color);
 
-		uchar *p1 = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_* 3);
-		memcpy(p1, pcolorBuffer, sizeof(uchar)*image_height_*image_width_* 3);
-		cv::Mat color(cv::Size(image_width_, image_height_), CV_8UC3);
-		ucharToMat(p1, color, 0);
-		cv::imshow("color", color);
+	uchar *p2 = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_);
+	memcpy(p2, pdepthBuffer, sizeof(uchar)*image_height_*image_width_);
+	cv::Mat depth(cv::Size(image_width_, image_height_), CV_8UC1);
+	Uchar2Mat(p2, depth);
+	image_depth = depth;
+	//cv::imshow("depth", image_depth);
+    //cv::waitKey(-1);
 
-		uchar *p2 = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_* 3);
-		memcpy(p2, pdepthBuffer, sizeof(uchar)*image_height_*image_width_* 3);
-		cv::Mat depth(cv::Size(image_width_, image_height_), CV_8UC3);
-		ucharToMat(p2, depth, 0);
-		cv::imshow("depth", depth);
+	mask = cv::Mat::ones(cv::Size(image_width_, image_height_), CV_8UC1);
 
-		cv::waitKey(1);
-		delete[] p1;
-		delete[] p2;
-		picture = PictureState::READED;
-		memcpy(pictureStateBuffer, &picture, sizeof(PictureState));
-	}
+	delete[] p1;
+	delete[] p2;
+	
 	return true;
 }
 
@@ -130,15 +113,28 @@ bool CameraData::Load2DImage(cv::Mat image, std::string file_name)
 
 void CameraData::ShowPointCloud(const PointCloud::Ptr pointcloud, std::string window_name)
 {
-	boost::shared_ptr<pcl::visualization::PCLVisualizer> view(new pcl::visualization::PCLVisualizer(window_name));
-	view->addPointCloud(pointcloud);
-  view->spin ();
+	if (nullptr != pointcloud)
+	{
+		boost::shared_ptr<pcl::visualization::PCLVisualizer> view(new pcl::visualization::PCLVisualizer(window_name));
+		view->addPointCloud(pointcloud);
+		view->spin ();
+	}
+	else
+	{
+		LOG(ERROR) << window_name << " is a nullptr pointlcoud!";
+	}
 }
 
 void CameraData::ShowImage(const cv::Mat image, std::string window_name)
 {
-	cv::imshow(window_name, image);
-	cv::waitKey(0);
+	if (!image.empty())
+	{
+		cv::imshow(window_name, image);
+		cv::waitKey(0);
+	}
+	else {
+		LOG(ERROR) << window_name << " is empty image!";
+	}
 }
 
 JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name, const char* out_type)
@@ -149,19 +145,19 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 	ifstream json_file;
 	json_file.open(file_name, ios::binary);
 
-	if (!reader.parse(json_file, json_object))
+	if (false == reader.parse(json_file, json_object))
 	{
-		cout << "json open error: " << GetLastError << endl;
+		LOG(ERROR) << "read json file error！";
 		json_file.close();
 		json_out_type.success = false;
 		return json_out_type;
 	}
-	if(0 == strcmp(out_type, "string"))
+	else if(0 == strcmp(out_type, "string"))
 	{
 		if (!json_object[key_name].isNull())
     {
-			std::string strValue= json_object[key_name].asString(); 
-			std::cout << strValue<< std::endl; 
+			json_out_type.json_string = json_object[key_name].asString();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_string;
     }
 		json_file.close();
 		return json_out_type;
@@ -170,8 +166,8 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 	{
 		if (!json_object[key_name].isNull())
     {
-			int strValue = json_object[key_name].asInt(); 
-			std::cout << strValue<< std::endl; 
+			json_out_type.json_int = json_object[key_name].asInt(); 
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_int;
     }
 		json_file.close();
 		return json_out_type;
@@ -180,8 +176,8 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 	{
 		if (!json_object[key_name].isNull())
     {
-			float strValue= json_object[key_name].asFloat(); 
-			std::cout << strValue<< std::endl; 
+			json_out_type.json_float = json_object[key_name].asFloat(); 
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_float;
     }
 		json_file.close();
 		return json_out_type;
@@ -190,8 +186,8 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 	{
 		if (!json_object[key_name].isNull())
     {
-			bool strValue= json_object[key_name].asBool(); 
-			std::cout << strValue<< std::endl; 
+			json_out_type.json_bool = json_object[key_name].asBool(); 
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_bool;
     }
 		json_file.close();
 		return json_out_type;
@@ -200,8 +196,8 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 	{
 		if (!json_object[key_name].isNull())
     {
-			double strValue= json_object[key_name].asDouble(); 
-			std::cout << strValue<< std::endl; 
+			json_out_type.json_double = json_object[key_name].asDouble(); 
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_double;
     }
 		json_file.close();
 		return json_out_type;
@@ -221,19 +217,55 @@ JsonOutType CameraData::ReadJsonString(std::string json_string, std::string key_
 		json_out_type.success = false;
 		return json_out_type;
 	}
-	else if(0 == strcmp(out_type, "string"))
+	else if (0 == strcmp(out_type, "string"))
 	{
 		if (!json_object[key_name].isNull())
-    {
-			std::string strValue= json_object[key_name].asString(); 
-			std::cout << strValue<< std::endl; 
-    }
+		{
+			json_out_type.json_string = json_object[key_name].asString();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_string;
+		}
+		return json_out_type;
+	}
+	if (0 == strcmp(out_type, "int"))
+	{
+		if (!json_object[key_name].isNull())
+		{
+			json_out_type.json_int = json_object[key_name].asInt();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_int;
+		}
+		return json_out_type;
+	}
+	if (0 == strcmp(out_type, "float"))
+	{
+		if (!json_object[key_name].isNull())
+		{
+			json_out_type.json_float = json_object[key_name].asFloat();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_float;
+		}
+		return json_out_type;
+	}
+	if (0 == strcmp(out_type, "bool"))
+	{
+		if (!json_object[key_name].isNull())
+		{
+			json_out_type.json_bool = json_object[key_name].asBool();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_bool;
+		}
+		return json_out_type;
+	}
+	if (0 == strcmp(out_type, "double"))
+	{
+		if (!json_object[key_name].isNull())
+		{
+			json_out_type.json_double = json_object[key_name].asDouble();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_double;
+		}
 		return json_out_type;
 	}
 	return json_out_type;
 }
  
-bool CameraData::SetParameters()
+bool CameraData::SetParameters(std::string JsonFilePath)
 {
 	JsonOutType json_out_type = { false, 0, 0.0, 0.0, false,"" };
 	json_out_type = ReadJsonFile(JsonFilePath, "ImageHeight", "int");
@@ -254,8 +286,6 @@ bool CameraData::SetParameters()
 	}
 	else
 	{
-		LOG(ERROR) << "set ImageWidth from json error";
-		return false;
 	}
 
 	json_out_type = ReadJsonFile(JsonFilePath, "Fx", "float");
@@ -318,42 +348,51 @@ bool CameraData::SetParameters()
 
 bool CameraData::DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr CloudMask)
 {
-	for(int ImgWidth = 0; ImgWidth < image_width_; ImgWidth++)
-  {
-    for(int ImgHeight = 0; ImgHeight < image_height_; ImgHeight++ )
+	for(int rows = 0; rows < image_height_; rows++)
     {
-      //获取深度图中对应点的深度值
-      float d = Depth.at<float>(ImgWidth,ImgHeight);
+    for(int cols = 0; cols < image_width_; cols++ )
+    {
+		float d = 0;
+		if (!Depth.empty())
+		{
+			//获取深度图中对应点的深度值
+			d = Depth.at<uchar>(rows, cols);
+		}
+		else
+		{
+			LOG(ERROR) << "depth image empty!";
+			return false;
+		}
 
       //有效范围内的点
-			if ((d > 0.5*scale_factor_) && (d < 1.2*scale_factor_))
+		//if ((d > 0.5*scale_factor_) && (d < 1.5*scale_factor_))
+		{
+			//判断mask中是否是物体的点
+			if (!Mask.empty())
 			{
-				//判断mask中是否是物体的点
-				if (Mask.empty())
-				{
-					unsigned char mask_value = Mask.at<unsigned char>(ImgWidth, ImgHeight);
-					if (mask_value == 0)
-						continue;
-				}
-				else
-				{
-					LOG(ERROR) << ("mask image pointer mask_ptr = null");
-						continue;
-				}
-				//计算这个点的空间坐标
-				pcl::PointXYZ PointWorld;
-				PointWorld.z = double(d) / scale_factor_;
-				//ROS_INFO("D = %f", d);
-				PointWorld.x = (ImgHeight - cx_)*PointWorld.z / fx_;
-				PointWorld.y = (ImgWidth - cy_)*PointWorld.z / fy_;
-				CloudMask->points.push_back(PointWorld);
+				unsigned char mask_value = Mask.at<unsigned char>(rows, cols);
+				if (mask_value == 0)
+					continue;
+			}
+			else
+			{
+				LOG(ERROR) << ("mask image empty!");
+			    return false;
+			}
+			//计算这个点的空间坐标
+			pcl::PointXYZ PointWorld;
+			PointWorld.z = double(d) / scale_factor_;
+			//ROS_INFO("D = %f", d);
+			PointWorld.x = (rows - cx_)*PointWorld.z / fx_;
+			PointWorld.y = (cols - cy_)*PointWorld.z / fy_;
+			CloudMask->points.push_back(PointWorld);
       }
     }
   }
   //设置点云属性，采用无序排列方式存储点云
   CloudMask->height = 1;
   CloudMask->width = CloudMask->points.size();
-  LOG(INFO)<<("mask cloud size = %d", CloudMask->width);
+  LOG(INFO) << "mask cloud size = " << CloudMask->width;
   if(0 == CloudMask->points.size())
   {
     LOG(ERROR)<<("Mask points number = 0 !!!");
@@ -361,9 +400,9 @@ bool CameraData::DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr 
   }
   //去除NaN点
   std::vector<int> nan_indices;
-  //pcl::removeNaNFromPointCloud(*CloudMask, *CloudMask, nan_indices);
+  pcl::removeNaNFromPointCloud(*CloudMask, *CloudMask, nan_indices);
   CloudMask->is_dense = false;
-	return true;
+  return true;
 }
 
 void CameraData::test()

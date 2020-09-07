@@ -27,6 +27,9 @@
 //pcd文件输入/输出
 #include <pcl/io/pcd_io.h>
 
+//
+#include <pcl/filters/filter.h>
+
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/visualization/histogram_visualizer.h> //直方图的可视化
 #include <pcl/visualization/pcl_plotter.h>

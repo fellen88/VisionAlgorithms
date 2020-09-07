@@ -13,10 +13,12 @@ class PoseEstimation: public IPoseEstimation
 {
 	public:
 
-	ICameraData* p_camera_data_;
+	ICameraData* p_realsense_;
 	IRegistration3D *p_registration_;
 
 	bool pose_flag;
+	bool debug_visualization;
+	float sample_3d;
 	std::string pose_object;
 	
 	cv::Mat object_depth;

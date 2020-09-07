@@ -2,10 +2,14 @@
 #include "registration_3d.h"
 #include "features.h"
 #include <math.h>
-#include "torch/torch.h"
-#include "torch/script.h"
 
-void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &SAC_transform, bool downsample)
+Registration3D::Registration3D():
+	sac_output(new pcl::PointCloud<pcl::PointXYZ>),
+	icp_output(new pcl::PointCloud<pcl::PointXYZ>)
+{
+}
+
+void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &SAC_transform, float downsample = 0)
 {
   //为了一致性和速度，下采样
   PointCloud::Ptr source_filtered(new PointCloud); //创建点云指针
@@ -13,7 +17,7 @@ void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::P
   pcl::VoxelGrid<PointT> grid; //VoxelGrid 把一个给定的点云，聚集在一个局部的3D网格上,并下采样和滤波点云数据
   if (downsample) //下采样
   {
-    grid.setLeafSize (0.002, 0.002, 0.002); //设置体元网格的叶子大小
+    grid.setLeafSize (downsample, downsample, downsample); //设置体元网格的叶子大小
         //下采样 源点云
     grid.setInputCloud (cloud_src); //设置输入点云
     grid.filter (*source_filtered); //下采样和滤波，并存储在src中
@@ -26,6 +30,8 @@ void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::P
     source_filtered = cloud_src; //直接复制
     target_filtered = cloud_tgt;
   }
+  ////保存到PCD文件
+  //pcl::io::savePCDFileASCII("model.pcd", *source_filtered);
 
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
 	fpfhFeature::Ptr source_fpfh;
@@ -83,7 +89,7 @@ void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::P
 	}
 }
 
-void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, bool downsample = false)
+void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, float downsample = 0)
 {
   //为了一致性和速度，下采样
   PointCloud::Ptr src (new PointCloud); //创建点云指针
@@ -91,7 +97,7 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
   pcl::VoxelGrid<PointT> grid; //VoxelGrid 把一个给定的点云，聚集在一个局部的3D网格上,并下采样和滤波点云数据
   if (downsample) //下采样
   {
-    grid.setLeafSize (0.001, 0.001, 0.001); //设置体元网格的叶子大小
+    grid.setLeafSize (downsample, downsample, downsample); //设置体元网格的叶子大小
         //下采样 源点云
     grid.setInputCloud (cloud_src); //设置输入点云
     grid.filter (*src); //下采样和滤波，并存储在src中
@@ -172,7 +178,7 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
     }*/
   }
 
- PCL_INFO ("Iteration Nr. %d.\n", NumIteration); //命令行显示迭代的次数
+ //PCL_INFO ("Iteration Nr. %d.\n", NumIteration); //命令行显示迭代的次数
   targetToSource = Ti.inverse(); //计算从目标点云到源点云的变换矩阵
   pcl::transformPointCloud (*cloud_tgt, *output, targetToSource); //将目标点云 变换回到 源点云帧
 
@@ -194,74 +200,24 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
   }
 }
 
-void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f & final_transform, bool downsample)
+void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f & final_transform, float downsample = 0)
 {
-	LoadLibraryA("ATen_cuda.dll");
-	LoadLibraryA("c10_cuda.dll");
-	LoadLibraryA("torch_cuda.dll");
-	LoadLibraryA("torchvision.dll");
 
-	try {
-		std::cout << "CUDA:   " << torch::cuda::is_available() << std::endl;
-		std::cout << "CUDNN:  " << torch::cuda::cudnn_is_available() << endl;
-		std::cout << "GPU(s): " << torch::cuda::device_count() << std::endl;
-	}
-	catch (std::exception& ex) {
-		std::cout << ex.what() << std::endl;
-	}
-	try {
-		std::cout << "List devices:" << std::endl;
-		for (size_t d = 0; d <= static_cast<size_t>(c10::DeviceType::COMPILE_TIME_MAX_DEVICE_TYPES); d++) {
-			std::cout << d << ": " << c10::impl::device_guard_impl_registry[d] << std::endl;
-		}
-	}
-	catch (std::exception& ex) {
-		std::cout << ex.what() << std::endl;
-	}
-	torch::Tensor tensor = torch::rand({ 3, 3 });
-	tensor = tensor.cuda();
-	std::cout << tensor << std::endl;
-
-	int gpu_id = 0;
-	torch::Device device(torch::cuda::is_available() ? torch::kCUDA : torch::kCPU, gpu_id);
-	torch::jit::script::Module module;
-	torch::NoGradGuard no_grad;
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>); // 创建点云（指针）
-
-	try {
-		// Deserialize the ScriptModule from a file using torch::jit::load().
-		module = torch::jit::load("plugins//DCP//libtorch_model//dcp.pt", device);
-		//gpu optimize
-		module.eval();
-	}
-	catch (const c10::Error& e) {
-		std::cerr << "error loading the model\n";
-	}
-
-	// Create a vector of inputs.
-	at::Tensor src_tensor = torch::rand({ 3, 1024 });
-	at::Tensor tgt_tensor = src_tensor;
-	src_tensor = src_tensor.to(device);
-	tgt_tensor = tgt_tensor.to(device);
-	std::vector<torch::jit::IValue> inputs;
-	inputs.push_back(src_tensor);
-	inputs.push_back(tgt_tensor);
-
-	// Execute the model and turn its output into a tensor.
-	at::Tensor output_tensor = module.forward(inputs).toTensor();
-	std::cout << output_tensor.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << '\n';
 }
 
-void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt)
+void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, float downsample)
 {
-	SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, 0.05);
-	LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, 0.05);
+	{
+		pcl::ScopeTime scope_time("*SAC_IA");//计算算法运行时间
+		SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, downsample);
+	}
+	{
+		pcl::ScopeTime scope_time("*LM_ICP");//计算算法运行时间
+		LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, downsample);
+
+	}
+
 	final_transform = icp_transform * sac_transform;
-}
-
-void Registration3D::ComputeTransformation_GPU(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt)
-{
-	DCP(cloud_src, cloud_tgt, sac_output, sac_transform, 0.05);
 }
 
 Eigen::Matrix4f Registration3D::GetTransformation()
