@@ -204,11 +204,6 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
 
 void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f & final_transform, float downsample = 0)
 {
-	LoadLibraryA("ATen_cuda.dll");
-	LoadLibraryA("c10_cuda.dll");
-	LoadLibraryA("torch_cuda.dll");
-	LoadLibraryA("torchvision.dll");
-
 	try {
 		std::cout << "CUDA:   " << torch::cuda::is_available() << std::endl;
 		std::cout << "CUDNN:  " << torch::cuda::cudnn_is_available() << endl;
@@ -256,7 +251,7 @@ void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr 
 	inputs.push_back(tgt_tensor);
 
 	// Execute the model and turn its output into a tensor.
-	at::Tensor output_tensor = module.forward(inputs).toTensor();
+	at::Tensor output_tensor = module.forward(std::move(inputs)).toTensor();
 	std::cout << output_tensor.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << '\n';
 }
 
