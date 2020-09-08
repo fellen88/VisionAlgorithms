@@ -156,6 +156,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 	{
 		if (!json_object[key_name].isNull())
     {
+			json_out_type.success = true;
 			json_out_type.json_string = json_object[key_name].asString();
 			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_string;
     }
@@ -166,6 +167,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 	{
 		if (!json_object[key_name].isNull())
     {
+			json_out_type.success = true;
 			json_out_type.json_int = json_object[key_name].asInt(); 
 			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_int;
     }
@@ -176,6 +178,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 	{
 		if (!json_object[key_name].isNull())
     {
+			json_out_type.success = true;
 			json_out_type.json_float = json_object[key_name].asFloat(); 
 			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_float;
     }
@@ -186,6 +189,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 	{
 		if (!json_object[key_name].isNull())
     {
+			json_out_type.success = true;
 			json_out_type.json_bool = json_object[key_name].asBool(); 
 			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_bool;
     }
@@ -196,6 +200,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 	{
 		if (!json_object[key_name].isNull())
     {
+			json_out_type.success = true;
 			json_out_type.json_double = json_object[key_name].asDouble(); 
 			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_double;
     }
@@ -286,6 +291,8 @@ bool CameraData::SetParameters(std::string JsonFilePath)
 	}
 	else
 	{
+		LOG(ERROR) << "set ImageWidth from json error";
+		return false;
 	}
 
 	json_out_type = ReadJsonFile(JsonFilePath, "Fx", "float");
