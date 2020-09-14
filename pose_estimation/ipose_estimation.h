@@ -7,6 +7,6 @@ class IPoseEstimation
 	virtual std::string GetTransformation(std::string parameters) = 0;
 };
 
-extern "C" __declspec(dllexport) IPoseEstimation* APIENTRY GetPoseEstimation();
+extern "C" __declspec(dllexport) IPoseEstimation* GetPoseEstimation();
 
 #endif
