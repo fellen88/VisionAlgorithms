@@ -243,7 +243,7 @@ void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr 
 	}
 
 	// Create a vector of inputs.
-	torch::Tensor src_tensor = torch::rand({1, 3, 1024 });
+	torch::Tensor src_tensor = torch::rand({1,3,1024});
 	torch::Tensor tgt_tensor = src_tensor;
 	src_tensor = src_tensor.to(device);
 	tgt_tensor = tgt_tensor.to(device);
