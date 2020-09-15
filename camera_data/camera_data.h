@@ -19,7 +19,8 @@ class CameraData :public ICameraData
 	HANDLE mask_map;
 	HANDLE label_map;
 
-	bool isOpenFileMapping;
+	bool isOpenCameraMapping;
+	bool isOpenMaskMapping;
 	bool DebugVisualization;
 
 	enum CameraState
@@ -43,7 +44,6 @@ class CameraData :public ICameraData
 	int ucharToMat(uchar *p2, cv::Mat& src, int flag);
 
 	bool GetCameraImages(cv::Mat& color, cv::Mat& depth);
-	bool InitMaskSharedMem();
 	bool GetMaskAndLabel(cv::Mat& mask, std::string label);
 	bool SetParameters(std::string JsonFilePath);
 	bool LoadPointCloud(std::string file_name, PointCloud::Ptr object_model);

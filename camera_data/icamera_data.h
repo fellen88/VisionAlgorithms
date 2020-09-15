@@ -24,7 +24,6 @@ class ICameraData
 	int scale_factor_;
 
 	virtual bool GetCameraImages(cv::Mat& color, cv::Mat &depth) = 0;
-	virtual bool InitMaskSharedMem() = 0;
 	virtual bool GetMaskAndLabel(cv::Mat& mask, std::string label) = 0;
 	virtual bool SetParameters(std::string JsonFilePath) = 0;
 	virtual bool DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr pointcloud) = 0;

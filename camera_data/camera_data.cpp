@@ -13,17 +13,30 @@ CameraData::CameraData()
 	
 	pcolorBuffer = nullptr;                                   // 共享内存指针
 	pdepthBuffer = nullptr;                                   // 共享内存指针
-	isOpenFileMapping = false;
+	mask_buffer = nullptr;                                   // 共享内存指针
+	label_buffer = nullptr;                                   // 共享内存指针
+	isOpenCameraMapping = false;
+	isOpenMaskMapping = false;
 
 	hcolorMap = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)COLORMEMORYNAME);
 	hdepthMap = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)DEPTHMEMORYNAME);
+	mask_map = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)L"mask");
+	label_map = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)L"mask_label");
 	if (NULL != hcolorMap && NULL != hdepthMap)
 	{
 		//打开成功，映射对象的一个视图，得到指向共享内存的指针，显示出里面的数据
 		pcolorBuffer = ::MapViewOfFile(hcolorMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 		pdepthBuffer = ::MapViewOfFile(hdepthMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-		isOpenFileMapping = true;
+		isOpenCameraMapping = true;
 		LOG(INFO) << "OpenCameraMapping ok! ";
+	}
+	if (NULL != mask_map && NULL != label_map)
+	{
+		//打开成功，映射对象的一个视图，得到指向共享内存的指针，显示出里面的数据
+		mask_buffer = ::MapViewOfFile(mask_map, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+    label_buffer = ::MapViewOfFile(label_map, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		isOpenMaskMapping = true;
+		LOG(INFO) << "OpenMaskMapping ok! ";
 	}
 }
 
@@ -36,31 +49,9 @@ CameraData::~CameraData()
 	::CloseHandle(hdepthMap);
 }
 
-void Uchar2Mat(uchar* p, cv::Mat &src) {
-	int img_width = src.cols;
-	int img_height = src.rows;
-	if (src.channels() == 3) {
-		for (int i = 0; i < img_width * img_height * 3; i++)
-		{
-			src.at<cv::Vec3b>(i / (img_width * 3), (i % (img_width * 3)) / 3)[i % 3] = p[i];//BGR格式
-
-		}
-	}
-
-	else if (src.channels() == 1)
-	{
-		for (int i = 0; i < img_width * img_height; i++)
-		{
-			src.at<uchar>(i / (img_width), i % (img_width)) = p[i];
-
-		}
-	}
-	return;
-}
-
 bool CameraData::GetCameraImages(cv::Mat &image_color, cv::Mat& image_depth)
 {
-	if (false == isOpenFileMapping)
+	if (false == isOpenCameraMapping)
 	{
 		LOG(ERROR) << "OpenFileMapping error! ";
 		LOG(ERROR) << "hcolorMap: " << hcolorMap;
@@ -92,26 +83,15 @@ bool CameraData::GetCameraImages(cv::Mat &image_color, cv::Mat& image_depth)
 	return true;
 }
 
-bool CameraData::InitMaskSharedMem()
-{
-	mask_buffer = nullptr;                                   // 共享内存指针
-	label_buffer = nullptr;                                   // 共享内存指针
-
-	mask_map = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)L"mask");
-	label_map = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)L"mask_label");
-	if (NULL != mask_map && NULL != label_map)
-	{
-		//打开成功，映射对象的一个视图，得到指向共享内存的指针，显示出里面的数据
-		mask_buffer = ::MapViewOfFile(mask_map, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-    label_buffer = ::MapViewOfFile(label_map, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-		LOG(INFO) << "OpenMaskMapping ok! ";
-		return true;
-	}
-	return false;
-}
-
 bool CameraData::GetMaskAndLabel(cv::Mat & image_mask, std::string label)
 {
+	if (false == isOpenMaskMapping)
+	{
+		LOG(ERROR) << "OpenMaskMapping error! ";
+		LOG(ERROR) << "mask_map: " << mask_map;
+		LOG(ERROR) << "label_map: " << label_map;
+		return false;
+	}
 	image_mask = cv::Mat::ones(cv::Size(image_width_, image_height_), CV_8UC1);
 	uchar *p_mask = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_ * 3);
 	memcpy(p_mask, pcolorBuffer, sizeof(uchar)*image_height_*image_width_ * 3);

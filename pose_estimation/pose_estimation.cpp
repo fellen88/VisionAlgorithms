@@ -52,12 +52,6 @@ std::string PoseEstimation::GetTransformation(std::string input_string)
 		return output_string + "\"false\"" + "}";
 	}
 
-	if (false == p_realsense_->InitMaskSharedMem())
-	{
-		LOG(ERROR) << "IintMaskSharedMem Error!";
-		return output_string + "\"false\"" + "}";
-	}
-
 	if (false == p_realsense_->GetMaskAndLabel(object_mask, object_label))
 	{
 		LOG(ERROR) << "GetMaskAndLabel Error!";
