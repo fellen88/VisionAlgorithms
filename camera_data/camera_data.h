@@ -11,13 +11,13 @@ class CameraData :public ICameraData
 	// π≤œÌƒ⁄¥Ê÷∏’Î
 	LPVOID pcolorBuffer;                                  
 	LPVOID pdepthBuffer;                                  
-	LPVOID cameraStateBuffer;
-	LPVOID pictureStateBuffer;
+	LPVOID mask_buffer;
+	LPVOID label_buffer;
 
 	HANDLE hcolorMap;
 	HANDLE hdepthMap;
-	HANDLE hcameraMap;
-	HANDLE hpictureMap;
+	HANDLE mask_map;
+	HANDLE label_map;
 
 	bool isOpenFileMapping;
 	bool DebugVisualization;
@@ -42,7 +42,9 @@ class CameraData :public ICameraData
 
 	int ucharToMat(uchar *p2, cv::Mat& src, int flag);
 
-	bool GetSharedMemImages(cv::Mat& color, cv::Mat& depth, cv::Mat& mask, std::string label);
+	bool GetCameraImages(cv::Mat& color, cv::Mat& depth);
+	bool InitMaskSharedMem();
+	bool GetMaskAndLabel(cv::Mat& mask, std::string label);
 	bool SetParameters(std::string JsonFilePath);
 	bool LoadPointCloud(std::string file_name, PointCloud::Ptr object_model);
 	bool Load2DImage(cv::Mat image, std::string file_name);

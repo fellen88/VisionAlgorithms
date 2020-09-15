@@ -23,7 +23,7 @@ CameraData::CameraData()
 		pcolorBuffer = ::MapViewOfFile(hcolorMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 		pdepthBuffer = ::MapViewOfFile(hdepthMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 		isOpenFileMapping = true;
-		LOG(INFO) << "OpenFileMapping ok! ";
+		LOG(INFO) << "OpenCameraMapping ok! ";
 	}
 }
 
@@ -58,7 +58,7 @@ void Uchar2Mat(uchar* p, cv::Mat &src) {
 	return;
 }
 
-bool CameraData::GetSharedMemImages(cv::Mat &image_color, cv::Mat& image_depth, cv::Mat& mask, std::string label)
+bool CameraData::GetCameraImages(cv::Mat &image_color, cv::Mat& image_depth)
 {
 	if (false == isOpenFileMapping)
 	{
@@ -70,23 +70,63 @@ bool CameraData::GetSharedMemImages(cv::Mat &image_color, cv::Mat& image_depth, 
 	uchar *p1 = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_* 3);
 	memcpy(p1, pcolorBuffer, sizeof(uchar)*image_height_*image_width_* 3);
 	cv::Mat color(cv::Size(image_width_, image_height_), CV_8UC3);
-	Uchar2Mat(p1, color);
+	for (int i = 0; i < image_width_ * image_height_ * 3; i++)
+	{
+		color.at<cv::Vec3b>(i / (image_width_ * 3), (i % (image_width_ * 3)) / 3)[i % 3] = p1[i];//BGR格式
+	}
+
 	image_color = color.clone();
-	//cv::imshow("color", image_color);
 
-	uchar *p2 = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_);
-	memcpy(p2, pdepthBuffer, sizeof(uchar)*image_height_*image_width_);
-	cv::Mat depth(cv::Size(image_width_, image_height_), CV_8UC1);
-	Uchar2Mat(p2, depth);
+	ushort *p2 = (ushort*)malloc(sizeof(ushort)*image_height_*image_width_);
+	memcpy(p2, pdepthBuffer, sizeof(ushort)*image_height_*image_width_);
+	cv::Mat depth(cv::Size(image_width_, image_height_), CV_16UC1);
+	for (int i = 0; i < image_width_ * image_height_ * 3; i++)
+	{
+		depth.at<ushort>(i / (image_width_), i % (image_width_)) = p2[i];
+	}
 	image_depth = depth;
-	//cv::imshow("depth", image_depth);
-    //cv::waitKey(-1);
-
-	mask = cv::Mat::ones(cv::Size(image_width_, image_height_), CV_8UC1);
 
 	delete[] p1;
 	delete[] p2;
 	
+	return true;
+}
+
+bool CameraData::InitMaskSharedMem()
+{
+	mask_buffer = nullptr;                                   // 共享内存指针
+	label_buffer = nullptr;                                   // 共享内存指针
+
+	mask_map = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)L"mask");
+	label_map = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)L"mask_label");
+	if (NULL != mask_map && NULL != label_map)
+	{
+		//打开成功，映射对象的一个视图，得到指向共享内存的指针，显示出里面的数据
+		mask_buffer = ::MapViewOfFile(mask_map, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+    label_buffer = ::MapViewOfFile(label_map, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		LOG(INFO) << "OpenMaskMapping ok! ";
+		return true;
+	}
+	return false;
+}
+
+bool CameraData::GetMaskAndLabel(cv::Mat & image_mask, std::string label)
+{
+	image_mask = cv::Mat::ones(cv::Size(image_width_, image_height_), CV_8UC1);
+	uchar *p_mask = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_ * 3);
+	memcpy(p_mask, pcolorBuffer, sizeof(uchar)*image_height_*image_width_ * 3);
+	cv::Mat mask(cv::Size(image_width_, image_height_), CV_8UC1);
+	for (int i = 0; i < image_width_ * image_height_ * 3; i++)
+	{
+		mask.at<cv::Vec3b>(i / (image_width_ * 3), (i % (image_width_ * 3)) / 3)[i % 3] = p_mask[i];//BGR格式
+	}
+
+	image_mask = mask.clone();
+
+	char *p_label = (char*)malloc(sizeof(char) * 50);
+
+	delete[] p_mask;
+	delete[] p_label;
 	return true;
 }
 

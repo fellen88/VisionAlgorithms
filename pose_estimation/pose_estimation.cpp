@@ -40,15 +40,27 @@ std::string PoseEstimation::GetTransformation(std::string input_string)
 		return output_string + "\"false\"" + "}";
 	}
 
-	if (false == p_realsense_->GetSharedMemImages(object_color, object_depth, object_mask, object_label))
+	if (false == p_realsense_->GetCameraImages(object_color, object_depth))
 	{
-		LOG(ERROR) << "GetSharedMemImages Error!";
+		LOG(ERROR) << "GetCameraImages Error!";
 		return output_string + "\"false\"" + "}";
 	}
 
 	if (false == p_realsense_->LoadPointCloud(ModelFileName, object_model))
 	{
 		LOG(ERROR) << "LoadPointCloud Error!";
+		return output_string + "\"false\"" + "}";
+	}
+
+	if (false == p_realsense_->InitMaskSharedMem())
+	{
+		LOG(ERROR) << "IintMaskSharedMem Error!";
+		return output_string + "\"false\"" + "}";
+	}
+
+	if (false == p_realsense_->GetMaskAndLabel(object_mask, object_label))
+	{
+		LOG(ERROR) << "GetMaskAndLabel Error!";
 		return output_string + "\"false\"" + "}";
 	}
 	
@@ -59,13 +71,14 @@ std::string PoseEstimation::GetTransformation(std::string input_string)
 	}
 	if (debug_visualization)
 	{
-		p_realsense_->ShowImage(object_color, "object_color");
-		p_realsense_->ShowImage(object_depth, "object_depth");
+		//p_realsense_->ShowImage(object_color, "object_color");
+		//p_realsense_->ShowImage(object_depth, "object_depth");
+		p_realsense_->ShowImage(object_depth, "object_mask");
 		p_realsense_->ShowPointCloud(object_model, "object_model");
 		p_realsense_->ShowPointCloud(object_scan, "object_scan");
 	}
 
-	p_registration_->ComputeTransformation(object_model, object_model, sample_3d);
+	p_registration_->ComputeTransformation(object_model, object_scan, sample_3d);
 	object_transform = p_registration_->GetTransformation();
 	cout << object_transform << endl;
 	return output_string + "\"true\"," + TestOutput;
