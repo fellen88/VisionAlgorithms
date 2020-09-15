@@ -45,8 +45,15 @@ CameraData::~CameraData()
 	// 解除文件映射，关闭内存映射文件对象句柄
 	::UnmapViewOfFile(pcolorBuffer);
 	::CloseHandle(hcolorMap);
+
 	::UnmapViewOfFile(pdepthBuffer);
 	::CloseHandle(hdepthMap);
+
+	::UnmapViewOfFile(mask_buffer);
+	::CloseHandle(mask_map);
+
+	::UnmapViewOfFile(label_buffer);
+	::CloseHandle(label_map);
 }
 
 bool CameraData::GetCameraImages(cv::Mat &image_color, cv::Mat& image_depth)
