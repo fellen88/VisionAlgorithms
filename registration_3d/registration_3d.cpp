@@ -243,19 +243,21 @@ void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr 
 	}
 
 	// Create a vector of inputs.
-	torch::Tensor src_tensor = torch::rand({1,3,1024});
-	torch::Tensor tgt_tensor = src_tensor;
+  at::Tensor src_tensor = torch::rand({1,3,1024});
+	at::Tensor tgt_tensor = src_tensor;
 	src_tensor = src_tensor.to(device);
 	tgt_tensor = tgt_tensor.to(device);
 	std::vector<torch::jit::IValue> inputs;
 	inputs.push_back(src_tensor);
 	inputs.push_back(tgt_tensor);
+	c10::IValue outputs;
 
 	// Execute the model and turn its output into a tensor.
 	//at::Tensor output_tensor = module.forward(std::move(inputs)).toTensor();
 	{
-		pcl::ScopeTime scope_time("*SAC_IA");//计算算法运行时间
-		cout << module.forward(inputs);
+		pcl::ScopeTime scope_time("*Forward time : ");//计算算法运行时间
+		outputs = module.forward(inputs);
+		cout << outputs << endl;
 	}
 	//std::cout << output_tensor1.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << '\n';
 }

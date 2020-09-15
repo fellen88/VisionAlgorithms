@@ -66,8 +66,8 @@ std::string PoseEstimation::GetTransformation(std::string input_string)
 	//}
 
 	p_registration_->ComputeTransformation(object_model, object_model, sample_3d);
-	object_transform = p_registration_->GetTransformation();
-	cout << object_transform << endl;
+	//object_transform = p_registration_->GetTransformation();
+	//cout << object_transform << endl;
 	return output_string + "\"true\"," + TestOutput;
 }
 
