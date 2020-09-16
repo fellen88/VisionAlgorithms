@@ -49,6 +49,7 @@ class CameraData :public ICameraData
 	bool LoadPointCloud(std::string file_name, PointCloud::Ptr object_model);
 	bool Load2DImage(cv::Mat image, std::string file_name);
 	void ShowPointCloud(const PointCloud::Ptr pointcloud, std::string window_name);
+	void ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, std::string window_name);
 	void ShowImage(const cv::Mat image, std::string window_name);
 	
 	JsonOutType ReadJsonFile(std::string file_name, std::string key_name, const char* out_type);

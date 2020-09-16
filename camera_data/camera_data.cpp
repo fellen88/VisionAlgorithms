@@ -152,6 +152,20 @@ void CameraData::ShowPointCloud(const PointCloud::Ptr pointcloud, std::string wi
 	}
 }
 
+void CameraData::ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, std::string window_name)
+{
+	if (nullptr != pointcloud)
+	{
+		boost::shared_ptr<pcl::visualization::PCLVisualizer> view(new pcl::visualization::PCLVisualizer(window_name));
+		view->addPointCloud(pointcloud);
+		view->spin ();
+	}
+	else
+	{
+		LOG(ERROR) << window_name << " is a nullptr pointlcoud!";
+	}
+}
+
 void CameraData::ShowImage(const cv::Mat image, std::string window_name)
 {
 	if (!image.empty())

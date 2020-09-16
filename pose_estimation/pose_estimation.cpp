@@ -1,4 +1,4 @@
-﻿// pose_estimation.cpp : 定义 DLL 应用程序的导出函数。
+﻿// pose_estimation.cpp
 //
 #include "stdafx.h"
 #define __DLLEXPORT
@@ -27,10 +27,10 @@ PoseEstimation::~PoseEstimation()
 std::string PoseEstimation::GetTransformation(std::string input_string)
 {
 	if(p_realsense_->ReadJsonString(input_string, "Visualization", "bool").success)
-	debug_visualization = p_realsense_->ReadJsonString(input_string, "Visualization", "bool").json_bool;
+		debug_visualization = p_realsense_->ReadJsonString(input_string, "Visualization", "bool").json_bool;
 
 	if(p_realsense_->ReadJsonString(input_string, "Sample3D", "float").success)
-	debug_visualization = p_realsense_->ReadJsonString(input_string, "Sample3D", "float").json_float;
+		debug_visualization = p_realsense_->ReadJsonString(input_string, "Sample3D", "float").json_float;
 
 	std::string output_string = "{\"pose_flag\":";
 
@@ -65,11 +65,11 @@ std::string PoseEstimation::GetTransformation(std::string input_string)
 	}
 	if (debug_visualization)
 	{
+		p_realsense_->ShowPointCloud_NonBlocking(object_model, "object_model");
+		p_realsense_->ShowPointCloud_NonBlocking(object_scan, "object_scan");
 		//p_realsense_->ShowImage(object_color, "object_color");
 		//p_realsense_->ShowImage(object_depth, "object_depth");
 		p_realsense_->ShowImage(object_depth, "object_mask");
-		p_realsense_->ShowPointCloud(object_model, "object_model");
-		p_realsense_->ShowPointCloud(object_scan, "object_scan");
 	}
 
 	p_registration_->ComputeTransformation(object_model, object_scan, sample_3d);
