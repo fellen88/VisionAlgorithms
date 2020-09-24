@@ -9,7 +9,7 @@ Registration3D::Registration3D():
 {
 }
 
-void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &SAC_transform, float downsample = 0)
+void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &SAC_transform, float downsample, bool debug_v)
 {
   //为了一致性和速度，下采样
   PointCloud::Ptr source_filtered(new PointCloud); //创建点云指针
@@ -55,7 +55,7 @@ void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::P
 	SAC_transform = sac_ia.getFinalTransformation();
 
 	//可视化
-	if (true == DEBUG_VISUALIZER)
+	if (true == debug_v)
 	{
 	boost::shared_ptr<pcl::visualization::PCLVisualizer> view(new pcl::visualization::PCLVisualizer("fpfh test"));
 	int v1;
@@ -89,7 +89,7 @@ void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::P
 	}
 }
 
-void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, float downsample = 0)
+void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, float downsample, bool debug_v)
 {
   //为了一致性和速度，下采样
   PointCloud::Ptr src (new PointCloud); //创建点云指针
@@ -186,7 +186,7 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
   //*output += *cloud_src; // 拼接点云图（的点）点数数目是两个点云的点数和
   final_transform = targetToSource; //最终的变换。目标点云到源点云的变换矩阵
 
-  if(true == DEBUG_VISUALIZER)
+  if(true == debug_v)
   {
   	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer("Registration3D"));
     viewer->removePointCloud ("source"); //根据给定的ID，从屏幕中去除一个点云。参数是ID
@@ -200,21 +200,20 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
   }
 }
 
-void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f & final_transform, float downsample = 0)
+void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f & final_transform, float downsample, bool debug_v)
 {
 
 }
 
-void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, float downsample)
+void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, float downsample, bool debug_v)
 {
 	{
 		pcl::ScopeTime scope_time("*SAC_IA");//计算算法运行时间
-		SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, downsample);
+		SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, downsample, debug_v);
 	}
 	{
 		pcl::ScopeTime scope_time("*LM_ICP");//计算算法运行时间
-		LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, downsample);
-
+		LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, downsample, debug_v);
 	}
 
 	final_transform = icp_transform * sac_transform;

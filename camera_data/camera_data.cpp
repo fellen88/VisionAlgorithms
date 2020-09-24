@@ -78,11 +78,11 @@ bool CameraData::GetCameraImages(cv::Mat &image_color, cv::Mat& image_depth)
 	ushort *p2 = (ushort*)malloc(sizeof(ushort)*image_height_*image_width_);
 	memcpy(p2, pdepthBuffer, sizeof(ushort)*image_height_*image_width_);
 	cv::Mat depth(cv::Size(image_width_, image_height_), CV_16UC1);
-	for (int i = 0; i < image_width_ * image_height_ * 3; i++)
+	for (int i = 0; i < image_width_ * image_height_; i++)
 	{
 		depth.at<ushort>(i / (image_width_), i % (image_width_)) = p2[i];
 	}
-	image_depth = depth;
+	image_depth = depth.clone();
 
 	delete[] p1;
 	delete[] p2;
@@ -99,18 +99,20 @@ bool CameraData::GetMaskAndLabel(cv::Mat & image_mask, std::string label)
 		LOG(ERROR) << "label_map: " << label_map;
 		return false;
 	}
+
 	image_mask = cv::Mat::ones(cv::Size(image_width_, image_height_), CV_8UC1);
-	uchar *p_mask = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_ * 3);
-	memcpy(p_mask, pcolorBuffer, sizeof(uchar)*image_height_*image_width_ * 3);
+	uchar *p_mask = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_);
+	memcpy(p_mask, mask_buffer, sizeof(uchar)*image_height_*image_width_);
 	cv::Mat mask(cv::Size(image_width_, image_height_), CV_8UC1);
-	for (int i = 0; i < image_width_ * image_height_ * 3; i++)
+	for (int i = 0; i < image_width_ * image_height_; i++)
 	{
-		mask.at<cv::Vec3b>(i / (image_width_ * 3), (i % (image_width_ * 3)) / 3)[i % 3] = p_mask[i];//BGR格式
+		mask.at<uchar>(i / (image_width_), i % (image_width_))= p_mask[i];//BGR格式
 	}
 
 	image_mask = mask.clone();
 
 	char *p_label = (char*)malloc(sizeof(char) * 50);
+	label = p_label;
 
 	delete[] p_mask;
 	delete[] p_label;
@@ -158,7 +160,6 @@ void CameraData::ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, st
 	{
 		boost::shared_ptr<pcl::visualization::PCLVisualizer> view(new pcl::visualization::PCLVisualizer(window_name));
 		view->addPointCloud(pointcloud);
-		view->spin ();
 	}
 	else
 	{
@@ -404,7 +405,7 @@ bool CameraData::DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr 
 		if (!Depth.empty())
 		{
 			//获取深度图中对应点的深度值
-			d = Depth.at<uchar>(rows, cols);
+			d = Depth.at<ushort>(rows, cols);
 		}
 		else
 		{
