@@ -4,7 +4,7 @@
 class IPoseEstimation
 {
 	public:
-	virtual std::string GetTransformation(std::string parameters) = 0;
+	virtual bool GetTransformation() = 0;
 };
 
 extern "C" __declspec(dllexport) IPoseEstimation* GetPoseEstimation();
