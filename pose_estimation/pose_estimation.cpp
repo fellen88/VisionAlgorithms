@@ -5,7 +5,7 @@
 #include "pose_estimation.h"
 
 std::string ModelFileName = "plugins//PoseEstimation//Model_3D//object_model.pcd";
-std::string JsonFileName = "plugins//PoseEstimation//pose_estimation.json";
+std::string JsonFileName = "plugins//PoseEstimation//Config//realsense_d435.json";
 
 std::string TestJsonInput = "{\"CmdCode\": 1015,\"MessageBody\": {\"ScaleFactor3D\": 1000,\"Sample3D\": 0.005, \"Visualization\": true}, \"Plugin\": \"PoseEstimation.pln\"}";
 
@@ -88,8 +88,8 @@ std::string PoseEstimation::GetTransformation(std::string input_string)
 	{
 		LOG(INFO) << "Object label : " << object_label;
 		//p_realsense_->ShowImage(object_color, "object_color");
-		p_realsense_->ShowImage(object_depth, "object_depth");
-		p_realsense_->ShowImage(object_mask, "object_mask");
+		//p_realsense_->ShowImage(object_depth, "object_depth");
+		//p_realsense_->ShowImage(object_mask, "object_mask");
 		p_realsense_->ShowPointCloud(object_model, "object_model");
 		p_realsense_->ShowPointCloud(object_scan, "object_scan");
 	}
