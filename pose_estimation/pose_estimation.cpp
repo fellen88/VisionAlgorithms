@@ -7,8 +7,6 @@
 std::string ModelFileName = "plugins//PoseEstimation//Model_3D//object_model.pcd";
 std::string JsonFileName = "plugins//PoseEstimation//Config//realsense_d435.json";
 
-std::string TestJsonInput = "{\"CmdCode\": 1015,\"MessageBody\": {\"ScaleFactor3D\": 1000,\"Sample3D\": 0.005, \"Visualization\": true}, \"Plugin\": \"PoseEstimation.pln\"}";
-
 
 PoseEstimation::PoseEstimation():
 	object_model(new pcl::PointCloud<pcl::PointXYZ>),
@@ -26,32 +24,8 @@ PoseEstimation::~PoseEstimation()
 {
 }
 
-std::string PoseEstimation::MatrixToString()
-{
-	std::string TestOutput = "\"array\":[[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15 ,16]]}"; 
-	return TestOutput;
-}
-
 std::string PoseEstimation::GetTransformation(std::string input_string)
 {
-	//if (p_realsense_->ReadJsonString(TestJsonInput, "MessageBody", "string").success)
-	//{
-	//	std::string message_body = p_realsense_->ReadJsonString(TestJsonInput, "MessageBody", "string").json_string;
-
-	//	if (p_realsense_->ReadJsonString(message_body, "Visualization", "bool").success)
-	//	{
-	//		debug_visualization = p_realsense_->ReadJsonString(message_body, "Visualization", "bool").json_bool;
-	//		LOG(INFO) << "Visualization(json input) : " << debug_visualization;
-	//	}
-
-	//	if (p_realsense_->ReadJsonString(message_body, "Sample3D", "float").success)
-	//	{
-	//		sample_3d = p_realsense_->ReadJsonString(message_body, "Sample3D", "float").json_float;
-	//		LOG(INFO) << "Sample3D(json input) : " << sample_3d;
-	//	}
-	//}
-	//else
-	//	LOG(ERROR) << "Read input json error!";
 
 	std::string output_string = "{\"pose_flag\":";
 
@@ -97,7 +71,7 @@ std::string PoseEstimation::GetTransformation(std::string input_string)
 	p_registration_->ComputeTransformation(object_model, object_scan, sample_3d, debug_visualization);
 	object_transform = p_registration_->GetTransformation();
 	cout << object_transform << endl;
-	return output_string + "\"true\"," + MatrixToString();
+	return output_string + "\"true\",";
 }
 
 IPoseEstimation * GetPoseEstimation()
