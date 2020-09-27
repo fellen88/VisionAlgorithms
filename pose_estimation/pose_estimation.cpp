@@ -9,7 +9,6 @@ std::string JsonFileName = "plugins//PoseEstimation//Config//realsense_d435.json
 
 std::string TestJsonInput = "{\"CmdCode\": 1015,\"MessageBody\": {\"ScaleFactor3D\": 1000,\"Sample3D\": 0.005, \"Visualization\": true}, \"Plugin\": \"PoseEstimation.pln\"}";
 
-
 PoseEstimation::PoseEstimation():
 	object_model(new pcl::PointCloud<pcl::PointXYZ>),
 	object_scan(new pcl::PointCloud<pcl::PointXYZ>)
@@ -20,6 +19,7 @@ PoseEstimation::PoseEstimation():
 	pose_flag = false;
 	debug_visualization = true;
 	sample_3d = 0.005;
+	object_transform = Eigen::Matrix4f::Ones();
 }
 
 PoseEstimation::~PoseEstimation()
@@ -28,8 +28,27 @@ PoseEstimation::~PoseEstimation()
 
 std::string PoseEstimation::MatrixToString()
 {
-	std::string TestOutput = "\"array\":[[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15 ,16]]}"; 
-	return TestOutput;
+	std::string output_str = "\"array\":\"[";
+	std::string matrix4f_str;
+
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			matrix4f_str = matrix4f_str + std::to_string(object_transform(i, j));
+			if (j < 3)
+			{
+				matrix4f_str = matrix4f_str + ",";
+			}
+		}
+		if(i < 3)
+		{
+			matrix4f_str = matrix4f_str + "],[";
+		}
+	}
+	output_str = output_str + matrix4f_str + "]\"";
+	LOG(INFO) << output_str;
+	return output_str;
 }
 
 std::string PoseEstimation::GetTransformation(std::string input_string)
@@ -53,7 +72,7 @@ std::string PoseEstimation::GetTransformation(std::string input_string)
 	//else
 	//	LOG(ERROR) << "Read input json error!";
 
-	std::string output_string = "{\"pose_flag\":";
+	std::string output_string = "\"pose_flag\":";
 
 	if (false == p_realsense_->SetParameters(JsonFileName))
 	{
@@ -97,7 +116,7 @@ std::string PoseEstimation::GetTransformation(std::string input_string)
 	p_registration_->ComputeTransformation(object_model, object_scan, sample_3d, debug_visualization);
 	object_transform = p_registration_->GetTransformation();
 	cout << object_transform << endl;
-	return output_string + "\"true\"," + MatrixToString();
+	return "{" + output_string + "\"true\"," + MatrixToString() + "}";
 }
 
 IPoseEstimation * GetPoseEstimation()
