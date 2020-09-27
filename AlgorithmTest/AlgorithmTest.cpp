@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include "../pose_estimation/ipose_estimation.h"
-#pragma comment (lib, "plugins/TestGrasp/grasp_pose_estimation.lib")
+#pragma comment (lib, "plugins/PoseEstimation_Test/grasp_pose_estimation.lib")
 
 int main()
 {
