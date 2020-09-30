@@ -4,9 +4,10 @@
 #define __DLLEXPORT
 #include "pose_estimation.h"
 
-std::string ModelFileName = "plugins//PoseEstimation//Model_3D//object_model.pcd";
+std::string ModelFileName = "Model_3D//object_model.pcd";
+std::string ScanFileName = "Model_3D//object_scan.pcd";
 
-PoseEstimation::PoseEstimation():
+PoseEstimation::PoseEstimation() :
 	object_model(new pcl::PointCloud<pcl::PointXYZ>),
 	object_scan(new pcl::PointCloud<pcl::PointXYZ>)
 {
@@ -14,7 +15,7 @@ PoseEstimation::PoseEstimation():
 	p_registration_ = GetRegistration3D();
 
 	debug_visualization = true;
-	sample_3d = 0.005;
+	sample_3d = 0.01;
 }
 
 PoseEstimation::~PoseEstimation()
@@ -26,9 +27,9 @@ bool PoseEstimation::GetTransformation()
 
 	if (false == p_realsense_->LoadPointCloud(ModelFileName, object_model))
 	{
-		LOG(ERROR) << "LoadPointCloud Error!";
+		LOG(ERROR) << "LoadModel Error!";
 	}
-	if (false == p_realsense_->LoadPointCloud(ModelFileName, object_scan))
+	if (false == p_realsense_->LoadPointCloud(ScanFileName, object_scan))
 	{
 		LOG(ERROR) << "LoadPointCloud Error!";
 	}
@@ -47,7 +48,7 @@ bool PoseEstimation::GetTransformation()
 
 IPoseEstimation * GetPoseEstimation()
 {
-  IPoseEstimation* p_pose_estimation_ = new PoseEstimation(); 
-  return p_pose_estimation_;
+	IPoseEstimation* p_pose_estimation_ = new PoseEstimation();
+	return p_pose_estimation_;
 }
 

@@ -32,5 +32,6 @@ class PoseEstimation: public IPoseEstimation
 	PoseEstimation();
 	~PoseEstimation();
 
+	std::string MatrixToString();
 	bool GetTransformation();
 };
