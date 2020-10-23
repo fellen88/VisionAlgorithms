@@ -24,9 +24,11 @@ class PoseEstimation: public IPoseEstimation
 	cv::Mat object_depth;
 	cv::Mat object_color;
 	cv::Mat object_mask;
+	cv::Mat object_mask_collision;
 	std::string object_label;
 	PointCloud::Ptr object_model;
 	PointCloud::Ptr object_scan;
+	PointCloud::Ptr object_scan_collision;
 	Eigen::Matrix4f object_transform;
 
 	PoseEstimation();

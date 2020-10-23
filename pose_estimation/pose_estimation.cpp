@@ -11,7 +11,8 @@ std::string TestJsonInput = "{\"CmdCode\": 1015,\"MessageBody\": {\"ScaleFactor3
 
 PoseEstimation::PoseEstimation():
 	object_model(new pcl::PointCloud<pcl::PointXYZ>),
-	object_scan(new pcl::PointCloud<pcl::PointXYZ>)
+	object_scan(new pcl::PointCloud<pcl::PointXYZ>),
+	object_scan_collision(new pcl::PointCloud<pcl::PointXYZ>)
 {
 	p_realsense_ = GetCameraData();
 	p_registration_ = GetRegistration3D();
@@ -19,7 +20,10 @@ PoseEstimation::PoseEstimation():
 	pose_flag = false;
 	debug_visualization = true;
 	sample_3d = 0.005;
+
 	object_transform = Eigen::Matrix4f::Ones();
+	object_mask = cv::Mat::ones(cv::Size(1280, 720), CV_8UC1);
+	object_mask_collision = cv::Mat::ones(cv::Size(1280, 720), CV_8UC1);
 }
 
 PoseEstimation::~PoseEstimation()
@@ -77,32 +81,39 @@ std::string PoseEstimation::GetTransformation(std::string input_string)
 	if (false == p_realsense_->SetParameters(JsonFileName))
 	{
 		LOG(ERROR) << "SetParameters Error!";
-		return output_string + "\"false\"" + "}";
+		return "{" + output_string + "\"false\"" + "}";
 	}
 
 	if (false == p_realsense_->GetCameraImages(object_color, object_depth))
 	{
 		LOG(ERROR) << "GetCameraImages Error!";
-		return output_string + "\"false\"" + "}";
+		return "{" + output_string + "\"false\"" + "}";
 	}
 
 	if (false == p_realsense_->LoadPointCloud(ModelFileName, object_model))
 	{
 		LOG(ERROR) << "LoadPointCloud Error!";
-		return output_string + "\"false\"" + "}";
+		return "{" + output_string + "\"false\"" + "}";
 	}
 
-	if (false == p_realsense_->GetMaskAndLabel(object_mask, object_label))
+	if (false == p_realsense_->GetMaskAndLabel(object_mask, object_mask_collision, object_label))
 	{
 		LOG(ERROR) << "GetMaskAndLabel Error!";
-		return output_string + "\"false\"" + "}";
+		return "{" + output_string + "\"false\"" + "}";
 	}
 	
 	if (false == p_realsense_->DepthtoPointCloud(object_depth, object_mask, object_scan))
 	{
 		LOG(ERROR) << "DepthtoPointCloud Error!";
-		return output_string + "\"false\"" + "}";
+		return "{" + output_string + "\"false\"" + "}";
 	}
+
+	if (false == p_realsense_->DepthtoPointCloud_Collision(object_depth, object_mask_collision, object_scan_collision))
+	{
+		LOG(ERROR) << "DepthtoPointCloud_Collision Error!";
+		return "{" + output_string + "\"false\"" + "}";
+	}
+
 	if (debug_visualization)
 	{
 		LOG(INFO) << "Object label : " << object_label;
@@ -111,6 +122,7 @@ std::string PoseEstimation::GetTransformation(std::string input_string)
 		//p_realsense_->ShowImage(object_mask, "object_mask");
 		p_realsense_->ShowPointCloud(object_model, "object_model");
 		p_realsense_->ShowPointCloud(object_scan, "object_scan");
+		p_realsense_->ShowPointCloud(object_scan_collision, "object_collision");
 	}
 
 	p_registration_->ComputeTransformation(object_model, object_scan, sample_3d, debug_visualization);

@@ -14,6 +14,7 @@ CameraData::CameraData()
 	pcolorBuffer = nullptr;                                   // 共享内存指针
 	pdepthBuffer = nullptr;                                   // 共享内存指针
 	mask_buffer = nullptr;                                   // 共享内存指针
+	mask_collision_buffer = nullptr;                                   // 共享内存指针
 	label_buffer = nullptr;                                   // 共享内存指针
 	isOpenCameraMapping = false;
 	isOpenMaskMapping = false;
@@ -21,6 +22,7 @@ CameraData::CameraData()
 	hcolorMap = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)COLORMEMORYNAME);
 	hdepthMap = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)DEPTHMEMORYNAME);
 	mask_map = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)L"mask");
+	mask_collision_map = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)L"collision_area");
 	label_map = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, 0, (LPCWSTR)L"mask_label");
 	if (NULL != hcolorMap && NULL != hdepthMap)
 	{
@@ -30,14 +32,36 @@ CameraData::CameraData()
 		isOpenCameraMapping = true;
 		LOG(INFO) << "OpenCameraMapping ok! ";
 	}
-	if (NULL != mask_map && NULL != label_map)
+	if (NULL != mask_map && NULL != label_map && NULL != mask_collision_map)
 	{
 		//打开成功，映射对象的一个视图，得到指向共享内存的指针，显示出里面的数据
 		mask_buffer = ::MapViewOfFile(mask_map, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		mask_collision_buffer = ::MapViewOfFile(mask_map, FILE_MAP_ALL_ACCESS, 0, 0, 0);
     label_buffer = ::MapViewOfFile(label_map, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 		isOpenMaskMapping = true;
 		LOG(INFO) << "OpenMaskMapping ok! ";
 	}
+
+  //************写共享内存****************//
+	BUF_SIZE = 1280*720*4*3;
+	// 创建共享文件句柄 
+	point_map = CreateFileMapping(
+			INVALID_HANDLE_VALUE,   // 物理文件句柄
+			NULL,                   // 默认安全级别
+			PAGE_READWRITE,         // 可读可写
+			0,                      // 高位文件大小
+			BUF_SIZE,               // 低位文件大小
+			L"points_collision"          // 共享内存名称
+			);
+
+	// 映射缓存区视图 , 得到指向共享内存的指针
+	point_buffer = MapViewOfFile(
+		point_map,            // 共享内存的句柄
+		FILE_MAP_ALL_ACCESS, // 可读写许可
+		0,
+		0,
+		BUF_SIZE
+	);
 }
 
 CameraData::~CameraData()
@@ -54,6 +78,9 @@ CameraData::~CameraData()
 
 	::UnmapViewOfFile(label_buffer);
 	::CloseHandle(label_map);
+
+	::UnmapViewOfFile(point_buffer);
+	::CloseHandle(point_map);
 }
 
 bool CameraData::GetCameraImages(cv::Mat &image_color, cv::Mat& image_depth)
@@ -90,17 +117,18 @@ bool CameraData::GetCameraImages(cv::Mat &image_color, cv::Mat& image_depth)
 	return true;
 }
 
-bool CameraData::GetMaskAndLabel(cv::Mat & image_mask, std::string label)
+bool CameraData::GetMaskAndLabel(cv::Mat & image_mask, cv::Mat& image_mask_collision, std::string& label)
 {
 	if (false == isOpenMaskMapping)
 	{
 		LOG(ERROR) << "OpenMaskMapping error! ";
 		LOG(ERROR) << "mask_map: " << mask_map;
+		LOG(ERROR) << "mask_collision_map: " << mask_collision_map;
 		LOG(ERROR) << "label_map: " << label_map;
 		return false;
 	}
 
-	image_mask = cv::Mat::ones(cv::Size(image_width_, image_height_), CV_8UC1);
+	//image_mask = cv::Mat::ones(cv::Size(image_width_, image_height_), CV_8UC1);
 	uchar *p_mask = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_);
 	memcpy(p_mask, mask_buffer, sizeof(uchar)*image_height_*image_width_);
 	cv::Mat mask(cv::Size(image_width_, image_height_), CV_8UC1);
@@ -108,13 +136,23 @@ bool CameraData::GetMaskAndLabel(cv::Mat & image_mask, std::string label)
 	{
 		mask.at<uchar>(i / (image_width_), i % (image_width_))= p_mask[i];//BGR格式
 	}
-
 	image_mask = mask.clone();
+
+	image_mask_collision = cv::Mat::ones(cv::Size(image_width_, image_height_), CV_8UC1);
+	uchar *p_mask_collision = (uchar*)malloc(sizeof(uchar)*image_height_*image_width_);
+	memcpy(p_mask_collision, mask_collision_buffer, sizeof(uchar)*image_height_*image_width_);
+	cv::Mat mask_collision(cv::Size(image_width_, image_height_), CV_8UC1);
+	for (int i = 0; i < image_width_ * image_height_; i++)
+	{
+		mask_collision.at<uchar>(i / (image_width_), i % (image_width_))= p_mask_collision[i];//BGR格式
+	}
+	image_mask_collision = mask_collision.clone();
 
 	char *p_label = (char*)malloc(sizeof(char) * 50);
 	label = p_label;
 
 	delete[] p_mask;
+	delete[] p_mask_collision;
 	delete[] p_label;
 	return true;
 }
@@ -147,19 +185,6 @@ void CameraData::ShowPointCloud(const PointCloud::Ptr pointcloud, std::string wi
 		boost::shared_ptr<pcl::visualization::PCLVisualizer> view(new pcl::visualization::PCLVisualizer(window_name));
 		view->addPointCloud(pointcloud);
 		view->spin ();
-	}
-	else
-	{
-		LOG(ERROR) << window_name << " is a nullptr pointlcoud!";
-	}
-}
-
-void CameraData::ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, std::string window_name)
-{
-	if (nullptr != pointcloud)
-	{
-		boost::shared_ptr<pcl::visualization::PCLVisualizer> view(new pcl::visualization::PCLVisualizer(window_name));
-		view->addPointCloud(pointcloud);
 	}
 	else
 	{
@@ -453,11 +478,71 @@ bool CameraData::DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr 
   return true;
 }
 
-void CameraData::test()
+bool CameraData::DepthtoPointCloud_Collision(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr CloudMask)
 {
-	int a = 1;
-	int b = 0;
-	//int c = a / b;
+	int count = 0;
+	for(int rows = 0; rows < image_height_; rows++)
+    {
+			for(int cols = 0; cols < image_width_; cols++ )
+			{
+					float d = 0;
+					if (!Depth.empty())
+					{
+						//获取深度图中对应点的深度值
+						d = Depth.at<ushort>(rows, cols);
+					}
+					else
+					{
+						LOG(ERROR) << "depth image empty!";
+						return false;
+					}
+
+					//有效范围内的点
+					//if ((d > 0.5*scale_factor_) && (d < 1.5*scale_factor_))
+					{
+						//判断mask中是否是物体的点
+						if (!Mask.empty())
+						{
+							unsigned char mask_value = Mask.at<unsigned char>(rows, cols);
+							if (mask_value == 0)
+								continue;
+						}
+						else
+						{
+							LOG(ERROR) << ("mask image empty!");
+								return false;
+						}
+						//计算这个点的空间坐标
+						pcl::PointXYZ PointWorld;
+						PointWorld.z = double(d) / scale_factor_;
+						PointWorld.x = (rows - cx_)*PointWorld.z / fx_;
+						PointWorld.y = (cols - cy_)*PointWorld.z / fy_;
+
+						*((float*)point_buffer + count) = PointWorld.x;
+						count++;
+						*((float*)point_buffer + count) = PointWorld.y;
+						count++;
+						*((float*)point_buffer + count) = PointWorld.z;
+						count++;
+
+						CloudMask->points.push_back(PointWorld);
+					}
+			}
+  }
+  //设置点云属性，采用无序排列方式存储点云
+  CloudMask->height = 1;
+  CloudMask->width = CloudMask->points.size();
+  LOG(INFO) << "mask cloud size = " << CloudMask->width;
+  if(0 == CloudMask->points.size())
+  {
+    LOG(ERROR)<<("Mask points number = 0 !!!");
+    return false;
+  }
+  //去除NaN点
+  std::vector<int> nan_indices;
+  pcl::removeNaNFromPointCloud(*CloudMask, *CloudMask, nan_indices);
+  CloudMask->is_dense = false;
+  return true;
 }
 
 ICameraData* GetCameraData()
