@@ -32,7 +32,7 @@ PoseEstimation::~PoseEstimation()
 
 std::string PoseEstimation::MatrixToString()
 {
-	std::string output_str = "\"array\":\"[";
+	std::string output_str = "\"array\":\"[\n[";
 	std::string matrix4f_str;
 
 	for (int i = 0; i < 4; i++)
@@ -47,11 +47,11 @@ std::string PoseEstimation::MatrixToString()
 		}
 		if(i < 3)
 		{
-			matrix4f_str = matrix4f_str + "],[";
+			matrix4f_str = matrix4f_str + "],\n[";
 		}
 	}
-	output_str = output_str + matrix4f_str + "]\"";
-	LOG(INFO) << output_str;
+	output_str = output_str + matrix4f_str + "]\n]\"";
+	//LOG(INFO) << output_str;
 	return output_str;
 }
 
@@ -127,8 +127,10 @@ std::string PoseEstimation::GetTransformation(std::string input_string)
 
 	p_registration_->ComputeTransformation(object_model, object_scan, sample_3d, debug_visualization);
 	object_transform = p_registration_->GetTransformation();
-	cout << object_transform << endl;
-	return "{" + output_string + "\"true\"," + MatrixToString() + "}";
+	LOG(INFO)<<"\n"<< object_transform;
+	output_json = "{" + output_string + "\"true\",\n" + MatrixToString() + "}";
+	LOG(INFO)<<"\n"<< output_json;
+	return output_json;
 }
 
 IPoseEstimation * GetPoseEstimation()

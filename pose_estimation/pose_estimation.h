@@ -30,6 +30,8 @@ class PoseEstimation: public IPoseEstimation
 	PointCloud::Ptr object_scan;
 	PointCloud::Ptr object_scan_collision;
 	Eigen::Matrix4f object_transform;
+	
+	std::string output_json;
 
 	PoseEstimation();
 	~PoseEstimation();
