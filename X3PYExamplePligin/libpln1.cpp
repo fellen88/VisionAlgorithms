@@ -15,9 +15,9 @@ int CSimpleA::disPatchChar(BYTE ucType, int& iInstanID, std::string strInData, s
 	{
 	case 0:
 		{
-		IPoseEstimation *pose_estimation_ = GetPoseEstimation();
-		strOutData = pose_estimation_->GetTransformation(strInData);
-		break;
+		  std::auto_ptr<IPoseEstimation> pose_estimation_(GetPoseEstimation());
+			strOutData = pose_estimation_->GetTransformation(strInData);
+			break;
 		}
 	case 1:
 		strOutData = "case 1";

@@ -28,6 +28,8 @@ PoseEstimation::PoseEstimation():
 
 PoseEstimation::~PoseEstimation()
 {
+	delete p_realsense_;
+	delete p_registration_;
 }
 
 std::string PoseEstimation::MatrixToString()
