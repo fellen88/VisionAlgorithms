@@ -7,6 +7,12 @@ Registration3D::Registration3D():
 	sac_output(new pcl::PointCloud<pcl::PointXYZ>),
 	icp_output(new pcl::PointCloud<pcl::PointXYZ>)
 {
+	LOG(INFO) << "Registrration3D";
+}
+
+Registration3D::~Registration3D()
+{
+	LOG(INFO) << "~Registrration3D";
 }
 
 void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &SAC_transform, float downsample, bool debug_v)

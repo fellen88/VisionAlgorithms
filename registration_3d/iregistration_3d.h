@@ -11,6 +11,7 @@ class IRegistration3D
 	virtual void DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, float downsample , bool debug_v) = 0;
 	virtual void ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, float downsample, bool debug_v) = 0;
 	virtual Eigen::Matrix4f GetTransformation() = 0;
+	virtual ~IRegistration3D() {};
 };
 
 extern "C" __declspec(dllexport) IRegistration3D* APIENTRY GetRegistration3D();

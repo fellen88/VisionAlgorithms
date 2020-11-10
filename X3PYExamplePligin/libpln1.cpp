@@ -15,7 +15,7 @@ int CSimpleA::disPatchChar(BYTE ucType, int& iInstanID, std::string strInData, s
 	{
 	case 0:
 		{
-		  std::auto_ptr<IPoseEstimation> pose_estimation_(GetPoseEstimation());
+		  std::shared_ptr<IPoseEstimation> pose_estimation_(GetPoseEstimation());
 			strOutData = pose_estimation_->GetTransformation(strInData);
 			break;
 		}

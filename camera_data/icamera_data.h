@@ -23,6 +23,7 @@ class ICameraData
 	float cy_;
 	int scale_factor_;
 
+	virtual ~ICameraData() {};
 	virtual bool GetCameraImages(cv::Mat& color, cv::Mat &depth) = 0;
 	virtual bool GetMaskAndLabel(cv::Mat& mask, cv::Mat& mask_collision, std::string& label) = 0;
 	virtual bool SetParameters(std::string JsonFilePath) = 0;

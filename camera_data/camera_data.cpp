@@ -66,6 +66,7 @@ CameraData::CameraData()
 
 CameraData::~CameraData()
 {
+	LOG(INFO) << "CameraData::~CameraData() ";
 	// 解除文件映射，关闭内存映射文件对象句柄
 	::UnmapViewOfFile(pcolorBuffer);
 	::CloseHandle(hcolorMap);

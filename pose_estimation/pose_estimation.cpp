@@ -10,13 +10,12 @@ std::string JsonFileName = "plugins//PoseEstimation//Config//realsense_d435.json
 std::string TestJsonInput = "{\"CmdCode\": 1015,\"MessageBody\": {\"ScaleFactor3D\": 1000,\"Sample3D\": 0.005, \"Visualization\": true}, \"Plugin\": \"PoseEstimation.pln\"}";
 
 PoseEstimation::PoseEstimation():
+	p_realsense_(GetCameraData()),
+	p_registration_(GetRegistration3D()),
 	object_model(new pcl::PointCloud<pcl::PointXYZ>),
 	object_scan(new pcl::PointCloud<pcl::PointXYZ>),
 	object_scan_collision(new pcl::PointCloud<pcl::PointXYZ>)
 {
-	p_realsense_ = GetCameraData();
-	p_registration_ = GetRegistration3D();
-
 	pose_flag = false;
 	debug_visualization = true;
 	sample_3d = 0.005;
@@ -28,8 +27,6 @@ PoseEstimation::PoseEstimation():
 
 PoseEstimation::~PoseEstimation()
 {
-	delete p_realsense_;
-	delete p_registration_;
 }
 
 std::string PoseEstimation::MatrixToString()
