@@ -5,7 +5,7 @@
 #include "pose_estimation.h"
 
 std::string ModelFileName = "plugins//PoseEstimation//object_model.pcd";
-std::string JsonFileName = "plugins//PoseEstimation//pose_estimation.json";
+std::string JsonFileName = "plugins/DCP/config/pose_estimation.json";
 std::string TestOutput = "\"array\":[[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15 ,16]]}"; 
 
 PoseEstimation::PoseEstimation():
