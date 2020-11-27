@@ -234,7 +234,7 @@ void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr 
 
 	try {
 		// Deserialize the ScriptModule from a file using torch::jit::load().
-		module = torch::jit::load("plugins//DCP//libtorch_model//dcp.pt", device);
+		module = torch::jit::load("plugins/DCP/libtorch_model/dcp.pt", device);
 		//gpu optimize
 		module.eval();
 	}
