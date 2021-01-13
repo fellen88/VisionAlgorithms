@@ -16,7 +16,7 @@ PoseEstimation::PoseEstimation():
 	object_scan(new pcl::PointCloud<pcl::PointXYZ>),
 	object_scan_collision(new pcl::PointCloud<pcl::PointXYZ>)
 {
-	pose_flag = false;
+	pose_state = false;
 	debug_visualization = true;
 	sample_3d = 0.005;
 
@@ -31,7 +31,7 @@ PoseEstimation::~PoseEstimation()
 
 std::string PoseEstimation::MatrixToString()
 {
-	std::string output_str = "\"array\":\"[\n[";
+	std::string output_str = "\"pose_array\":\"[\n[";
 	std::string matrix4f_str;
 
 	for (int i = 0; i < 4; i++)
@@ -56,26 +56,36 @@ std::string PoseEstimation::MatrixToString()
 
 std::string PoseEstimation::GetTransformation(std::string input_string)
 {
-	//if (p_realsense_->ReadJsonString(TestJsonInput, "MessageBody", "string").success)
-	//{
-	//	std::string message_body = p_realsense_->ReadJsonString(TestJsonInput, "MessageBody", "string").json_string;
+	JsonOutType json_out;
+	json_out = p_realsense_->ReadJsonFile(JsonFileName, "DebugIndependent", "bool");
+	if (json_out.success)
+	{
+		if (json_out.json_bool)
+			json_out = p_realsense_->ReadJsonString(TestJsonInput, "MessageBody", "object");
+		else
+			json_out = p_realsense_->ReadJsonString(input_string, "MessageBody", "object");
+			if (json_out.success)
+			{
+				Json::Value message_body = json_out.json_object;
+				//读取嵌套json信息
+				json_out = p_realsense_->ReadJsonObject(message_body, "Visualization", "bool");
+				if (json_out.success)
+				{
+					debug_visualization = json_out.json_bool;
+				}
+				json_out = p_realsense_->ReadJsonObject(message_body, "Sample3D", "float");
+				if (json_out.success)
+				{
+					sample_3d = json_out.json_float;
+				}
+			}
+			else
+				LOG(ERROR) << "Read input json error!";
+	}
 
-	//	if (p_realsense_->ReadJsonString(message_body, "Visualization", "bool").success)
-	//	{
-	//		debug_visualization = p_realsense_->ReadJsonString(message_body, "Visualization", "bool").json_bool;
-	//		LOG(INFO) << "Visualization(json input) : " << debug_visualization;
-	//	}
 
-	//	if (p_realsense_->ReadJsonString(message_body, "Sample3D", "float").success)
-	//	{
-	//		sample_3d = p_realsense_->ReadJsonString(message_body, "Sample3D", "float").json_float;
-	//		LOG(INFO) << "Sample3D(json input) : " << sample_3d;
-	//	}
-	//}
-	//else
-	//	LOG(ERROR) << "Read input json error!";
 
-	std::string output_string = "\"pose_flag\":";
+	std::string output_string = "\"pose_state\":";
 
 	if (false == p_realsense_->SetParameters(JsonFileName))
 	{
@@ -119,9 +129,11 @@ std::string PoseEstimation::GetTransformation(std::string input_string)
 		//p_realsense_->ShowImage(object_color, "object_color");
 		//p_realsense_->ShowImage(object_depth, "object_depth");
 		//p_realsense_->ShowImage(object_mask, "object_mask");
+		//p_realsense_->ShowImage(object_mask_collision, "object_mask_collision");
 		p_realsense_->ShowPointCloud(object_model, "object_model");
 		p_realsense_->ShowPointCloud(object_scan, "object_scan");
 		p_realsense_->ShowPointCloud(object_scan_collision, "object_collision");
+		//pcl::io::savePCDFileASCII ("test.pcd", *object_scan);
 	}
 
 	p_registration_->ComputeTransformation(object_model, object_scan, sample_3d, debug_visualization);

@@ -16,7 +16,7 @@ class PoseEstimation: public IPoseEstimation
 	std::shared_ptr<ICameraData> p_realsense_;
 	std::shared_ptr<IRegistration3D> p_registration_;
 
-	bool pose_flag;
+	bool pose_state;
 	bool debug_visualization;
 	float sample_3d;
 	std::string pose_object;

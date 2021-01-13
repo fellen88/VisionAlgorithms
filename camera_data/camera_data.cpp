@@ -36,7 +36,7 @@ CameraData::CameraData()
 	{
 		//打开成功，映射对象的一个视图，得到指向共享内存的指针，显示出里面的数据
 		mask_buffer = ::MapViewOfFile(mask_map, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-		mask_collision_buffer = ::MapViewOfFile(mask_map, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+		mask_collision_buffer = ::MapViewOfFile(mask_collision_map, FILE_MAP_ALL_ACCESS, 0, 0, 0);
     label_buffer = ::MapViewOfFile(label_map, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 		isOpenMaskMapping = true;
 		LOG(INFO) << "OpenMaskMapping ok! ";
@@ -150,6 +150,7 @@ bool CameraData::GetMaskAndLabel(cv::Mat & image_mask, cv::Mat& image_mask_colli
 	image_mask_collision = mask_collision.clone();
 
 	char *p_label = (char*)malloc(sizeof(char) * 50);
+	memcpy(p_label, label_buffer, sizeof(char) * 50);
 	label = p_label;
 
 	delete[] p_mask;
@@ -203,6 +204,66 @@ void CameraData::ShowImage(const cv::Mat image, std::string window_name)
 	else {
 		LOG(ERROR) << window_name << " is empty image!";
 	}
+}
+
+JsonOutType CameraData::ReadJsonObject(Json::Value json_object, std::string key_name, const char* out_type)
+{
+	JsonOutType json_out_type;
+	if (0 == strcmp(out_type, "string"))
+	{
+		if (!json_object[key_name].isNull())
+		{
+			json_out_type.json_string = json_object[key_name].asString();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_string;
+		}
+		return json_out_type;
+	}
+	if (0 == strcmp(out_type, "int"))
+	{
+		if (!json_object[key_name].isNull())
+		{
+			json_out_type.json_int = json_object[key_name].asInt();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_int;
+		}
+		return json_out_type;
+	}
+	if (0 == strcmp(out_type, "float"))
+	{
+		if (!json_object[key_name].isNull())
+		{
+			json_out_type.json_float = json_object[key_name].asFloat();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_float;
+		}
+		return json_out_type;
+	}
+	if (0 == strcmp(out_type, "bool"))
+	{
+		if (!json_object[key_name].isNull())
+		{
+			json_out_type.json_bool = json_object[key_name].asBool();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_bool;
+		}
+		return json_out_type;
+	}
+	if (0 == strcmp(out_type, "double"))
+	{
+		if (!json_object[key_name].isNull())
+		{
+			json_out_type.json_double = json_object[key_name].asDouble();
+			LOG(INFO) << key_name << " (json key) : " << json_out_type.json_double;
+		}
+		return json_out_type;
+	}
+	if (0 == strcmp(out_type, "object"))
+	{
+		if (!json_object[key_name].isNull())
+		{
+			json_out_type.json_object = json_object[key_name];
+		}
+		return json_out_type;
+	}
+	return json_out_type;
+
 }
 
 JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name, const char* out_type)
@@ -335,6 +396,14 @@ JsonOutType CameraData::ReadJsonString(std::string json_string, std::string key_
 		}
 		return json_out_type;
 	}
+	if (0 == strcmp(out_type, "object"))
+	{
+		if (!json_object[key_name].isNull())
+		{
+			json_out_type.json_object = json_object[key_name];
+		}
+		return json_out_type;
+	}
 	return json_out_type;
 }
  
@@ -457,8 +526,8 @@ bool CameraData::DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr 
 						//计算这个点的空间坐标
 						pcl::PointXYZ PointWorld;
 						PointWorld.z = double(d) / scale_factor_;
-						PointWorld.x = (rows - cx_)*PointWorld.z / fx_;
-						PointWorld.y = (cols - cy_)*PointWorld.z / fy_;
+						PointWorld.x = (cols - cx_)*PointWorld.z / fx_;
+						PointWorld.y = (rows - cy_)*PointWorld.z / fy_;
 						CloudMask->points.push_back(PointWorld);
 					}
 			}
@@ -516,8 +585,8 @@ bool CameraData::DepthtoPointCloud_Collision(cv::Mat Depth, cv::Mat Mask, PointC
 						//计算这个点的空间坐标
 						pcl::PointXYZ PointWorld;
 						PointWorld.z = double(d) / scale_factor_;
-						PointWorld.x = (rows - cx_)*PointWorld.z / fx_;
-						PointWorld.y = (cols - cy_)*PointWorld.z / fy_;
+						PointWorld.x = (cols - cx_)*PointWorld.z / fx_;
+						PointWorld.y = (rows - cy_)*PointWorld.z / fy_;
 
 						*((float*)point_buffer + count) = PointWorld.x;
 						count++;

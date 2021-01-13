@@ -36,6 +36,7 @@ void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::P
     source_filtered = cloud_src; //直接复制
     target_filtered = cloud_tgt;
   }
+  LOG(INFO) << "point cloud size = " << target_filtered->points.size();
   ////保存到PCD文件
   //pcl::io::savePCDFileASCII("model.pcd", *source_filtered);
 

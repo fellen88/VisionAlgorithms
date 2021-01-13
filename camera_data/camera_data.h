@@ -1,12 +1,9 @@
 #pragma once
 #include "icamera_data.h"
-#include "json/json.h"
 
 class CameraData :public ICameraData
 {
   public:
-
-
 
 	// π≤œÌƒ⁄¥Ê÷∏’Î
 	LPVOID pcolorBuffer;                                  
@@ -56,6 +53,7 @@ class CameraData :public ICameraData
 	void ShowPointCloud(const PointCloud::Ptr pointcloud, std::string window_name);
 	void ShowImage(const cv::Mat image, std::string window_name);
 	
+	JsonOutType ReadJsonObject(Json::Value json_object, std::string key_name, const char* out_type);
 	JsonOutType ReadJsonFile(std::string file_name, std::string key_name, const char* out_type);
 	JsonOutType ReadJsonString(std::string json_string, std::string key_name, const char* out_type);
 	bool DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr pointcloud);
