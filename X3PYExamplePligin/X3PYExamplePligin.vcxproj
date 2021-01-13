@@ -73,7 +73,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)Library\interface\core;$(SolutionDir)FindDll;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)X3PYLibrary\interface\core;$(IncludePath)</IncludePath>
     <TargetName>PoseEstimation</TargetName>
     <TargetExt>.pln</TargetExt>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\PoseEstimation\</OutDir>
@@ -84,7 +84,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)Library\interface\core;$(SolutionDir)FindDll;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)X3PYLibrary\interface\core;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\PoseEstimation\</OutDir>
     <TargetName>PoseEstimation</TargetName>
     <TargetExt>.pln</TargetExt>
