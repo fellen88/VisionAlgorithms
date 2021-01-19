@@ -3,10 +3,11 @@
 
 #include <iostream>
 #include "../pose_estimation/ipose_estimation.h"
-#pragma comment (lib, "plugins/DCP/grasp_pose_estimation.lib")
+#pragma comment (lib, "grasp_pose_estimation.lib")
 
 int main()
 {
 		IPoseEstimation *pose_estimation_ = GetPoseEstimation();
 	   pose_estimation_->GetTransformation("");
+		 system("pause");
 }
