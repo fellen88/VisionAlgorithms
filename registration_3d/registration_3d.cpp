@@ -204,6 +204,25 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
 
 void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f & final_transform, float downsample = 0)
 {
+	//为了一致性和速度，下采样
+	PointCloud::Ptr src(new PointCloud); //创建点云指针
+	PointCloud::Ptr tgt(new PointCloud);
+	pcl::VoxelGrid<PointT> grid; //VoxelGrid 把一个给定的点云，聚集在一个局部的3D网格上,并下采样和滤波点云数据
+	if (downsample) //下采样
+	{
+		grid.setLeafSize(downsample, downsample, downsample); //设置体元网格的叶子大小
+				//下采样 源点云
+		grid.setInputCloud(cloud_src); //设置输入点云
+		grid.filter(*src); //下采样和滤波，并存储在src中
+				//下采样 目标点云
+		grid.setInputCloud(cloud_tgt);
+		grid.filter(*tgt);
+	}
+	else //不下采样
+	{
+		src = cloud_src; //直接复制
+		tgt = cloud_tgt;
+	}
 	try {
 		std::cout << "CUDA:   " << torch::cuda::is_available() << std::endl;
 		std::cout << "CUDNN:  " << torch::cuda::cudnn_is_available() << endl;
@@ -234,7 +253,7 @@ void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr 
 
 	try {
 		// Deserialize the ScriptModule from a file using torch::jit::load().
-		module = torch::jit::load("plugins/DCP/libtorch_model/dcp.pt", device);
+		module = torch::jit::load("libtorch_model/dcp.pt", device);
 		//gpu optimize
 		module.eval();
 	}
@@ -252,14 +271,20 @@ void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr 
 	inputs.push_back(tgt_tensor);
 	c10::IValue outputs;
 
-	// Execute the model and turn its output into a tensor.
-	//at::Tensor output_tensor = module.forward(std::move(inputs)).toTensor();
 	{
 		pcl::ScopeTime scope_time("*Forward time : ");//计算算法运行时间
 		outputs = module.forward(inputs);
 		cout << outputs << endl;
 	}
-	//std::cout << output_tensor1.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << '\n';
+	{
+	// Execute the model and turn its output into a tensor.
+		pcl::ScopeTime scope_time("*Forward time : ");//计算算法运行时间
+   auto output_auto =	module.forward(inputs).toTuple();
+	 torch::Tensor out_rotation = output_auto->elements()[0].toTensor();
+	 torch::Tensor out_translation = output_auto->elements()[1].toTensor();
+	 std::cout << out_rotation << std::endl;
+	 std::cout << out_translation << std::endl;
+	}
 }
 
 void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, float downsample)

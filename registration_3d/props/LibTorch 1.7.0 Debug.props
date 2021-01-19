@@ -5,25 +5,29 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdParty/LibTorch/libtorch-release-1.5.1+cu101/include;
-									$(SolutionDir)3rdParty/LibTorch/libtorch-release-1.5.1+cu101/include/torch/csrc/api/include;
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdParty/LibTorch/libtorch-release-1.7.0+cu102/include;
+									$(SolutionDir)3rdParty/LibTorch/libtorch-release-1.7.0+cu102/include/torch/csrc/api/include;
 									%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);</PreprocessorDefinitions>
 	  <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)3rdParty/LibTorch/libtorch-release-1.5.1+cu101/lib;
+      <AdditionalLibraryDirectories>$(SolutionDir)3rdParty/LibTorch/libtorch-release-1.7.0+cu102/lib;
 									  %(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>asmjit.lib;
 							  c10.lib;
 							  c10_cuda.lib;
+							  c10d.lib;
 							  caffe2_detectron_ops_gpu.lib;
 							  caffe2_module_test_dynamic.lib;
 							  caffe2_nvrtc.lib;
 							  clog.lib;
 							  cpuinfo.lib;
+							  dnnl.lib;
 							  fbgemm.lib;
+							  gloo.lib;
+							  gloo_cuda.lib;
 							  libprotobufd.lib;
 							  libprotobuf-lited.lib;
 							  libprotocd.lib;
