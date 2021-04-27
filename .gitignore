@@ -6,6 +6,7 @@
 #$ VisionAlgorithms
 
 3rdParty/
+.svn/
 
 #$ End VisionAlgorithms
 

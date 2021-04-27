@@ -1,24 +1,12 @@
-﻿// stdafx.h: 标准系统包含文件的包含文件，
-// 或是经常使用但不常更改的
-// 项目特定的包含文件
-//
 
-#pragma once
-
-#define WIN32_LEAN_AND_MEAN             // 从 Windows 头文件中排除极少使用的内容
-// Windows 头文件
-#include <windows.h>
-
-
+#ifndef MYPOINTREPRESENTATION_H
+#define MYPOINTREPRESENTATION_H
 // Google glog
-#include "glog/logging.h"
-#pragma comment(lib,"glog.lib")
+//#include "glog/logging.h"
 
 //OpenCV
-//#include <opencv2/opencv.hpp>
+//#include "opencv2/opencv.hpp"
 
-// 在此处引用程序需要的其他标头
-// PCL
 //点/点云
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
@@ -61,3 +49,25 @@ typedef pcl::PointCloud<PointNormalT> PointCloudWithNormals;
 typedef pcl::PointCloud<pcl::Normal> pointnormal;
 typedef pcl::PointCloud<pcl::FPFHSignature33> fpfhFeature;
 typedef pcl::PointCloud<pcl::VFHSignature308> vfhFeathure;
+
+class MyPointRepresentation : public pcl::PointRepresentation <PointNormalT> 
+{
+  using pcl::PointRepresentation<PointNormalT>::nr_dimensions_;
+  public:
+  MyPointRepresentation ()
+  {
+    //鎸囧畾缁存暟
+    nr_dimensions_ = 4;
+  }
+  //閲嶈浇鍑芥暟copyToFloatArray锛屼互瀹氫箟鑷?宸辩殑鐗瑰緛鍚戦噺
+  virtual void copyToFloatArray (const PointNormalT &p, float * out) const
+  {
+    //< x, y, z, curvature > 鍧愭爣xyz鍜屾洸鐜?
+    out[0] = p.x;
+    out[1] = p.y;
+    out[2] = p.z;
+    out[3] = p.curvature;
+  }
+};
+
+# endif
