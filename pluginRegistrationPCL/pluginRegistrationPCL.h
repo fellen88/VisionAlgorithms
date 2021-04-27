@@ -1,12 +1,9 @@
 #ifndef PLUGINRREGISTRATIONPCL_H
 #define PLUGINRREGISTRATIONPCL_H
 
-
 #include <QtCore/qglobal.h>
 
-
 #include "pluginInterfaceRegistration/pluginInterfaceRegistration.h"
-
 
 class pluginRegistrationPCL: public pluginInterfaceRegistration
 {
@@ -25,10 +22,10 @@ public:
 	PointCloud::Ptr sac_output;
 	PointCloud::Ptr icp_output;
 
+    bool DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr pointcloud);
     fpfhFeature::Ptr ComputeFpfh(const PointCloud::Ptr input_cloud, pcl::search::KdTree<pcl::PointXYZ>::Ptr tree);
 	void SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr transformed_cloud, Eigen::Matrix4f &SAC_transform, float downsample, bool debug_v);
 	void LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, float downsample, bool debug_v);
-	void DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, float downsample, bool debug_v);
     void ComputeTransformation(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_src, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_tgt, float downsample, bool debug_v);
     Eigen::Matrix4f GetTransformation();
 };

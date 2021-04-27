@@ -1,7 +1,6 @@
 #include "pluginRegistrationPCL.h"
 #include <math.h>
 
-
 pluginRegistrationPCL::pluginRegistrationPCL():
     sac_output(new pcl::PointCloud<pcl::PointXYZ>),
 	  icp_output(new pcl::PointCloud<pcl::PointXYZ>)
@@ -11,6 +10,64 @@ pluginRegistrationPCL::pluginRegistrationPCL():
 pluginRegistrationPCL::~pluginRegistrationPCL()
 {
 
+}
+
+bool pluginRegistrationPCL::DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr CloudMask)
+{
+	for(int rows = 0; rows < image_height_; rows++)
+    {
+			for(int cols = 0; cols < image_width_; cols++ )
+			{
+					float d = 0;
+					if (!Depth.empty())
+					{
+						//获取深度图中对应点的深度值
+						d = Depth.at<ushort>(rows, cols);
+					}
+					else
+					{
+						//LOG(ERROR) << "depth image empty!";
+						return false;
+					}
+
+					//有效范围内的点
+					//if ((d > 0.5*scale_factor_) && (d < 1.5*scale_factor_))
+					{
+						//判断mask中是否是物体的点
+						if (!Mask.empty())
+						{
+							unsigned char mask_value = Mask.at<unsigned char>(rows, cols);
+							if (mask_value == 0)
+								continue;
+						}
+						else
+						{
+							//LOG(ERROR) << ("mask image empty!");
+								return false;
+						}
+						//计算这个点的空间坐标
+						pcl::PointXYZ PointWorld;
+						PointWorld.z = double(d) / scale_factor_;
+						PointWorld.x = (rows - cx_)*PointWorld.z / fx_;
+						PointWorld.y = (cols - cy_)*PointWorld.z / fy_;
+						CloudMask->points.push_back(PointWorld);
+					}
+			}
+  }
+  //设置点云属性，采用无序排列方式存储点云
+  CloudMask->height = 1;
+  CloudMask->width = CloudMask->points.size();
+  //LOG(INFO) << "mask cloud size = " << CloudMask->width;
+  if(0 == CloudMask->points.size())
+  {
+    //LOG(ERROR)<<("Mask points number = 0 !!!");
+    return false;
+  }
+  //去除NaN点
+  std::vector<int> nan_indices;
+  pcl::removeNaNFromPointCloud(*CloudMask, *CloudMask, nan_indices);
+  CloudMask->is_dense = false;
+  return true;
 }
 
 fpfhFeature::Ptr pluginRegistrationPCL::ComputeFpfh(const PointCloud::Ptr input_cloud, pcl::search::KdTree<pcl::PointXYZ>::Ptr tree)
@@ -33,6 +90,7 @@ fpfhFeature::Ptr pluginRegistrationPCL::ComputeFpfh(const PointCloud::Ptr input_
 
     return fpfh;
 }
+
 void pluginRegistrationPCL::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &SAC_transform, float downsample, bool debug_v)
 {
     //为了一致性和速度，下采样
@@ -222,11 +280,6 @@ void pluginRegistrationPCL::LM_ICP (const PointCloud::Ptr cloud_src, const Point
         //PCL_INFO ("Press q to clear the screen.\n");
         viewer->spin ();
     }
-}
-
-void pluginRegistrationPCL::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f & final_transform, float downsample, bool debug_v)
-{
-
 }
 
 void pluginRegistrationPCL::ComputeTransformation(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_src, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_tgt, float downsample, bool debug_v)

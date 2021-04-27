@@ -9,16 +9,10 @@ set(pluginRegistrationPCL_SRCS
 # Instruct CMake to run moc automatically when needed.
 #set(CMAKE_AUTOMOC ON)
 
-#find_package(Qt5 COMPONENTS Widgets REQUIRED QUIET)
-#add_definitions(-DPLUGINREALSENSECAMERA_LIBRARY)
-#add_definitions(-DCAMERAPLUGININTERFACE_LIBRARY)
 add_library(pluginRegistrationPCL SHARED ${pluginRegistrationPCL_SRCS})#
 qt5_use_modules(pluginRegistrationPCL Core Gui Widgets)
 target_link_libraries(pluginRegistrationPCL
     ${QT_LIBRARIES}
     ${PCL_LIBRARIES}
-    #${OpenCV_LIBS}
-#${realsense2_LIBRARY}
     pluginInterfaceRegistration
-#    FLANN
 )
