@@ -1,2 +1,2 @@
 # VisionAlgorithms
-Object Detection
+Object Detection, Classification, Pose Estimation and so on.
