@@ -9,5 +9,7 @@ int main()
 {
 		IPoseEstimation *pose_estimation_ = GetPoseEstimation();
 	   pose_estimation_->GetTransformation("");
+	   pose_estimation_->GetTransformation("");
+
 		 system("pause");
 }

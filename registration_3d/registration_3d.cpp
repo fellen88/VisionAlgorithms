@@ -150,7 +150,7 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
   PointCloudWithNormals::Ptr reg_result = points_with_normals_src; //用于存储结果（坐标+法向量）
 
   int NumIteration = 0;
-  for (int i = 0; i < 200; ++i) //迭代
+  for (int i = 0; i < 100; ++i) //迭代
   {
     //pcl::ScopeTime scope_time("ICP Iteration"); 
     //PCL_INFO ("Iteration Nr. %d.\n", i); //命令行显示迭代的次数
@@ -202,25 +202,23 @@ void Registration3D::LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::
   }
 }
 
-void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f & final_transform, float downsample = 0)
+void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f & dcp_transform, float downsample = 0)
 {
 	//为了一致性和速度，下采样
-	PointCloud::Ptr src(new PointCloud); //创建点云指针
+	PointCloud::Ptr src(new PointCloud); 
 	PointCloud::Ptr tgt(new PointCloud);
-	pcl::VoxelGrid<PointT> grid; //VoxelGrid 把一个给定的点云，聚集在一个局部的3D网格上,并下采样和滤波点云数据
-	if (downsample) //下采样
+	pcl::VoxelGrid<PointT> grid;
+	if (downsample) 
 	{
-		grid.setLeafSize(downsample, downsample, downsample); //设置体元网格的叶子大小
-				//下采样 源点云
-		grid.setInputCloud(cloud_src); //设置输入点云
-		grid.filter(*src); //下采样和滤波，并存储在src中
-				//下采样 目标点云
+		grid.setLeafSize(downsample, downsample, downsample);	
+		grid.setInputCloud(cloud_src); 
+		grid.filter(*src); 
 		grid.setInputCloud(cloud_tgt);
 		grid.filter(*tgt);
 	}
 	else //不下采样
 	{
-		src = cloud_src; //直接复制
+		src = cloud_src; 
 		tgt = cloud_tgt;
 	}
 	try {
@@ -241,29 +239,44 @@ void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr 
 		std::cout << ex.what() << std::endl;
 	}
 
-	//torch::Tensor tensor = torch::rand({ 3, 3 });
-	//tensor = tensor.cuda();
-	//std::cout << tensor << std::endl;
-
 	int gpu_id = 0;
 	torch::Device device(torch::cuda::is_available() ? torch::kCUDA : torch::kCPU, gpu_id);
 	torch::jit::script::Module module;
 	torch::NoGradGuard no_grad;
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>); // 创建点云（指针）
 
 	try {
 		// Deserialize the ScriptModule from a file using torch::jit::load().
-		module = torch::jit::load("libtorch_model/dcp.pt", device);
-		//gpu optimize
-		module.eval();
+		{
+			// Execute the model and turn its output into a tensor.
+			pcl::ScopeTime scope_time("*load model : ");//计算算法运行时间
+			module = torch::jit::load("libtorch_model/dcp.pt", device);
+			//gpu optimize
+			module.eval();
+		}
 	}
 	catch (const c10::Error& e) {
 		std::cerr << "error loading the model\n";
 	}
 
 	// Create a vector of inputs.
-  at::Tensor src_tensor = torch::rand({1,3,1024});
-	at::Tensor tgt_tensor = src_tensor;
+  at::Tensor src_tensor = torch::rand({1,3,(int)(src->points.size())});
+	at::Tensor tgt_tensor = torch::rand({1,3,(int)(tgt->points.size())});
+	cout << "src points.size：" << src->points.size() << endl;
+	cout << "tgt points.size：" << tgt->points.size() << endl;
+	
+	for (int i = 0; i < src->points.size(); i++)
+	{
+		src_tensor[0][0][i] = src->points[i].x;
+		src_tensor[0][1][i] = src->points[i].y;
+		src_tensor[0][2][i] = src->points[i].z;
+	}
+
+	for (int i = 0; i < tgt->points.size(); i++)
+	{
+		tgt_tensor[0][0][i] = tgt->points[i].x;
+		tgt_tensor[0][1][i] = tgt->points[i].y;
+		tgt_tensor[0][2][i] = tgt->points[i].z;
+	}
 	src_tensor = src_tensor.to(device);
 	tgt_tensor = tgt_tensor.to(device);
 	std::vector<torch::jit::IValue> inputs;
@@ -271,25 +284,56 @@ void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr 
 	inputs.push_back(tgt_tensor);
 	c10::IValue outputs;
 
-	{
-		pcl::ScopeTime scope_time("*Forward time : ");//计算算法运行时间
-		outputs = module.forward(inputs);
-		cout << outputs << endl;
-	}
+	torch::Tensor out_rotation;
+	torch::Tensor out_translation;
 	{
 	// Execute the model and turn its output into a tensor.
-		pcl::ScopeTime scope_time("*Forward time : ");//计算算法运行时间
+	 pcl::ScopeTime scope_time("*Forward time : ");//计算算法运行时间
    auto output_auto =	module.forward(inputs).toTuple();
-	 torch::Tensor out_rotation = output_auto->elements()[0].toTensor();
-	 torch::Tensor out_translation = output_auto->elements()[1].toTensor();
+	 out_rotation = output_auto->elements()[0].toTensor();
+	 out_translation = output_auto->elements()[1].toTensor();
 	 std::cout << out_rotation << std::endl;
 	 std::cout << out_translation << std::endl;
 	}
+	//dcp matrix4f
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			dcp_transform(i, j) = out_rotation[0][i][j].item().toFloat();
+		}
+	}
+	for (int i = 0; i < 3; i++)
+	{
+		dcp_transform(i, 3) = out_translation[0][i].item().toFloat();
+	}
+	for (int i = 0; i < 3; i++)
+	{
+		dcp_transform(3, i) = 0;
+	}
+	dcp_transform(3, 3) = 1;
+	//将目标点云 变换回到 源点云帧
+  pcl::transformPointCloud (*src, *output, dcp_transform);
 }
 
 void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, float downsample)
 {
 	DCP(cloud_src, cloud_tgt, sac_output, sac_transform, downsample);
+	{
+		pcl::ScopeTime scope_time("*LM-ICP");//计算算法运行时间
+		LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, downsample);
+	}
+	cout << "icp transform:"<<endl << icp_transform << endl;
+	cout << "final transform:"<<endl << icp_transform*sac_transform << endl;
+	{
+		pcl::ScopeTime scope_time("*SAC_IA");//计算算法运行时间
+		SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, downsample);
+		LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, downsample);
+	}
+	cout << "sac transform:"<<endl << sac_transform << endl;
+	cout << "icp transform:"<<endl << icp_transform << endl;
+	cout << "final transform:"<<endl << icp_transform*sac_transform << endl;
+
 	//{
 	//	pcl::ScopeTime scope_time("*SAC_IA");//计算算法运行时间
 	//	SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, downsample);
