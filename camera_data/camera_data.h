@@ -5,9 +5,6 @@
 class CameraData :public ICameraData
 {
   public:
-
-
-	
 	// π≤œÌƒ⁄¥Ê÷∏’Î
 	LPVOID pcolorBuffer;                                  
 	LPVOID pdepthBuffer;                                  
@@ -47,6 +44,7 @@ class CameraData :public ICameraData
 	bool GetMaskAndLabel(cv::Mat& mask, std::string label);
 	bool SetParameters(std::string JsonFilePath);
 	bool LoadPointCloud(std::string file_name, PointCloud::Ptr object_model);
+	bool Load3DModel(std::string file_name, PointCloud::Ptr object_model);
 	bool Load2DImage(cv::Mat image, std::string file_name);
 	void ShowPointCloud(const PointCloud::Ptr pointcloud, std::string window_name);
 	void ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, std::string window_name);
@@ -55,7 +53,6 @@ class CameraData :public ICameraData
 	JsonOutType ReadJsonFile(std::string file_name, std::string key_name, const char* out_type);
 	JsonOutType ReadJsonString(std::string json_string, std::string key_name, const char* out_type);
 	bool DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr pointcloud);
-	void test();
 };
 
 

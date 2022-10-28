@@ -4,32 +4,76 @@
 #define __DLLEXPORT
 #include "pose_estimation.h"
 
-std::string ModelFileName = "Model_3D//object_model.pcd";
-std::string ScanFileName = "Model_3D//object_scan.pcd";
+std::string ModelFileName = "";
+std::string ScanFileName = "";
 
-PoseEstimation::PoseEstimation() :
+PoseEstimation::PoseEstimation(char algorithm_vision) :
 	object_model(new pcl::PointCloud<pcl::PointXYZ>),
 	object_scan(new pcl::PointCloud<pcl::PointXYZ>)
 {
-	p_realsense_ = GetCameraData();
-	p_registration_ = GetRegistration3D();
+	JsonOutType json_reader;
+  std::string JsonFileName = "Config//pose_estimation.json";
 
-	debug_visualization = true;
-	sample_3d = 0.01;
+	switch (algorithm_vision)
+	{
+		debug_visualization = false;
+		sensor_offline = true;
+		sample_3d = 0.01;
+		case 'A':
+			p_sensor_ = GetCameraData();
+			p_registration_ = GetRegistration3D();
+
+			json_reader = p_sensor_->ReadJsonFile(JsonFileName, "DebugVisualization", "bool");
+			if (json_reader.success)
+				debug_visualization = json_reader.json_bool;
+			json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SensorOffline", "bool");
+			if (json_reader.success)
+				sensor_offline = json_reader.json_bool;
+			json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Sample3D", "float");
+			if (json_reader.success)
+				sample_3d = json_reader.json_float;
+			json_reader = p_sensor_->ReadJsonFile(JsonFileName, "ObjectModelPath", "string");
+			if (json_reader.success)
+				ModelFileName = json_reader.json_string;
+			json_reader = p_sensor_->ReadJsonFile(JsonFileName, "PointCloudPath", "string");
+			if (json_reader.success)
+				ScanFileName = json_reader.json_string;
+
+			if (false == p_sensor_->LoadPointCloud(ModelFileName, object_model))
+			{
+				LOG(ERROR) << "LoadModel Error!";
+			}
+		
+		case 'B':
+		default:
+		break;
+	}
+
 }
 
 PoseEstimation::~PoseEstimation()
 {
 }
 
-bool PoseEstimation::GetTransformation()
+bool PoseEstimation::LoadObjectModel()
+{
+	if (false == p_sensor_->LoadPointCloud(ModelFileName, object_model))
+	{
+		LOG(ERROR) << "LoadModel Error!";
+		return false;
+	}
+	LOG(INFO) << "LoadModel Complete!";
+	return true;
+}
+
+bool PoseEstimation::Algorithm_Test()
 {
 
-	if (false == p_realsense_->LoadPointCloud(ModelFileName, object_model))
+	if (false == p_sensor_->LoadPointCloud(ModelFileName, object_model))
 	{
 		LOG(ERROR) << "LoadModel Error!";
 	}
-	if (false == p_realsense_->LoadPointCloud(ScanFileName, object_scan))
+	if (false == p_sensor_->LoadPointCloud(ScanFileName, object_scan))
 	{
 		LOG(ERROR) << "LoadPointCloud Error!";
 	}
@@ -46,9 +90,60 @@ bool PoseEstimation::GetTransformation()
 	return true;
 }
 
-IPoseEstimation * GetPoseEstimation()
+bool PoseEstimation::Algorithm_A(PointCloud::Ptr cloud_scene, unsigned char view_point, Eigen::Matrix4f pose_object)
 {
-	IPoseEstimation* p_pose_estimation_ = new PoseEstimation();
+	if (sensor_offline)
+	{
+		if (false == p_sensor_->LoadPointCloud(ScanFileName, object_scan))
+		{
+			LOG(ERROR) << "LoadPointCloud Error!";
+		}
+	}
+	else
+	{
+		if (cloud_scene->size() < 1000)
+		{
+			LOG(ERROR) << "input pointcloud size < 1000";
+		}
+		else
+			object_scan = cloud_scene;
+	}
+
+	if (1 == view_point)
+	{
+		if (debug_visualization)
+		{
+			p_sensor_->ShowPointCloud(object_model, "object_model");
+			p_sensor_->ShowPointCloud(object_scan, "object_scan");
+		}
+		p_registration_->ComputeTransformation(object_model, object_scan, sample_3d, debug_visualization);
+		object_transform = p_registration_->GetTransformation();
+		cout << object_transform << endl;
+	}
+	else if (2 == view_point)
+	{
+
+	}
+	else
+	{
+		return false;
+	}
+	return true;
+}
+
+bool PoseEstimation::Algorithm_B()
+{
+	return false;
+}
+
+bool PoseEstimation::Algorithm_C()
+{
+	return false;
+}
+
+IPoseEstimation * GetInstance(char algothrim_version)
+{
+	IPoseEstimation* p_pose_estimation_ = new PoseEstimation(algothrim_version);
 	return p_pose_estimation_;
 }
 

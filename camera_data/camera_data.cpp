@@ -129,6 +129,58 @@ bool CameraData::LoadPointCloud(std::string file_name, PointCloud::Ptr object_mo
 	return true;
 }
 
+bool CameraData::Load3DModel(std::string file_name, PointCloud::Ptr object_model)
+{
+	vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
+	pcl::PolygonMesh mesh;
+	pcl::io::loadPolygonFile(file_name, mesh);
+	pcl::io::mesh2vtk(mesh, polydata);
+	vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkSmartPointer<vtkTriangleFilter>::New();
+	#if VTK_MAJOR_VERSION < 6
+		triangleFilter->SetInput(polydata1);
+	#else
+		triangleFilter->SetInputData(polydata);
+	#endif
+		triangleFilter->Update();
+
+	vtkSmartPointer<vtkPolyDataMapper> triangleMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+	triangleMapper->SetInputConnection(triangleFilter->GetOutputPort());
+	triangleMapper->Update();
+	polydata = triangleMapper->GetInput();
+
+	polydata->BuildCells();
+	vtkSmartPointer<vtkCellArray> cells = polydata->GetPolys();
+
+	double p1[3], p2[3], p3[3], totalArea = 0;
+	std::vector<double> cumulativeAreas(cells->GetNumberOfCells(), 0);
+	size_t i = 0;
+	vtkIdType npts = 0, *ptIds = NULL;
+	for (cells->InitTraversal(); cells->GetNextCell(npts, ptIds); i++)
+	{
+		polydata->GetPoint(ptIds[0], p1);
+		polydata->GetPoint(ptIds[1], p2);
+		polydata->GetPoint(ptIds[2], p3);
+		totalArea += vtkTriangle::TriangleArea(p1, p2, p3);
+		cumulativeAreas[i] = totalArea;
+	}
+
+	//object_model->points.resize(n_samples);
+	//object_model->width = static_cast<pcl::uint32_t> (n_samples);
+	//object_model->height = 1;
+
+	//for (i = 0; i < n_samples; i++)
+	//{
+	//	Eigen::Vector4f p;
+	//	Eigen::Vector3f n;
+	//	randPSurface(polydata, &cumulativeAreas, totalArea, p, calc_normal, n);
+	//	cloud_out.points[i].x = p[0] / 1000;
+	//	cloud_out.points[i].y = p[1] / 1000;
+	//	cloud_out.points[i].z = p[2] / 1000;
+	//}
+	//pcl::io::savePCDFileASCII("data_process.pcd", *transformed_cloud);
+	return true;
+}
+
 bool CameraData::Load2DImage(cv::Mat image, std::string file_name)
 {
 	image = cv::imread(file_name);
@@ -158,8 +210,9 @@ void CameraData::ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, st
 {
 	if (nullptr != pointcloud)
 	{
-		boost::shared_ptr<pcl::visualization::PCLVisualizer> view(new pcl::visualization::PCLVisualizer(window_name));
-		view->addPointCloud(pointcloud);
+		boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer(window_name));
+		viewer->addPointCloud(pointcloud);
+		viewer->spinOnce(100);
 	}
 	else
 	{
@@ -451,13 +504,6 @@ bool CameraData::DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr 
   pcl::removeNaNFromPointCloud(*CloudMask, *CloudMask, nan_indices);
   CloudMask->is_dense = false;
   return true;
-}
-
-void CameraData::test()
-{
-	int a = 1;
-	int b = 0;
-	//int c = a / b;
 }
 
 ICameraData* GetCameraData()

@@ -14,10 +14,12 @@ class PoseEstimation: public IPoseEstimation
 	public:
 
 	ICameraData* p_realsense_;
+	ICameraData* p_sensor_;
 	IRegistration3D *p_registration_;
 
 	bool pose_flag;
 	bool debug_visualization;
+	bool sensor_offline;
 	float sample_3d;
 	std::string pose_object;
 	
@@ -29,9 +31,12 @@ class PoseEstimation: public IPoseEstimation
 	PointCloud::Ptr object_scan;
 	Eigen::Matrix4f object_transform;
 
-	PoseEstimation();
+	PoseEstimation(char algorithm_version);
 	~PoseEstimation();
 
-	std::string MatrixToString();
-	bool GetTransformation();
+	bool LoadObjectModel();
+	bool Algorithm_Test();
+	bool Algorithm_A(PointCloud::Ptr cloud_scene, unsigned char viewpoint, Eigen::Matrix4f pose_object);
+	bool Algorithm_B();
+	bool Algorithm_C();
 };

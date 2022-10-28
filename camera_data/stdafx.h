@@ -1,7 +1,6 @@
 ﻿// stdafx.h: 标准系统包含文件的包含文件，
 // 或是经常使用但不常更改的
 // 项目特定的包含文件
-//
 
 #pragma once
 
@@ -24,14 +23,22 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 
-//pcd文件输入/输出
+//pcl文件输入/输出
 #include <pcl/io/pcd_io.h>
+#include <pcl/io/vtk_lib_io.h>
+
+//vtk网格数据处理
+#include <vtkPLYReader.h>
+#include <vtkOBJReader.h>
+#include <vtkTriangle.h>
+#include <vtkTriangleFilter.h>
+#include <vtkPolyDataMapper.h>
 
 //
 #include <pcl/filters/filter.h>
 
 #include <pcl/visualization/pcl_visualizer.h>
-#include <pcl/visualization/histogram_visualizer.h> //直方图的可视化
+#include <pcl/visualization/histogram_visualizer.h> 
 #include <pcl/visualization/pcl_plotter.h>
 
 //pcl类型名简化
