@@ -30,13 +30,4 @@ int main()
 
 	/*机器人运动接近*/
 
-	/*采集拍照点2 目标场景点云*/
-	view_point = 2;
-  //object_pointcloud = 拍照点2点云;
-
-	//3D视觉算法调用:计算目标位姿
-	pose_estimation_->Algorithm_A(object_pointcloud, view_point, object_pose);
-
-	/*机器人运动抓取*/
-
 }
