@@ -2,6 +2,8 @@
 #include "ipose_estimation.h"
 #include"../camera_data/icamera_data.h"
 #include"../registration_3d/iregistration_3d.h"
+#include"../recognition/irecognition.h"
+#include"../segmentation/isegmentation.h"
 
 #ifdef __DLLEXPORT
 #define __DLL_INTERFACE _declspec(dllexport)    // 导出函数 - 生成dll文件时使用
@@ -15,7 +17,9 @@ class PoseEstimation: public IPoseEstimation
 
 	ICameraData* p_realsense_;
 	ICameraData* p_sensor_;
-	IRegistration3D *p_registration_;
+	IRegistration3D* p_registration_;
+	IRecognition* p_recognition_;
+	ISegmentation* p_seg_sac_;
 
 	bool pose_flag;
 	bool debug_visualization;
@@ -34,7 +38,6 @@ class PoseEstimation: public IPoseEstimation
 	PoseEstimation(char algorithm_version);
 	~PoseEstimation();
 
-	bool LoadObjectModel();
 	bool Algorithm_Test();
 	bool Algorithm_A(PointCloud::Ptr cloud_scene, unsigned char viewpoint, Eigen::Matrix4f pose_object);
 	bool Algorithm_B();

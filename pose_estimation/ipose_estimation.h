@@ -18,7 +18,6 @@ typedef pcl::PointCloud<pcl::VFHSignature308> vfhFeathure;
 class IPoseEstimation
 {
 	public:
-	virtual bool LoadObjectModel() = 0;
 	virtual bool Algorithm_Test() = 0;
 	virtual bool Algorithm_A(PointCloud::Ptr cloud_scene, unsigned char viewpoint, Eigen::Matrix4f pose_object) = 0;
 	virtual bool Algorithm_B() = 0;

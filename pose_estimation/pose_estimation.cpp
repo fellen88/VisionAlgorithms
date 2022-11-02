@@ -19,9 +19,13 @@ PoseEstimation::PoseEstimation(char algorithm_vision) :
 		debug_visualization = false;
 		sensor_offline = true;
 		sample_3d = 0.01;
+
 		case 'A':
 			p_sensor_ = GetCameraData();
 			p_registration_ = GetRegistration3D();
+			p_recognition_ = GetRecognition3DPPF();
+			p_seg_sac_ = GetSegmentationSAC();
+
 
 			json_reader = p_sensor_->ReadJsonFile(JsonFileName, "DebugVisualization", "bool");
 			if (json_reader.success)
@@ -39,31 +43,24 @@ PoseEstimation::PoseEstimation(char algorithm_vision) :
 			if (json_reader.success)
 				ScanFileName = json_reader.json_string;
 
-			if (false == p_sensor_->LoadPointCloud(ModelFileName, object_model))
+			if (false == p_sensor_->LoadPLY(ModelFileName, object_model))
 			{
 				LOG(ERROR) << "LoadModel Error!";
 			}
+			else
+				p_sensor_->ConvertPointsMMtoM(object_model);
+			break;
 		
 		case 'B':
-		default:
-		break;
-	}
+			break;
 
+		default:
+			break;
+	}
 }
 
 PoseEstimation::~PoseEstimation()
 {
-}
-
-bool PoseEstimation::LoadObjectModel()
-{
-	if (false == p_sensor_->LoadPointCloud(ModelFileName, object_model))
-	{
-		LOG(ERROR) << "LoadModel Error!";
-		return false;
-	}
-	LOG(INFO) << "LoadModel Complete!";
-	return true;
 }
 
 bool PoseEstimation::Algorithm_Test()
@@ -94,27 +91,41 @@ bool PoseEstimation::Algorithm_A(PointCloud::Ptr cloud_scene, unsigned char view
 {
 	if (sensor_offline)
 	{
-		if (false == p_sensor_->LoadPointCloud(ScanFileName, object_scan))
+		if (false == p_sensor_->LoadPLY(ScanFileName, object_scan))
 		{
 			LOG(ERROR) << "LoadPointCloud Error!";
+			return false;
 		}
+		else
+			p_sensor_->ConvertPointsMMtoM(object_scan);
 	}
 	else
 	{
 		if (cloud_scene->size() < 1000)
 		{
 			LOG(ERROR) << "input pointcloud size < 1000";
+			return false;
 		}
 		else
+		{
 			object_scan = cloud_scene;
+			p_sensor_->ConvertPointsMMtoM(object_scan);
+		}
 	}
 
 	if (1 == view_point)
 	{
+		LOG(INFO) << "start algorithm at viewpoint 1";
 		if (debug_visualization)
 		{
 			p_sensor_->ShowPointCloud(object_model, "object_model");
 			p_sensor_->ShowPointCloud(object_scan, "object_scan");
+		}
+
+	  p_seg_sac_->segment(object_scan);
+		if (debug_visualization)
+		{
+			p_sensor_->ShowPointCloud(object_scan, "object_seg");
 		}
 		p_registration_->ComputeTransformation(object_model, object_scan, sample_3d, debug_visualization);
 		object_transform = p_registration_->GetTransformation();
@@ -122,10 +133,12 @@ bool PoseEstimation::Algorithm_A(PointCloud::Ptr cloud_scene, unsigned char view
 	}
 	else if (2 == view_point)
 	{
+		LOG(INFO) << "start algorithm at viewpoint 2";
 
 	}
 	else
 	{
+		LOG(ERROR) << "viewpoint error !";
 		return false;
 	}
 	return true;

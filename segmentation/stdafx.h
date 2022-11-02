@@ -1,6 +1,7 @@
 ﻿// stdafx.h: 标准系统包含文件的包含文件，
 // 或是经常使用但不常更改的
 // 项目特定的包含文件
+//
 
 #pragma once
 
@@ -10,14 +11,9 @@
 // Windows 头文件
 #include <windows.h>
 
-// 在此处引用程序需要的其他标头
-
 // Google glog
 #include "glog/logging.h"
-
-// OpenCV
-#include "opencv2/opencv.hpp"
-
+#pragma comment(lib,"glog.lib")
 //PCL
 //点/点云
 #include <pcl/point_types.h>
@@ -27,17 +23,15 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
 
-//pcl滤波
-#include <pcl/filters/filter.h>
+//pcl segmentation
+#include <pcl/segmentation/sac_segmentation.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
+#include <pcl/filters/extract_indices.h>
 
-//pcl可视化
-#include <pcl/visualization/pcl_visualizer.h>
-#include <pcl/visualization/histogram_visualizer.h> 
-#include <pcl/visualization/pcl_plotter.h>
-
-//pcl类型名简化
 typedef pcl::PointXYZ PointT;
 typedef pcl::PointCloud<PointT> PointCloud;
 typedef pcl::PointNormal PointNormalT;
 typedef pcl::PointCloud<PointNormalT> PointCloudWithNormals;
 typedef pcl::PointCloud<pcl::Normal> pointnormal;
+

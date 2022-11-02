@@ -5,16 +5,15 @@
 
 #pragma once
 
+#include "targetver.h"
+
 #define WIN32_LEAN_AND_MEAN             // 从 Windows 头文件中排除极少使用的内容
 // Windows 头文件
 #include <windows.h>
-
-// 在此处引用程序需要的其他标头
-
 // Google glog
 #include "glog/logging.h"
 #pragma comment(lib,"glog.lib")
-
+// pcl
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/ppf.h>
 #include <pcl/filters/extract_indices.h>
@@ -25,4 +24,5 @@
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/visualization/pcl_visualizer.h>
+
 
