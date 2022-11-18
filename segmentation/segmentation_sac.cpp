@@ -3,8 +3,14 @@
 #include "stdafx.h"
 #include "segmentation_sac.h"
 
-SegmentationSAC::SegmentationSAC()
+SegmentationSAC::SegmentationSAC(std::string config_path)
 {
+	p_seg_cameradata_ = GetCameraData();
+	JsonOutType json_reader;
+	distance_threshold = 0.005;
+	json_reader = p_seg_cameradata_->ReadJsonFile(config_path, "DistanceThreshold", "float");
+	if (json_reader.success)
+		distance_threshold = json_reader.json_float;
 }
 
 SegmentationSAC::~SegmentationSAC()
@@ -19,7 +25,8 @@ bool SegmentationSAC::segment(PointCloud::Ptr cloud_scene)
 	seg.setModelType(pcl::SACMODEL_PLANE);
 	seg.setMethodType(pcl::SAC_RANSAC);
 	seg.setMaxIterations(1000);
-	seg.setDistanceThreshold(0.005);
+	//TODO:CONFIG
+	seg.setDistanceThreshold(distance_threshold);
 	extract.setNegative(true);
 	pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients());
 	pcl::PointIndices::Ptr inliers(new pcl::PointIndices());
@@ -35,12 +42,11 @@ bool SegmentationSAC::segment(PointCloud::Ptr cloud_scene)
 		extract.setIndices(inliers);
 		extract.filter(*cloud_scene);
 	}
-
 	return true;
 }
 
-ISegmentation* GetSegmentationSAC()
+ISegmentation* GetSegmentationSAC(std::string config_path)
 {
-	ISegmentation* p_isegmentation_ = new SegmentationSAC();
+	ISegmentation* p_isegmentation_ = new SegmentationSAC(config_path);
 	return p_isegmentation_;
 }

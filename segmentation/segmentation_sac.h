@@ -13,9 +13,11 @@ class SegmentationSAC : public ISegmentation
 {
 public:
 
-	SegmentationSAC();
+	SegmentationSAC(std::string config_path);
 	~SegmentationSAC();
 	
+	ICameraData* p_seg_cameradata_;
+	float distance_threshold;
 	bool segment(PointCloud::Ptr cloud_scene);
 
 };

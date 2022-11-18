@@ -17,8 +17,3 @@ bool Recognition3D::Compute()
 	return false;
 }
 
-IRecognition* GetRecognition3D()
-{
-	IRecognition* p_irecognition = new Recognition3D();
-	return p_irecognition;
-}

@@ -9,7 +9,7 @@
 
 CameraData::CameraData()
 {
-	LOG(INFO) << "CameraData::CameraData() ";
+	//LOG(INFO) << "CameraData::CameraData() ";
 	
 	pcolorBuffer = nullptr;                                   // 共享内存指针
 	pdepthBuffer = nullptr;                                   // 共享内存指针
@@ -471,6 +471,68 @@ void CameraData::ConvertPointsMMtoM(PointCloud::Ptr pointcloud)
 		pointcloud->points[i].y = pointcloud->points[i].y / 1000;
 		pointcloud->points[i].z = pointcloud->points[i].z / 1000;
 	}
+}
+void CameraData::Matrix2EulerAngle(Eigen::Matrix4f& matrix, Eigen::Vector3f& euler_angle)
+{
+	Eigen::Matrix3f Rotation_matrix;
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+		{
+			Rotation_matrix(i, j) = matrix(i, j);
+		}
+	euler_angle = Rotation_matrix.eulerAngles(2, 1, 0);//顺序Z, Y, X
+}
+
+void CameraData::VectorPointstoPCL(std::vector<double> points_normals, PointCloud::Ptr pointcloud, PointCloudWithNormals::Ptr pointcloud_normals)
+{
+	pointcloud->width = points_normals.size() / 6;
+	pointcloud->height = 1;
+	pointcloud->is_dense = false;
+	pointcloud->points.resize(points_normals.size() / 6);
+	//pointcloud_normals->width = points_normals.size() / 6;
+	//pointcloud_normals->height = 1;
+	//pointcloud_normals->is_dense = false;
+	//pointcloud_normals->resize(points_normals.size()/6);
+
+	LOG(INFO) << "PointCloud Size: " << pointcloud->size();
+	LOG(INFO) << "Points_Normals Size: "<< points_normals.size();
+
+	for (size_t i = 0; i < pointcloud->size(); i++)
+	{
+		pointcloud->points[i].x = points_normals[i*6]/1000;
+		pointcloud->points[i].y = points_normals[i*6 + 1]/1000;
+		pointcloud->points[i].z = points_normals[i*6 + 2]/1000;
+	
+	/*	pointcloud_normals->points[i].x = points_normals[j]/1000;
+		pointcloud_normals->points[i].y = points_normals[j + 1]/1000;
+		pointcloud_normals->points[i].z = points_normals[j + 2]/1000;
+		pointcloud_normals->points[i].normal_x = points_normals[j + 3];
+		pointcloud_normals->points[i].normal_y = points_normals[j + 4];
+		pointcloud_normals->points[i].normal_z = points_normals[j + 5];*/
+	}
+
+	LOG(INFO) << "Vector to PCL OK ";
+}
+
+void CameraData::DownSample(const PointCloud::Ptr cloud, const Eigen::Vector4f subsampling_leaf_size)
+{
+	pcl::VoxelGrid<pcl::PointXYZ> subsampling_filter;
+	subsampling_filter.setInputCloud(cloud);
+	subsampling_filter.setLeafSize(subsampling_leaf_size);
+	subsampling_filter.filter(*cloud);
+}
+
+void CameraData::CalculateNormals(const PointCloud::Ptr cloud, const float search_radius, PointCloudWithNormals::Ptr cloud_normals)
+{
+	PointNormals::Ptr normals(new PointNormals());
+	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normal_estimation_filter;
+	normal_estimation_filter.setInputCloud(cloud);
+	pcl::search::KdTree<pcl::PointXYZ>::Ptr search_tree(new pcl::search::KdTree<pcl::PointXYZ>);
+	normal_estimation_filter.setSearchMethod(search_tree);
+	normal_estimation_filter.setRadiusSearch(search_radius);
+	normal_estimation_filter.compute(*normals);
+
+	concatenateFields(*cloud, *normals, *cloud_normals);
 }
 
 ICameraData* GetCameraData()

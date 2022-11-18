@@ -33,13 +33,21 @@ class PoseEstimation: public IPoseEstimation
 	std::string object_label;
 	PointCloud::Ptr object_model;
 	PointCloud::Ptr object_scan;
+	PointCloudWithNormals::Ptr object_scene_normal;
 	Eigen::Matrix4f object_transform;
+	Eigen::Vector3f object_eulerangle;
+
+	std::string seg_sac_config;
+	std::string ppf_config;
+	std::vector<PointCloud::Ptr> cloud_models;
 
 	PoseEstimation(char algorithm_version);
 	~PoseEstimation();
 
+	void SetParameters_A();
 	bool Algorithm_Test();
-	bool Algorithm_A(PointCloud::Ptr cloud_scene, unsigned char viewpoint, Eigen::Matrix4f pose_object);
-	bool Algorithm_B();
+	bool Algorithm_A(std::vector<double> object_points, unsigned char viewpoint, std::vector<double>& object_pose);
+	void SetParameters_B();
+	bool Algorithm_B(std::vector<double> object_points, unsigned char view_point, std::vector<double>& object_pose);
 	bool Algorithm_C();
 };

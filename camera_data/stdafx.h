@@ -29,6 +29,10 @@
 
 //pcl滤波
 #include <pcl/filters/filter.h>
+#include <pcl/filters/voxel_grid.h>
+
+//pcl法向量
+#include <pcl/features/normal_3d.h>
 
 //pcl可视化
 #include <pcl/visualization/pcl_visualizer.h>
@@ -40,4 +44,4 @@ typedef pcl::PointXYZ PointT;
 typedef pcl::PointCloud<PointT> PointCloud;
 typedef pcl::PointNormal PointNormalT;
 typedef pcl::PointCloud<PointNormalT> PointCloudWithNormals;
-typedef pcl::PointCloud<pcl::Normal> pointnormal;
+typedef pcl::PointCloud<pcl::Normal> PointNormals;

@@ -31,7 +31,6 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 			google::SetStderrLogging(google::GLOG_INFO);
 			google::SetLogFilenameExtension("log_");
 			google::InstallFailureSignalHandler();
-		
 		  google::InstallFailureWriter(&FatalMessageDump);
 			LOG(INFO) << "camera_data dll attach ";
 			break;

@@ -36,6 +36,10 @@ class ICameraData
  	virtual JsonOutType ReadJsonFile(std::string file_name, std::string key_name, const char* out_type) = 0;
 	virtual JsonOutType ReadJsonString(std::string json_string, std::string key_name, const char* out_type) = 0;
 	virtual void ConvertPointsMMtoM(PointCloud::Ptr pointcloud) = 0;
+	virtual void Matrix2EulerAngle(Eigen::Matrix4f& matrix, Eigen::Vector3f& eulerangle) = 0;
+	virtual void VectorPointstoPCL(std::vector<double> points_normals, PointCloud::Ptr pointcloud, PointCloudWithNormals::Ptr pointcloud_normals) = 0;
+	virtual void DownSample(const PointCloud::Ptr cloud, const Eigen::Vector4f subsampling_leaf_size) = 0;
+	virtual void CalculateNormals(const PointCloud::Ptr cloud, const float search_radius, PointCloudWithNormals::Ptr cloud_normal) = 0;
 };
 
 extern "C" __declspec(dllexport) ICameraData* APIENTRY GetCameraData();

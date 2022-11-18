@@ -54,6 +54,10 @@ class CameraData :public ICameraData
 	JsonOutType ReadJsonString(std::string json_string, std::string key_name, const char* out_type);
 	bool DepthtoPointCloud(cv::Mat Depth, cv::Mat Mask, PointCloud::Ptr pointcloud);
 	void ConvertPointsMMtoM(PointCloud::Ptr pointcloud);
+	void Matrix2EulerAngle(Eigen::Matrix4f& matrix, Eigen::Vector3f& eulerangle);
+	void VectorPointstoPCL(std::vector<double> points_normals, PointCloud::Ptr pointcloud, PointCloudWithNormals::Ptr pointcloud_normals);
+	void DownSample(const PointCloud::Ptr cloud, const Eigen::Vector4f subsampling_leaf_size);
+	void CalculateNormals(const PointCloud::Ptr cloud, const float search_radius, PointCloudWithNormals::Ptr cloud_normal);
 };
 
 
