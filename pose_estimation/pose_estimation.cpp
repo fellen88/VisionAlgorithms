@@ -36,6 +36,7 @@ PoseEstimation::PoseEstimation(char algorithm_vision) :
 		case 'B':
 			p_sensor_ = GetCameraData();
 			SetParameters_B();
+			p_seg_sac_ = GetSegmentationSAC(seg_sac_config);
 			p_recognition_ = GetRecognition3DPPF(ppf_config);
 			//load ply model
 			if (false == p_sensor_->LoadPLY(ModelFileName, object_model))
@@ -79,7 +80,7 @@ void PoseEstimation::SetParameters_A()
 	if (json_reader.success)
 		ScanFileName = json_reader.json_string;
 
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegmSAC_Config", "string");
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegSAC_Config", "string");
 	if (json_reader.success)
 		seg_sac_config = json_reader.json_string;
 }
@@ -176,6 +177,9 @@ void PoseEstimation::SetParameters_B()
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "PPF_Config", "string");
 	if (json_reader.success)
 		ppf_config = json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegmSAC_Config", "string");
+	if (json_reader.success)
+		seg_sac_config = json_reader.json_string;
 }
 
 bool PoseEstimation::Algorithm_B(std::vector<double> object_points, unsigned char view_point, std::vector<double>& object_pose)
@@ -211,6 +215,7 @@ bool PoseEstimation::Algorithm_B(std::vector<double> object_points, unsigned cha
 			p_sensor_->ShowPointCloud(object_model, "object_model");
 			p_sensor_->ShowPointCloud(object_scan, "object_scan");
 		}
+	  p_seg_sac_->segment(object_scan);
 		p_recognition_->Compute(object_scan,cloud_models);
 		return true;
 	}

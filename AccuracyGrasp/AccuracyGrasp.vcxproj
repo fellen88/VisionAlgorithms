@@ -23,7 +23,7 @@
     <ProjectGuid>{8CFF46E9-1B25-4001-99C7-33E003F5F016}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>AccuracyGrasp</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
