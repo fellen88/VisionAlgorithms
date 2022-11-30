@@ -537,6 +537,6 @@ void CameraData::CalculateNormals(const PointCloud::Ptr cloud, const float searc
 
 ICameraData* GetCameraData()
 {
-	ICameraData* p_iregistration = new CameraData();
-	return p_iregistration;
+	ICameraData* p_icamera_data_ = new CameraData();
+	return p_icamera_data_;
 }

@@ -8,7 +8,7 @@ class ISegmentation
 	virtual bool segment(PointCloud::Ptr cloud_scene) = 0;
 };
 
-extern "C" __declspec(dllexport) ISegmentation* APIENTRY GetSegmentationSAC(std::string config_path);
+extern "C" __declspec(dllexport) ISegmentation* APIENTRY GetSegmentationSAC(const std::string config_path);
 #endif
 
 

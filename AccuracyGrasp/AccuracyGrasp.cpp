@@ -45,5 +45,6 @@ int main()
 		else
 			std::cout << "input error !" << std::endl;
 	}
+	delete pose_estimation_;
 }
 

@@ -15,7 +15,6 @@ class PoseEstimation: public IPoseEstimation
 {
 	public:
 
-	ICameraData* p_realsense_;
 	ICameraData* p_sensor_;
 	IRegistration3D* p_registration_;
 	IRecognition* p_recognition_;
@@ -40,6 +39,10 @@ class PoseEstimation: public IPoseEstimation
 	std::string seg_sac_config;
 	std::string ppf_config;
 	std::vector<PointCloud::Ptr> cloud_models;
+	
+	std::string ModelFileName;
+  std::string ScanFileName;
+
 
 	PoseEstimation(char algorithm_version);
 	~PoseEstimation();

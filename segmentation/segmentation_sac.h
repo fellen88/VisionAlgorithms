@@ -13,7 +13,7 @@ class SegmentationSAC : public ISegmentation
 {
 public:
 
-	SegmentationSAC(std::string config_path);
+	SegmentationSAC(const std::string config_path);
 	~SegmentationSAC();
 	
 	ICameraData* p_seg_cameradata_;

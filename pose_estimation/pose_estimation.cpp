@@ -1,11 +1,7 @@
 ﻿// pose_estimation.cpp
 //
 #include "stdafx.h"
-#define __DLLEXPORT
 #include "pose_estimation.h"
-
-std::string ModelFileName = "";
-std::string ScanFileName = "";
 
 PoseEstimation::PoseEstimation(char algorithm_vision) :
 	object_model(new pcl::PointCloud<pcl::PointXYZ>),
@@ -16,6 +12,8 @@ PoseEstimation::PoseEstimation(char algorithm_vision) :
 		debug_visualization = false;
 		sensor_offline = true;
 		sample_3d = 0.01;
+		ModelFileName = "Model_3D//model.ply";
+		ScanFileName = "PointCloud//scene.ply";
 
 		case 'A':
 			p_sensor_ = GetCameraData();
@@ -58,6 +56,11 @@ PoseEstimation::PoseEstimation(char algorithm_vision) :
 
 PoseEstimation::~PoseEstimation()
 {
+	if (p_sensor_ != nullptr)
+	{
+	  delete p_sensor_;
+	}
+	//TODO:DELETE
 }
 
 void PoseEstimation::SetParameters_A()
@@ -109,15 +112,15 @@ bool PoseEstimation::Algorithm_A(std::vector<double> object_points, unsigned cha
 			p_sensor_->VectorPointstoPCL(object_points, object_scan, object_scene_normal);
 		}
 	}
+	if (debug_visualization)
+	{
+		p_sensor_->ShowPointCloud(object_model, "object_model");
+		p_sensor_->ShowPointCloud(object_scan, "object_scan");
+	}
 
 	if (1 == view_point)
 	{
 		LOG(INFO) << "start algorithm at viewpoint 1";
-		if (debug_visualization)
-		{
-			p_sensor_->ShowPointCloud(object_model, "object_model");
-			p_sensor_->ShowPointCloud(object_scan, "object_scan");
-		}
 
 	  p_seg_sac_->segment(object_scan);
 		if (debug_visualization)
@@ -136,10 +139,10 @@ bool PoseEstimation::Algorithm_A(std::vector<double> object_points, unsigned cha
 		object_pose.push_back(object_eulerangle[2]);
 		object_pose.push_back(object_eulerangle[1]);
 		object_pose.push_back(object_eulerangle[0]);
-		for (auto it = object_pose.begin(); it != object_pose.end(); ++it) {
+	/*	for (auto it = object_pose.begin(); it != object_pose.end(); ++it) {
 			std::cout << *it << " ";
 		}
-		std::cout << std::endl;
+		std::cout << std::endl;*/
 	}
 	else if (2 == view_point)
 	{
@@ -241,8 +244,8 @@ bool PoseEstimation::Algorithm_Test()
 
 	if (debug_visualization)
 	{
-		p_realsense_->ShowPointCloud(object_model, "object_model");
-		p_realsense_->ShowPointCloud(object_scan, "object_scan");
+		p_sensor_->ShowPointCloud(object_model, "object_model");
+		p_sensor_->ShowPointCloud(object_scan, "object_scan");
 	}
 
 	p_registration_->ComputeTransformation(object_model, object_scan, sample_3d, debug_visualization);

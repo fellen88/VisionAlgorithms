@@ -6,7 +6,9 @@
 class IPoseEstimation
 {
 	public:
+	virtual ~IPoseEstimation() = 0;
 	virtual bool Algorithm_Test() = 0;
+	//TODO:interface as one
 	virtual bool Algorithm_A(std::vector<double> object_points, unsigned char view_point, std::vector<double>& object_pose) = 0;
 	virtual bool Algorithm_B(std::vector<double> object_points, unsigned char view_point, std::vector<double>& object_pose) = 0;
 	virtual bool Algorithm_C() = 0;
