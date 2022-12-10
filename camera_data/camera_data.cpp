@@ -189,7 +189,7 @@ void CameraData::ShowImage(const cv::Mat image, std::string window_name)
 	}
 }
 
-JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name, const char* out_type)
+JsonOutType CameraData::ReadJsonFile(const std::string file_name, const std::string key_name, const char* out_type)
 {
 	JsonOutType json_out_type;
 	Json::Value json_object;
@@ -263,7 +263,7 @@ JsonOutType CameraData::ReadJsonFile(std::string file_name, std::string key_name
 	return json_out_type;
 }
 
-JsonOutType CameraData::ReadJsonString(std::string json_string, std::string key_name, const char * out_type)
+JsonOutType CameraData::ReadJsonString(const std::string json_string, const std::string key_name, const char * out_type)
 {
 	JsonOutType json_out_type;
 	Json::Value json_object;
@@ -322,7 +322,7 @@ JsonOutType CameraData::ReadJsonString(std::string json_string, std::string key_
 	return json_out_type;
 }
  
-bool CameraData::SetParameters(std::string JsonFilePath)
+bool CameraData::SetParameters(const std::string JsonFilePath)
 {
 	JsonOutType json_out_type = { false, 0, 0.0, 0.0, false,"" };
 	json_out_type = ReadJsonFile(JsonFilePath, "ImageHeight", "int");

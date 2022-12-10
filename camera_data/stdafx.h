@@ -10,16 +10,13 @@
 // Windows 头文件
 #include <windows.h>
 
-// 在此处引用程序需要的其他标头
-
 // Google glog
 #include "glog/logging.h"
 
 // OpenCV
 #include "opencv2/opencv.hpp"
 
-//PCL
-//点/点云
+//PCL 点/点云
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 

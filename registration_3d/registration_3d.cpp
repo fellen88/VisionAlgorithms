@@ -148,7 +148,7 @@ void Registration3D::LM_ICP(const PointCloud::Ptr cloud_src, const PointCloud::P
 	PointCloudWithNormals::Ptr reg_result = points_with_normals_src; //用于存储结果（坐标+法向量）
 
 	int NumIteration = 0;
-	for (int i = 0; i < 200; ++i) //迭代
+	for (int i = 0; i < 100; ++i) //迭代
 	{
 		//pcl::ScopeTime scope_time("ICP Iteration"); 
 		//PCL_INFO ("Iteration Nr. %d.\n", i); //命令行显示迭代的次数

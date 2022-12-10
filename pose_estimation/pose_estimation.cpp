@@ -1,6 +1,8 @@
 ﻿// pose_estimation.cpp
 //
 #include "stdafx.h"
+
+#define __POSE_ESTIMATION_EXPORT
 #include "pose_estimation.h"
 
 PoseEstimation::PoseEstimation(char algorithm_vision) :
@@ -20,6 +22,7 @@ PoseEstimation::PoseEstimation(char algorithm_vision) :
 			SetParameters_A();
 			p_registration_ = GetRegistration3D();
 			p_seg_sac_ = GetSegmentationSAC(seg_sac_config);
+			p_recognition_ = GetRecognition3DPPF(ppf_config);
 
 			//load ply model
 			if (false == p_sensor_->LoadPLY(ModelFileName, object_model))
@@ -29,6 +32,8 @@ PoseEstimation::PoseEstimation(char algorithm_vision) :
 			else
 				p_sensor_->ConvertPointsMMtoM(object_model);
 
+			cloud_models.push_back(object_model);
+			p_recognition_->TrainPPFModel(cloud_models);
 			break;
 		
 		case 'B':
@@ -46,7 +51,6 @@ PoseEstimation::PoseEstimation(char algorithm_vision) :
 
 			cloud_models.push_back(object_model);
 			p_recognition_->TrainPPFModel(cloud_models);
-
 			break;
 
 		default:
@@ -65,7 +69,7 @@ PoseEstimation::~PoseEstimation()
 
 void PoseEstimation::SetParameters_A()
 {
-  std::string JsonFileName = "Config//Algorithm_A//algorithm_a.json";
+  const std::string JsonFileName = "Config//Algorithm_A//algorithm_a.json";
 	JsonOutType json_reader;
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "DebugVisualization", "bool");
 	if (json_reader.success)
@@ -86,9 +90,12 @@ void PoseEstimation::SetParameters_A()
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegSAC_Config", "string");
 	if (json_reader.success)
 		seg_sac_config = json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "PPF_Config", "string");
+	if (json_reader.success)
+		ppf_config = json_reader.json_string;
 }
 
-bool PoseEstimation::Algorithm_A(std::vector<double> object_points, unsigned char view_point, std::vector<double>& object_pose)
+bool PoseEstimation::Algorithm_A(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>& object_pose)
 {
 	if (sensor_offline)
 	{
@@ -98,6 +105,7 @@ bool PoseEstimation::Algorithm_A(std::vector<double> object_points, unsigned cha
 			return false;
 		}
 		else
+			LOG(INFO) << "Load PLY on sensor off mode";
 			p_sensor_->ConvertPointsMMtoM(object_scan);
 	}
 	else
@@ -109,7 +117,9 @@ bool PoseEstimation::Algorithm_A(std::vector<double> object_points, unsigned cha
 		}
 		else
 		{
-			p_sensor_->VectorPointstoPCL(object_points, object_scan, object_scene_normal);
+			LOG(INFO) << "Read pointcloud data on sensor on mode";
+			pcl::copyPointCloud(object_points, *object_scan);
+			p_sensor_->ConvertPointsMMtoM(object_scan);
 		}
 	}
 	if (debug_visualization)
@@ -129,7 +139,7 @@ bool PoseEstimation::Algorithm_A(std::vector<double> object_points, unsigned cha
 		}
 		p_registration_->ComputeTransformation(object_model, object_scan, sample_3d, debug_visualization);
 		object_transform = p_registration_->GetTransformation();
-		//cout << object_transform << endl;
+		cout << object_transform << endl;
 		p_sensor_->Matrix2EulerAngle(object_transform, object_eulerangle);
 
 		object_pose.clear();
@@ -159,7 +169,7 @@ bool PoseEstimation::Algorithm_A(std::vector<double> object_points, unsigned cha
 
 void PoseEstimation::SetParameters_B()
 {
-  std::string JsonFileName = "Config//Algorithm_B//algorithm_b.json";
+  const std::string JsonFileName = "Config//Algorithm_B//algorithm_b.json";
 	JsonOutType json_reader;
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "DebugVisualization", "bool");
 	if (json_reader.success)
@@ -223,35 +233,6 @@ bool PoseEstimation::Algorithm_B(std::vector<double> object_points, unsigned cha
 		return true;
 	}
 	return false;
-}
-
-bool PoseEstimation::Algorithm_C()
-{
-	return false;
-}
-
-bool PoseEstimation::Algorithm_Test()
-{
-
-	if (false == p_sensor_->LoadPointCloud(ModelFileName, object_model))
-	{
-		LOG(ERROR) << "LoadModel Error!";
-	}
-	if (false == p_sensor_->LoadPointCloud(ScanFileName, object_scan))
-	{
-		LOG(ERROR) << "LoadPointCloud Error!";
-	}
-
-	if (debug_visualization)
-	{
-		p_sensor_->ShowPointCloud(object_model, "object_model");
-		p_sensor_->ShowPointCloud(object_scan, "object_scan");
-	}
-
-	p_registration_->ComputeTransformation(object_model, object_scan, sample_3d, debug_visualization);
-	object_transform = p_registration_->GetTransformation();
-	cout << object_transform << endl;
-	return true;
 }
 
 IPoseEstimation * GetInstance(char algothrim_version)

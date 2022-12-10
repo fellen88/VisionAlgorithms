@@ -11,6 +11,10 @@ SegmentationSAC::SegmentationSAC(const std::string config_path)
 	json_reader = p_seg_cameradata_->ReadJsonFile(config_path, "DistanceThreshold", "float");
 	if (json_reader.success)
 		distance_threshold = json_reader.json_float;
+	json_reader = p_seg_cameradata_->ReadJsonFile(config_path, "Sample3D", "float");
+	if (json_reader.success)
+		sample_3d = json_reader.json_float;
+	subsampling_leaf_size = Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f);
 }
 
 SegmentationSAC::~SegmentationSAC()
@@ -23,6 +27,8 @@ SegmentationSAC::~SegmentationSAC()
 
 bool SegmentationSAC::segment(PointCloud::Ptr cloud_scene)
 {
+	//TODO:TEST
+	p_seg_cameradata_->DownSample(cloud_scene, subsampling_leaf_size);
 	pcl::SACSegmentation<pcl::PointXYZ> seg;
 	pcl::ExtractIndices<pcl::PointXYZ> extract;
 	seg.setOptimizeCoefficients(true);
@@ -38,7 +44,7 @@ bool SegmentationSAC::segment(PointCloud::Ptr cloud_scene)
 		seg.setInputCloud(cloud_scene);
 		seg.segment(*inliers, *coefficients);
 		PCL_INFO("Plane inliers: %zu\n", static_cast<std::size_t>(inliers->indices.size()));
-		if (inliers->indices.size() < 50000)
+		if (inliers->indices.size() < 5000)
 			break;
 
 		extract.setInputCloud(cloud_scene);

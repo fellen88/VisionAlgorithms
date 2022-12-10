@@ -91,7 +91,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-    <TargetName>grasp_$(ProjectName)</TargetName>
+    <TargetName>vision_$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -169,7 +169,7 @@
 									  C:\Program Files\PCL 1.9.1\3rdParty\FLANN\lib;
 									  C:\Program Files\PCL 1.9.1\3rdParty\Qhull\lib;
 									  C:\Program Files\PCL 1.9.1\3rdParty\VTK\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>grasp_camera_data.lib;grasp_registration_3d.lib;grasp_recognition.lib;grasp_segmentation.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vision_camera_data.lib;vision_registration_3d.lib;vision_recognition.lib;vision_segmentation.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

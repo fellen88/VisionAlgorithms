@@ -38,5 +38,8 @@
     <ClCompile Include="segmentation_sac.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="isegmentation.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
