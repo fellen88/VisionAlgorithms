@@ -133,10 +133,10 @@ void Registration3D::LM_ICP(const PointCloud::Ptr cloud_src, const PointCloud::P
 
 	//创建非线性ICP对象 并设置参数
 	pcl::IterativeClosestPointNonLinear<PointNormalT, PointNormalT> reg; //创建非线性ICP对象（ICP变体，使用Levenberg-Marquardt最优化）
-	reg.setTransformationEpsilon(1e-6); //设置容许的最大误差（迭代最优化）
+	reg.setTransformationEpsilon(0.00001); //设置容许的最大误差（迭代最优化）
 	//reg.setTransformationEpsilon (0.01); //设置容许的最大误差（迭代最优化）
 	//***** 注意：根据自己数据库的大小调节该参数
-	reg.setMaxCorrespondenceDistance(2);  //设置对应点之间的最大距离（2m）,在配准过程中，忽略大于该阈值的点  reg.setPointRepresentation (boost::make_shared<const MyPointRepresentation> (point_representation)); //设置点表达
+	reg.setMaxCorrespondenceDistance(0.050);  //设置对应点之间的最大距离（2m）,在配准过程中，忽略大于该阈值的点  reg.setPointRepresentation (boost::make_shared<const MyPointRepresentation> (point_representation)); //设置点表达
 	//设置源点云和目标点云
 	reg.setInputSource(points_with_normals_src); //版本不符合，使用下面的语句
 	//reg.setInputCloud (points_with_normals_src); //设置输入点云（待变换的点云）
@@ -150,26 +150,25 @@ void Registration3D::LM_ICP(const PointCloud::Ptr cloud_src, const PointCloud::P
 	int NumIteration = 0;
 	for (int i = 0; i < 100; ++i) //迭代
 	{
-		//pcl::ScopeTime scope_time("ICP Iteration"); 
 		//PCL_INFO ("Iteration Nr. %d.\n", i); //命令行显示迭代的次数
-		//保存点云，用于可视化
 		points_with_normals_src = reg_result; //
 		//估计
-		reg.setInputSource(points_with_normals_src);
-		//reg.setInputCloud (points_with_normals_src); //重新设置输入点云（待变换的点云），因为经过上一次迭代，已经发生变换了
+		reg.setInputCloud (points_with_normals_src); //重新设置输入点云（待变换的点云），因为经过上一次迭代，已经发生变换了
 		reg.align(*reg_result); //对齐（配准）两个点云
 
 		Ti = reg.getFinalTransformation() * Ti; //累积（每次迭代的）变换矩阵
 		//如果这次变换和上次变换的误差比阈值小，通过减小最大的对应点距离的方法来进一步细化
 		// if (fabs ((reg.getLastIncrementalTransformation () - prev).sum ()) < reg.getTransformationEpsilon ())
 		//    break;
-
-					//如果这次变换和上次变换的误差比阈值小，通过减小最大的对应点距离的方法来进一步细化
-		if (fabs((reg.getLastIncrementalTransformation() - prev).sum()) < reg.getTransformationEpsilon())
-			reg.setMaxCorrespondenceDistance(reg.getMaxCorrespondenceDistance() - 0.001); //减小对应点之间的最大距离（上面设置过）
+		//如果这次变换和上次变换的误差比阈值小，通过减小最大的对应点距离的方法来进一步细化
+		if (fabs((double)(reg.getLastIncrementalTransformation() - prev).sum()) < reg.getTransformationEpsilon())
+			reg.setMaxCorrespondenceDistance(reg.getMaxCorrespondenceDistance() - 0.000001); //减小对应点之间的最大距离（上面设置过）
+		if (fabs((reg.getLastIncrementalTransformation() - prev).sum()) < 0.000001)
+			break;
+	// std::cout<<"getLastIncrementalTransformation"<<reg.getLastIncrementalTransformation ()<<endl;
+	 //std::cout<<"prev"<<prev<<endl;
+	 //std::cout<<"getLastIncrementalTransformation.sum: "<<fabs((reg.getLastIncrementalTransformation() - prev).sum())<<endl;
 		prev = reg.getLastIncrementalTransformation(); //上一次变换的误差
-	 //std::cout<<"getLastIncrementalTransformation"<<reg.getLastIncrementalTransformation ()<<endl;
-	 //std::cout<<"getLastIncrementalTransformation.sum: "<<reg.getLastIncrementalTransformation ().sum()<<endl;
 		NumIteration = i;
 		//显示当前配准状态，在窗口的右视区，简单的显示源点云和目标点云
 		/*if(true == DEBUG_VISUALIZER)
@@ -178,7 +177,7 @@ void Registration3D::LM_ICP(const PointCloud::Ptr cloud_src, const PointCloud::P
 		}*/
 	}
 
-	//PCL_INFO ("Iteration Nr. %d.\n", NumIteration); //命令行显示迭代的次数
+	PCL_INFO ("Iteration Nr. %d.\n", NumIteration); //命令行显示迭代的次数
 	targetToSource = Ti.inverse(); //计算从目标点云到源点云的变换矩阵
 	pcl::transformPointCloud(*cloud_tgt, *output, targetToSource); //将目标点云 变换回到 源点云帧
 
