@@ -33,12 +33,17 @@ Recognition3DPPF::~Recognition3DPPF()
 }
 
 bool Recognition3DPPF::Compute(const PointCloud::Ptr cloud_scene,
-	const std::vector<PointCloud::Ptr> cloud_models)
+	                             const std::vector<PointCloud::Ptr> cloud_models)
 {
 	PointCloudWithNormals::Ptr cloud_scene_normals(new PointCloudWithNormals());
+	PointCloud::Ptr cloud_scene_temp(new PointCloud());
+	PointCloud::Ptr cloud_model_temp(new PointCloud());
 	
-	p_dataprocess_->DownSample(cloud_scene, subsampling_leaf_size);
-	p_dataprocess_->CalculateNormals(cloud_scene, search_radius, cloud_scene_normals);
+	pcl::copyPointCloud(*cloud_scene, *cloud_scene_temp);
+	pcl::copyPointCloud(*cloud_models[0], *cloud_model_temp);
+	
+	p_dataprocess_->DownSample(cloud_scene_temp, subsampling_leaf_size);
+	p_dataprocess_->CalculateNormals(cloud_scene_temp, search_radius, cloud_scene_normals);
 
 	PCL_INFO("Registering PPF models to scene ...\n");
 	for (std::size_t model_i = 0; model_i < cloud_models.size(); ++model_i)
@@ -65,13 +70,13 @@ bool Recognition3DPPF::Compute(const PointCloud::Ptr cloud_scene,
 
 		PointCloud::Ptr cloud_output(new PointCloud());
 		pcl::transformPointCloud(
-			*cloud_models[model_i], *cloud_output, final_transformation);
+			*cloud_model_temp, *cloud_output, final_transformation);
 
 		const std::string mode_name = "model_" + std::to_string(model_i);
 		pcl::visualization::PCLVisualizer viewer("PPF Object Recognition - Results");
 		viewer.setBackgroundColor(0, 0, 0);
 		pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZ> random_color(cloud_output->makeShared());
-		viewer.addPointCloud(cloud_scene);
+		viewer.addPointCloud(cloud_scene_temp);
 		viewer.addPointCloud(cloud_output, random_color, mode_name);
 		viewer.spin();
 		PCL_INFO("Showing model %s\n", mode_name.c_str());
@@ -83,10 +88,13 @@ bool Recognition3DPPF::TrainPPFModel(std::vector<PointCloud::Ptr> cloud_models)
 {
 	PCL_INFO("Training PPF Models ...\n");
 
-	for (const auto& cloud_model : cloud_models) {
+	for (const auto& cloud_model : cloud_models)
+	{
 		PointCloudWithNormals::Ptr cloud_model_normals(new PointCloudWithNormals());
-		p_dataprocess_->DownSample(cloud_model, subsampling_leaf_size);
-		p_dataprocess_->CalculateNormals(cloud_model, search_radius, cloud_model_normals);
+		PointCloud::Ptr cloud_model_temp(new PointCloud());
+	  pcl::copyPointCloud(*cloud_model, *cloud_model_temp);
+		p_dataprocess_->DownSample(cloud_model_temp, subsampling_leaf_size);
+		p_dataprocess_->CalculateNormals(cloud_model_temp, search_radius, cloud_model_normals);
 		cloud_models_with_normals.push_back(cloud_model_normals);
 
 		pcl::PointCloud<pcl::PPFSignature>::Ptr cloud_model_ppf(new pcl::PointCloud<pcl::PPFSignature>());

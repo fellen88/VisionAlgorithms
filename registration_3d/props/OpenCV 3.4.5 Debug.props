@@ -12,7 +12,7 @@
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdParty/OpenCV/OpenCV-3.4.5/lib/x64;
 									  %(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world345.lib;
+      <AdditionalDependencies>opencv_world345d.lib;
 	                          %(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

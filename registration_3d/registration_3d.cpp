@@ -3,10 +3,18 @@
 #include "features.h"
 #include <math.h>
 
-Registration3D::Registration3D() :
+Registration3D::Registration3D(const std::string config_file) :
 	sac_output(new pcl::PointCloud<pcl::PointXYZ>),
 	icp_output(new pcl::PointCloud<pcl::PointXYZ>)
 {
+	p_regist_cameradata_ = GetCameraData();
+	JsonOutType json_reader;
+	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "Sample3D_ICP", "float");
+	if (json_reader.success)
+		sample_3d = json_reader.json_float;
+	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "DebugVisualization", "bool");
+	if (json_reader.success)
+		debug_visualization = json_reader.json_bool;
 }
 
 void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &SAC_transform, float downsample, bool debug_v)
@@ -53,7 +61,7 @@ void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::P
 	sac_ia.align(*output);
 
 	SAC_transform = sac_ia.getFinalTransformation();
-
+	pcl::transformPointCloud(*cloud_src, *output, SAC_transform);
 	//可视化
 	if (true == debug_v)
 	{
@@ -95,9 +103,9 @@ void Registration3D::LM_ICP(const PointCloud::Ptr cloud_src, const PointCloud::P
 	PointCloud::Ptr src(new PointCloud); //创建点云指针
 	PointCloud::Ptr tgt(new PointCloud);
 	pcl::VoxelGrid<PointT> grid; //VoxelGrid 把一个给定的点云，聚集在一个局部的3D网格上,并下采样和滤波点云数据
-	if (downsample) //下采样
+	if (sample_3d) //下采样
 	{
-		grid.setLeafSize(downsample, downsample, downsample); //设置体元网格的叶子大小
+		grid.setLeafSize(sample_3d, sample_3d, sample_3d); //设置体元网格的叶子大小
 				//下采样 源点云
 		grid.setInputCloud(cloud_src); //设置输入点云
 		grid.filter(*src); //下采样和滤波，并存储在src中
@@ -136,19 +144,19 @@ void Registration3D::LM_ICP(const PointCloud::Ptr cloud_src, const PointCloud::P
 	reg.setTransformationEpsilon(0.00001); //设置容许的最大误差（迭代最优化）
 	//reg.setTransformationEpsilon (0.01); //设置容许的最大误差（迭代最优化）
 	//***** 注意：根据自己数据库的大小调节该参数
-	reg.setMaxCorrespondenceDistance(0.050);  //设置对应点之间的最大距离（2m）,在配准过程中，忽略大于该阈值的点  reg.setPointRepresentation (boost::make_shared<const MyPointRepresentation> (point_representation)); //设置点表达
+	reg.setMaxCorrespondenceDistance(0.05);  //设置对应点之间的最大距离（5cm）,在配准过程中，忽略大于该阈值的点  reg.setPointRepresentation (boost::make_shared<const MyPointRepresentation> (point_representation)); //设置点表达
 	//设置源点云和目标点云
 	reg.setInputSource(points_with_normals_src); //版本不符合，使用下面的语句
 	//reg.setInputCloud (points_with_normals_src); //设置输入点云（待变换的点云）
 	reg.setInputTarget(points_with_normals_tgt); //设置目标点云
-	reg.setMaximumIterations(2); //设置内部优化的迭代次数
+	reg.setMaximumIterations(5); //设置内部优化的迭代次数
 
 	// Run the same optimization in a loop and visualize the results
 	Eigen::Matrix4f Ti = Eigen::Matrix4f::Identity(), prev, targetToSource;
 	PointCloudWithNormals::Ptr reg_result = points_with_normals_src; //用于存储结果（坐标+法向量）
 
 	int NumIteration = 0;
-	for (int i = 0; i < 100; ++i) //迭代
+	for (int i = 0; i < 200; ++i) //迭代
 	{
 		//PCL_INFO ("Iteration Nr. %d.\n", i); //命令行显示迭代的次数
 		points_with_normals_src = reg_result; //
@@ -179,21 +187,23 @@ void Registration3D::LM_ICP(const PointCloud::Ptr cloud_src, const PointCloud::P
 
 	PCL_INFO ("Iteration Nr. %d.\n", NumIteration); //命令行显示迭代的次数
 	targetToSource = Ti.inverse(); //计算从目标点云到源点云的变换矩阵
-	pcl::transformPointCloud(*cloud_tgt, *output, targetToSource); //将目标点云 变换回到 源点云帧
+	pcl::transformPointCloud(*tgt, *output, targetToSource); //将目标点云 变换回到 源点云帧
 
 	//add the source to the transformed target
 	//*output += *cloud_src; // 拼接点云图（的点）点数数目是两个点云的点数和
 	final_transform = targetToSource; //最终的变换。目标点云到源点云的变换矩阵
 
-	if (true == debug_v)
+	if (true == debug_visualization)
 	{
 		boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer("Registration3D"));
 		viewer->removePointCloud("source"); //根据给定的ID，从屏幕中去除一个点云。参数是ID
 		viewer->removePointCloud("target");
 		pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_tgt_h(output, 0, 255, 0); //设置点云显示颜色，下同
-		pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_src_h(cloud_src, 255, 0, 0);
+		pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_src_h(src, 255, 0, 0);
 		viewer->addPointCloud(output, cloud_tgt_h, "target"); //添加点云数据，下同
-		viewer->addPointCloud(cloud_src, cloud_src_h, "source");
+		viewer->addPointCloud(src, cloud_src_h, "source");
+	  viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "target");
+	  viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "source");
 		//PCL_INFO ("Press q to clear the screen.\n");
 		viewer->spin();
 	}
@@ -212,7 +222,7 @@ void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, cons
 	}
 	{
 		pcl::ScopeTime scope_time("*LM_ICP");//计算算法运行时间
-		LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, downsample, debug_v);
+		LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, sample_3d, debug_v);
 	}
 
 	final_transform = icp_transform * sac_transform;
@@ -223,8 +233,8 @@ Eigen::Matrix4f Registration3D::GetTransformation()
 	return final_transform;
 }
 
-IRegistration3D* GetRegistration3D()
+IRegistration3D* GetRegistration3D(const std::string config_file)
 {
-	IRegistration3D* p_iregistration = new Registration3D();
+	IRegistration3D* p_iregistration = new Registration3D(config_file);
 	return p_iregistration;
 }

@@ -16,7 +16,7 @@ class IPoseEstimation
 public:
 	virtual ~IPoseEstimation() = 0;
 	virtual bool Algorithm_A(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>& object_pose) = 0;
-	virtual bool Algorithm_B(std::vector<double> object_points, unsigned char view_point, std::vector<double>& object_pose) = 0;
+	virtual bool Algorithm_B(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>& object_pose) = 0;
 };
 
 __POSE_ESTIMATION_API  IPoseEstimation* GetInstance(char str);

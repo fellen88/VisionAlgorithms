@@ -153,9 +153,11 @@ void CameraData::ShowPointCloud(const PointCloud::Ptr pointcloud, std::string wi
 {
 	if (nullptr != pointcloud)
 	{
-		boost::shared_ptr<pcl::visualization::PCLVisualizer> view(new pcl::visualization::PCLVisualizer(window_name));
-		view->addPointCloud(pointcloud);
-		view->spin ();
+		boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer(window_name));
+		viewer->addPointCloud(pointcloud);
+		viewer->addCoordinateSystem(0.1);
+		//viewer->initCameraParameters();
+		viewer->spin ();
 	}
 	else
 	{
@@ -169,7 +171,7 @@ void CameraData::ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, st
 	{
 		boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer(window_name));
 		viewer->addPointCloud(pointcloud);
-		viewer->spinOnce(100);
+		viewer->spinOnce(1000);
 	}
 	else
 	{
@@ -533,6 +535,16 @@ void CameraData::CalculateNormals(const PointCloud::Ptr cloud, const float searc
 	normal_estimation_filter.compute(*normals);
 
 	concatenateFields(*cloud, *normals, *cloud_normals);
+}
+
+void CameraData::RemoveInvalidPoints(const PointCloud::Ptr cloud_in, PointCloud::Ptr cloud_out)
+{
+	LOG(INFO) << "points number before remove invalid points:" << cloud_in->size();
+	LOG(INFO) << "is dense :" << cloud_in->is_dense;
+	cloud_in->is_dense = false;
+	std::vector<int> mapping;
+	pcl::removeNaNFromPointCloud(*cloud_in, *cloud_out, mapping);
+	LOG(INFO) << "points number after remove invalid points:" << cloud_in->size();
 }
 
 ICameraData* GetCameraData()

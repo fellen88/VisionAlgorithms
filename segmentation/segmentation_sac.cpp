@@ -25,7 +25,7 @@ SegmentationSAC::~SegmentationSAC()
 	}
 }
 
-bool SegmentationSAC::segment(PointCloud::Ptr cloud_scene)
+bool SegmentationSAC::segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
 {
 	//TODO:TEST
 	p_seg_cameradata_->DownSample(cloud_scene, subsampling_leaf_size);

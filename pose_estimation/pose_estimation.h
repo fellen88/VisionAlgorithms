@@ -10,19 +10,20 @@
 class PoseEstimation: public IPoseEstimation
 {
 public:
-	PoseEstimation(char algorithm_version);
+	PoseEstimation(const char algorithm_version);
 	~PoseEstimation();
 
 	void SetParameters_A();
 	bool Algorithm_A(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char viewpoint, std::vector<double>& object_pose);
 	void SetParameters_B();
-	bool Algorithm_B(std::vector<double> object_points, unsigned char view_point, std::vector<double>& object_pose);
+	bool Algorithm_B(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>& object_pose);
 
 private:
 	ICameraData* p_sensor_;
 	IRegistration3D* p_registration_;
 	IRecognition* p_recognition_;
 	ISegmentation* p_seg_sac_;
+	ISegmentation* p_seg_obb_;
 
 	bool pose_flag;
 	bool debug_visualization;
@@ -36,13 +37,19 @@ private:
 
 	PointCloud::Ptr object_model;
 	PointCloud::Ptr object_scan;
+	PointCloud::Ptr object_output;
+	PointCloud::Ptr sac_output;
+	PointCloud::Ptr obb_output;
 	PointCloudWithNormals::Ptr object_scene_normal;
 
 	Eigen::Matrix4f object_transform;
+	Eigen::Matrix4f sac_transform;
 	Eigen::Vector3f object_eulerangle;
 
 	std::string seg_sac_config;
+	std::string seg_obb_config;
 	std::string ppf_config;
+	std::string lmicp_config;
 	std::vector<PointCloud::Ptr> cloud_models;
 	
 	std::string ModelFileName;
