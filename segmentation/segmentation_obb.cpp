@@ -75,7 +75,6 @@ bool SegmentationOBB::segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud
 	rotation_matrix(1, 3) = position_OBB.y;
 	rotation_matrix(2, 3) = position_OBB.z;
 	rotation_matrix(3, 3) = 1;
-	cout << rotation_matrix << endl;
 	pcl::transformPointCloud(*cloud_scene, *cloud_scene_rotation, rotation_matrix.inverse());
 
 	//pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("3D Viewer"));

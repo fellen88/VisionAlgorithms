@@ -15,10 +15,18 @@ Registration3D::Registration3D(const std::string config_file) :
 	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "DebugVisualization", "bool");
 	if (json_reader.success)
 		debug_visualization = json_reader.json_bool;
+	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "MaxCorrespondenceDistance", "float");
+	if (json_reader.success)
+		max_correspondence_distance = json_reader.json_float;
 }
 
-void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &SAC_transform, float downsample, bool debug_v)
+void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &sac_transform, float downsample, bool debug_v)
 {
+	sac_transform = Eigen::Matrix4f::Identity();
+	if (cloud_src->points.size() < 100 || cloud_tgt->points.size() < 100)
+	{
+		return;
+	}
 	//为了一致性和速度，下采样
 	PointCloud::Ptr source_filtered(new PointCloud); //创建点云指针
 	PointCloud::Ptr target_filtered(new PointCloud);
@@ -56,12 +64,12 @@ void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::P
 	sac_ia.setSourceFeatures(source_fpfh);
 	sac_ia.setInputTarget(target_filtered);
 	sac_ia.setTargetFeatures(target_fpfh);
-	//sac_ia.setNumberOfSamples(20);  //设置每次迭代计算中使用的样本数量（可省）,可节省时间
+	sac_ia.setNumberOfSamples(20);  //设置每次迭代计算中使用的样本数量（可省）,可节省时间
 	sac_ia.setCorrespondenceRandomness(10); //设置计算协方差时选择多少近邻点，该值越大，协防差越精确，但是计算效率越低.(可省)
 	sac_ia.align(*output);
 
-	SAC_transform = sac_ia.getFinalTransformation();
-	pcl::transformPointCloud(*cloud_src, *output, SAC_transform);
+	sac_transform = sac_ia.getFinalTransformation();
+	pcl::transformPointCloud(*cloud_src, *output, sac_transform);
 	//可视化
 	if (true == debug_v)
 	{
@@ -99,6 +107,12 @@ void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::P
 
 void Registration3D::LM_ICP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, float downsample, bool debug_v)
 {
+	final_transform = Eigen::Matrix4f::Identity();
+
+	if (cloud_src->points.size() < 100 || cloud_tgt->points.size() < 100)
+	{
+		return;
+	}
 	//为了一致性和速度，下采样
 	PointCloud::Ptr src(new PointCloud); //创建点云指针
 	PointCloud::Ptr tgt(new PointCloud);
@@ -141,10 +155,9 @@ void Registration3D::LM_ICP(const PointCloud::Ptr cloud_src, const PointCloud::P
 
 	//创建非线性ICP对象 并设置参数
 	pcl::IterativeClosestPointNonLinear<PointNormalT, PointNormalT> reg; //创建非线性ICP对象（ICP变体，使用Levenberg-Marquardt最优化）
-	reg.setTransformationEpsilon(0.00001); //设置容许的最大误差（迭代最优化）
-	//reg.setTransformationEpsilon (0.01); //设置容许的最大误差（迭代最优化）
+	reg.setTransformationEpsilon(0.000001); //设置容许的最大误差（迭代最优化）
 	//***** 注意：根据自己数据库的大小调节该参数
-	reg.setMaxCorrespondenceDistance(0.05);  //设置对应点之间的最大距离（5cm）,在配准过程中，忽略大于该阈值的点  reg.setPointRepresentation (boost::make_shared<const MyPointRepresentation> (point_representation)); //设置点表达
+	reg.setMaxCorrespondenceDistance(max_correspondence_distance);  //设置对应点之间的最大距离,在配准过程中，忽略大于该阈值的点  reg.setPointRepresentation (boost::make_shared<const MyPointRepresentation> (point_representation)); //设置点表达
 	//设置源点云和目标点云
 	reg.setInputSource(points_with_normals_src); //版本不符合，使用下面的语句
 	//reg.setInputCloud (points_with_normals_src); //设置输入点云（待变换的点云）
@@ -170,8 +183,8 @@ void Registration3D::LM_ICP(const PointCloud::Ptr cloud_src, const PointCloud::P
 		//    break;
 		//如果这次变换和上次变换的误差比阈值小，通过减小最大的对应点距离的方法来进一步细化
 		if (fabs((double)(reg.getLastIncrementalTransformation() - prev).sum()) < reg.getTransformationEpsilon())
-			reg.setMaxCorrespondenceDistance(reg.getMaxCorrespondenceDistance() - 0.000001); //减小对应点之间的最大距离（上面设置过）
-		if (fabs((reg.getLastIncrementalTransformation() - prev).sum()) < 0.000001)
+			reg.setMaxCorrespondenceDistance(reg.getMaxCorrespondenceDistance() - 0.0000001); //减小对应点之间的最大距离（上面设置过）
+		if (fabs((reg.getLastIncrementalTransformation() - prev).sum()) < 0.0000001)
 			break;
 	// std::cout<<"getLastIncrementalTransformation"<<reg.getLastIncrementalTransformation ()<<endl;
 	 //std::cout<<"prev"<<prev<<endl;

@@ -19,7 +19,7 @@ int main()
 	unsigned char view_point = 0;
 
 	//3D视觉算法调用:初始化实例
-	IPoseEstimation *pose_estimation_ = GetInstance('B');
+	std::shared_ptr<IPoseEstimation> p_pose_estimation_(GetInstance('B'));
 
 	//加载测试点云数据
 	pcl::io::loadPLYFile("PointCloud/cylinder_multiple.ply", object_points);
@@ -34,13 +34,12 @@ int main()
 			//采集拍照点1 目标场景点云
 			view_point = 1;
 			//3D视觉算法调用:计算目标位姿
-			pose_estimation_->Algorithm_B(object_points, view_point, object_pose);
+			p_pose_estimation_->Algorithm_B(object_points, view_point, object_pose);
 		}
 		else if (input == 'e')
 			break;
 		else
 			std::cout << "input error !" << std::endl;
 	}
-	delete pose_estimation_;
 }
 

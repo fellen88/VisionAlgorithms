@@ -45,6 +45,9 @@ PoseEstimation::PoseEstimation(char algorithm_vision) :
 			p_seg_sac_ = GetSegmentationSAC(seg_sac_config);
 			p_seg_obb_ = GetSegmentationOBB(seg_obb_config);
 			p_recognition_ = GetRecognition3DPPF(ppf_config);
+
+			sac_transform = Eigen::Matrix4f::Identity();
+			object_transform = Eigen::Matrix4f::Identity();
 			//load ply model
 			if (false == p_sensor_->LoadPLY(ModelFileName, object_model))
 			{
@@ -64,6 +67,7 @@ PoseEstimation::PoseEstimation(char algorithm_vision) :
 
 PoseEstimation::~PoseEstimation()
 {
+	LOG(INFO) << "~PoseEstimation()";
 	if (p_sensor_ != nullptr)
 	{
 	  delete p_sensor_;
@@ -249,6 +253,7 @@ bool PoseEstimation::Algorithm_B(const pcl::PointCloud<pcl::PointXYZRGBNormal>& 
 		p_seg_obb_->segment(object_scan, sac_output, obb_output);
 		p_registration_->SAC_IA(object_model, obb_output, sac_output, sac_transform, sample_3d, debug_visualization);
 		p_registration_->LM_ICP(obb_output, sac_output, object_output, object_transform);
+
 		object_transform = object_transform * sac_transform;
 		cout << object_transform << endl;
 		p_sensor_->Matrix2EulerAngle(object_transform, object_eulerangle);

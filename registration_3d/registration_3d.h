@@ -31,6 +31,7 @@ class Registration3D : public IRegistration3D, public Features
 	ICameraData* p_regist_cameradata_;
 	float sample_3d;
 	bool debug_visualization;
+	float max_correspondence_distance;
 
   Registration3D(const std::string config_file);
   void SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr transformed_cloud, Eigen::Matrix4f &SAC_transform, float downsample, bool debug_v);
