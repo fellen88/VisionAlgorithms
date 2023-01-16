@@ -165,17 +165,23 @@ void CameraData::ShowPointCloud(const PointCloud::Ptr pointcloud, std::string wi
 	}
 }
 
-void CameraData::ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, std::string window_name)
+void CameraData::ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, size_t spin_time,
+	std::string cloudname, 	unsigned char r, unsigned char g, unsigned char b)
 {
 	if (nullptr != pointcloud)
 	{
-		boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer(window_name));
-		viewer->addPointCloud(pointcloud);
-		viewer->spinOnce(1000);
+		if (nullptr == viewer_nonblock)
+		{
+			viewer_nonblock.reset(new pcl::visualization::PCLVisualizer("viewer_nonblock"));
+		}
+		viewer_nonblock->removePointCloud(cloudname); //根据给定的ID，从屏幕中去除一个点云。参数是ID
+		pcl::visualization::PointCloudColorHandlerCustom<PointT> cloudcolor(pointcloud, r, g, b); //设置点云显示颜色
+		viewer_nonblock->addPointCloud(pointcloud, cloudcolor, cloudname);
+		viewer_nonblock->spinOnce(spin_time);
 	}
 	else
 	{
-		LOG(ERROR) << window_name << " is a nullptr pointlcoud!";
+		LOG(ERROR) << "show pointcloud nonblocking is a nullptr pointlcoud!";
 	}
 }
 

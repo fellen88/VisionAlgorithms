@@ -13,7 +13,8 @@
 									$(SolutionDir)3rdParty\PCL\PCL 1.9.1\3rdParty\VTK\include\vtk-8.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_SILENCE_FPOS_SEEKPOS_DEPRECATION_WARNING;NOMINMAX</PreprocessorDefinitions>
-    </ClCompile>
+	  <DisableSpecificWarnings>4819</DisableSpecificWarnings>
+   </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)3rdParty\PCL\PCL 1.9.1\lib;
 									  $(SolutionDir)3rdParty\PCL\PCL 1.9.1\3rdParty\Boost\lib;

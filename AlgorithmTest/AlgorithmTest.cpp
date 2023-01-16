@@ -1,5 +1,3 @@
-// AlgorithmTest.cpp : This file contains the 'main' function. Program execution begins and ends there.
-
 #include <iostream>
 #include <vector>
 #include <pcl/io/ply_io.h>
@@ -19,14 +17,14 @@ int main()
 	unsigned char view_point = 0;
 
 	//3D视觉算法调用:初始化实例
-	std::shared_ptr<IPoseEstimation> p_pose_estimation_(GetInstance('B'));
+	std::shared_ptr<val::IPoseEstimation> p_grasp_accuracy_(GetInstance(val::IPoseEstimation::AccuracyGrasp));
 
 	//加载测试点云数据
-	pcl::io::loadPLYFile("PointCloud/cylinder_multiple.ply", object_points);
+	pcl::io::loadPLYFile("PointCloud/test.ply", object_points);
+	char input;
 
 	while (true)
 	{
-		char input;
 		std::cout << "input 's' to start / input 'e' to end :" << std::endl;
 		std::cin >> input;
 		if (input == 's')
@@ -34,7 +32,7 @@ int main()
 			//采集拍照点1 目标场景点云
 			view_point = 1;
 			//3D视觉算法调用:计算目标位姿
-			p_pose_estimation_->Algorithm_B(object_points, view_point, object_pose);
+			p_grasp_accuracy_->Algorithm_A(object_points, view_point, object_pose);
 		}
 		else if (input == 'e')
 			break;

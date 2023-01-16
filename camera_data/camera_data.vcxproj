@@ -109,8 +109,8 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="props\JsonCpp 1.8.3 Release.props" />
     <Import Project="props\Glog 0.4.0 Release.props" />
-    <Import Project="props\OpenCV 3.4.5 Release.props" />
     <Import Project="props\PCL 1.9.1 Release.props" />
+    <Import Project="props\OpenCV 3.4.5 Release.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

@@ -117,7 +117,7 @@ void Registration3D::LM_ICP(const PointCloud::Ptr cloud_src, const PointCloud::P
 	PointCloud::Ptr src(new PointCloud); //创建点云指针
 	PointCloud::Ptr tgt(new PointCloud);
 	pcl::VoxelGrid<PointT> grid; //VoxelGrid 把一个给定的点云，聚集在一个局部的3D网格上,并下采样和滤波点云数据
-	if (sample_3d) //下采样
+	if (sample_3d > 0.00001) //下采样
 	{
 		grid.setLeafSize(sample_3d, sample_3d, sample_3d); //设置体元网格的叶子大小
 				//下采样 源点云

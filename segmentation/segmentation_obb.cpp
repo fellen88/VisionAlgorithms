@@ -4,25 +4,9 @@
 #include <pcl/common/transforms.h>
 
 
-SegmentationOBB::SegmentationOBB(const std::string config_path)
+SegmentationOBB::SegmentationOBB()
 {
 	p_obb_cameradata_ = GetCameraData();
-	JsonOutType json_reader;
-	json_reader = p_obb_cameradata_->ReadJsonFile(config_path, "Sample3D_ICP", "float");
-	if (json_reader.success)
-		sample_3d = json_reader.json_float;
-	json_reader = p_obb_cameradata_->ReadJsonFile(config_path, "DebugVisualization", "bool");
-	if (json_reader.success)
-		debug_visualization = json_reader.json_bool;
-	json_reader = p_obb_cameradata_->ReadJsonFile(config_path, "L_Offset", "float");
-	if (json_reader.success)
-		l_offset = json_reader.json_float;
-	json_reader = p_obb_cameradata_->ReadJsonFile(config_path, "W_Offset", "float");
-	if (json_reader.success)
-		w_offset = json_reader.json_float;
-	json_reader = p_obb_cameradata_->ReadJsonFile(config_path, "H_Offset", "float");
-	if (json_reader.success)
-		h_offset = json_reader.json_float;
 }
 
 SegmentationOBB::~SegmentationOBB()
@@ -36,7 +20,10 @@ SegmentationOBB::~SegmentationOBB()
 bool SegmentationOBB::segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
 {
 	pcl::MomentOfInertiaEstimation <pcl::PointXYZ> feature_extractor;
-	feature_extractor.setInputCloud(cloud_model);
+	PointCloud::Ptr cloud_model_temp(new PointCloud());
+	pcl::copyPointCloud(*cloud_model, *cloud_model_temp);
+	p_obb_cameradata_->DownSample(cloud_model_temp, subsampling_leaf_size);
+	feature_extractor.setInputCloud(cloud_model_temp);
 	feature_extractor.compute();
 
 	std::vector <float> moment_of_inertia;
@@ -114,13 +101,47 @@ bool SegmentationOBB::segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud
 	return true;
 }
 
+bool SegmentationOBB::SetParameters(const std::string config_file)
+{
+	JsonOutType json_reader;
+	json_reader = p_obb_cameradata_->ReadJsonFile(config_file, "Sample3D_OBB", "float");
+	if (json_reader.success)
+		sample_3d = json_reader.json_float;
+	else
+		return false;
+	json_reader = p_obb_cameradata_->ReadJsonFile(config_file, "DebugVisualization", "bool");
+	if (json_reader.success)
+		debug_visualization = json_reader.json_bool;
+	else
+		return false;
+	json_reader = p_obb_cameradata_->ReadJsonFile(config_file, "L_Offset", "float");
+	if (json_reader.success)
+		l_offset = json_reader.json_float;
+	else
+		return false;
+	json_reader = p_obb_cameradata_->ReadJsonFile(config_file, "W_Offset", "float");
+	if (json_reader.success)
+		w_offset = json_reader.json_float;
+	else
+		return false;
+	json_reader = p_obb_cameradata_->ReadJsonFile(config_file, "H_Offset", "float");
+	if (json_reader.success)
+		h_offset = json_reader.json_float;
+	else
+		return false;
+
+	subsampling_leaf_size = Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f);
+
+	return true;
+}
+
 void SegmentationOBB::CalulateOBB(const PointCloud::Ptr cloud_in)
 {
 
 }
 
-ISegmentation* GetSegmentationOBB(const std::string config_path)
+ISegmentation* GetSegmentationOBB()
 {
-	ISegmentation* p_isegmentation_ = new SegmentationOBB(config_path);
+	ISegmentation* p_isegmentation_ = new SegmentationOBB();
 	return p_isegmentation_;
 }

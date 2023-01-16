@@ -5,79 +5,50 @@
 #define __POSE_ESTIMATION_EXPORT
 #include "pose_estimation.h"
 
+using namespace val;
+
 PoseEstimation::PoseEstimation(char algorithm_vision) :
 	object_model(new pcl::PointCloud<pcl::PointXYZ>),
+	object_model_part(new pcl::PointCloud<pcl::PointXYZ>),
 	object_scan(new pcl::PointCloud<pcl::PointXYZ>),
 	sac_output(new pcl::PointCloud<pcl::PointXYZ>),
 	obb_output(new pcl::PointCloud<pcl::PointXYZ>),
-	object_output(new pcl::PointCloud<pcl::PointXYZ>)
+	object_output(new pcl::PointCloud<pcl::PointXYZ>),
+	object_scan_segsac(new pcl::PointCloud<pcl::PointXYZ>),
+	object_model_segsac(new pcl::PointCloud<pcl::PointXYZ>),
+	p_sensor_(GetCameraData()),
+	p_seg_sac_(GetSegmentationSAC()),
+	p_seg_obb_(nullptr)
 {
+	debug_visualization = false;
+	sensor_offline = true;
+	sample_3d = 0.01;
+	ModelFileName = "Model_3D//model.ply";
+	ScanFileName = "PointCloud//scene.ply";
+
 	switch (algorithm_vision)
 	{
-		debug_visualization = false;
-		sensor_offline = true;
-		sample_3d = 0.01;
-		ModelFileName = "Model_3D//model.ply";
-		ScanFileName = "PointCloud//scene.ply";
-
-		case 'A':
-			p_sensor_ = GetCameraData();
-			SetParameters_A();
-			p_registration_ = GetRegistration3D(lmicp_config);
-			p_seg_sac_ = GetSegmentationSAC(seg_sac_config);
-			p_recognition_ = GetRecognition3DPPF(ppf_config);
-			//load ply model
-			if (false == p_sensor_->LoadPLY(ModelFileName, object_model))
-			{
-				LOG(ERROR) << "LoadModel Error!";
-			}
-			else
-				p_sensor_->ConvertPointsMMtoM(object_model);
-
-			cloud_models.push_back(object_model);
-			//p_recognition_->TrainPPFModel(cloud_models);
+		case AccuracyGrasp:
+			Init_AccuracyGrasp();
 			break;
 		
-		case 'B':
-			p_sensor_ = GetCameraData();
-			SetParameters_B();
-			p_registration_ = GetRegistration3D(lmicp_config);
-			p_seg_sac_ = GetSegmentationSAC(seg_sac_config);
-			p_seg_obb_ = GetSegmentationOBB(seg_obb_config);
-			p_recognition_ = GetRecognition3DPPF(ppf_config);
-
-			sac_transform = Eigen::Matrix4f::Identity();
-			object_transform = Eigen::Matrix4f::Identity();
-			//load ply model
-			if (false == p_sensor_->LoadPLY(ModelFileName, object_model))
-			{
-				LOG(ERROR) << "LoadModel Error!";
-			}
-			else
-				p_sensor_->ConvertPointsMMtoM(object_model);
-
-			cloud_models.push_back(object_model);
-			p_recognition_->TrainPPFModel(cloud_models);
+		case Cylinder:
+			Init_Cylinder();
 			break;
 
 		default:
+			LOG(ERROR) << "GraspName Error !";
 			break;
 	}
 }
 
 PoseEstimation::~PoseEstimation()
 {
-	LOG(INFO) << "~PoseEstimation()";
-	if (p_sensor_ != nullptr)
-	{
-	  delete p_sensor_;
-	}
-	//TODO:DELETE
 }
 
-void PoseEstimation::SetParameters_A()
+void PoseEstimation::Init_AccuracyGrasp()
 {
-  const std::string JsonFileName = "Config//Algorithm_A//algorithm_a.json";
+  const std::string JsonFileName = "Config\\Algorithm_A\\algorithm_a.json";
 	JsonOutType json_reader;
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "DebugVisualization", "bool");
 	if (json_reader.success)
@@ -104,6 +75,41 @@ void PoseEstimation::SetParameters_A()
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "LMICP_Config", "string");
 	if (json_reader.success)
 		lmicp_config = json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "LMICP_Refine_Config", "string");
+	if (json_reader.success)
+		lmicp_refine_config = json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegOBB_Config", "string");
+	if (json_reader.success)
+		seg_obb_config = json_reader.json_string;
+
+	p_seg_sac_->SetParameters(seg_sac_config);
+	p_seg_obb_.reset(GetSegmentationOBB());
+	p_seg_obb_->SetParameters(seg_obb_config);
+
+	p_registration_ = GetRegistration3D(lmicp_config);
+	p_registration_refine_ = GetRegistration3D(lmicp_refine_config);
+	p_recognition_ = GetRecognition3DPPF(ppf_config);
+	sac_transform = Eigen::Matrix4f::Identity();
+	object_transform = Eigen::Matrix4f::Identity();
+	object_transform_refine = Eigen::Matrix4f::Identity();
+	//load ply model
+	if (false == p_sensor_->LoadPLY(ModelFileName, object_model))
+	{
+		LOG(ERROR) << "LoadModel Error!";
+	}
+	else
+		p_sensor_->ConvertPointsMMtoM(object_model);
+	if (false == p_sensor_->LoadPLY("Model_3D//model_part.ply", object_model_part))
+	{
+		LOG(ERROR) << "LoadModelPart Error!";
+	}
+	else
+		p_sensor_->ConvertPointsMMtoM(object_model_part);
+
+	pcl::copyPointCloud(*object_model, *object_model_segsac);
+	p_seg_sac_->segment(object_model_segsac);
+	cloud_models.push_back(object_model_segsac);
+	//p_recognition_->TrainPPFModel(cloud_models);
 }
 
 bool PoseEstimation::Algorithm_A(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>& object_pose)
@@ -133,6 +139,7 @@ bool PoseEstimation::Algorithm_A(const pcl::PointCloud<pcl::PointXYZRGBNormal>& 
 			p_sensor_->ConvertPointsMMtoM(object_scan);
 		}
 	}
+	
 	if (debug_visualization)
 	{
 		p_sensor_->ShowPointCloud(object_model, "object_model");
@@ -143,23 +150,40 @@ bool PoseEstimation::Algorithm_A(const pcl::PointCloud<pcl::PointXYZRGBNormal>& 
 	{
 		LOG(INFO) << "start algorithm at viewpoint 1";
 
-	  p_seg_sac_->segment(object_scan);
+		pcl::copyPointCloud(*object_scan, *object_scan_segsac);
+	  p_seg_sac_->segment(object_scan_segsac);
 		if (debug_visualization)
 		{
-			p_sensor_->ShowPointCloud(object_scan, "object_seg");
+			p_sensor_->ShowPointCloud(object_scan_segsac, "object_scene_seg");
+			p_sensor_->ShowPointCloud(object_model_segsac, "object_model_seg");
 		}
-		p_registration_->ComputeTransformation(object_model, object_scan, sample_3d, debug_visualization);
-		object_transform = p_registration_->GetTransformation();
+	
+		//p_recognition_->Compute(object_scan_segsac, cloud_models);
+		p_registration_->SAC_IA(object_model_segsac, object_scan_segsac, sac_output, sac_transform, sample_3d, debug_visualization);
+		p_registration_->LM_ICP(object_scan_segsac, sac_output, object_output, object_transform);
+		object_transform = object_transform * sac_transform;
+		//part refine
+	  pcl::transformPointCloud(*object_model_part, *object_model_part, object_transform);
+		
+		{
+			pcl::ScopeTime scope_time("OBB");//计算算法运行时间
+			p_seg_obb_->segment(object_scan, object_model_part, obb_output);
+		}
+		p_registration_refine_->LM_ICP(obb_output, object_model_part, object_output, object_transform_refine);
+
+		object_transform = object_transform_refine * object_transform;
 		cout << object_transform << endl;
 		p_sensor_->Matrix2EulerAngle(object_transform, object_eulerangle);
 
-		object_pose.clear();
-		object_pose.push_back(object_transform(0,3));
-		object_pose.push_back(object_transform(1,3));
-		object_pose.push_back(object_transform(2,3));
-		object_pose.push_back(object_eulerangle[2]);
-		object_pose.push_back(object_eulerangle[1]);
-		object_pose.push_back(object_eulerangle[0]);
+		{
+			object_pose.clear();
+			object_pose.push_back(object_transform(0, 3));
+			object_pose.push_back(object_transform(1, 3));
+			object_pose.push_back(object_transform(2, 3));
+			object_pose.push_back(object_eulerangle[2]);
+			object_pose.push_back(object_eulerangle[1]);
+			object_pose.push_back(object_eulerangle[0]);
+		}
 		return true;
 	}
 	else if (2 == view_point)
@@ -174,9 +198,9 @@ bool PoseEstimation::Algorithm_A(const pcl::PointCloud<pcl::PointXYZRGBNormal>& 
 	}
 }
 
-void PoseEstimation::SetParameters_B()
+void PoseEstimation::Init_Cylinder()
 {
-  const std::string JsonFileName = "Config//Algorithm_B//algorithm_b.json";
+  const std::string JsonFileName = "Config\\Algorithm_B\\algorithm_b.json";
 	JsonOutType json_reader;
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "DebugVisualization", "bool");
 	if (json_reader.success)
@@ -206,6 +230,25 @@ void PoseEstimation::SetParameters_B()
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegOBB_Config", "string");
 	if (json_reader.success)
 		seg_obb_config = json_reader.json_string;
+
+	p_seg_sac_->SetParameters(seg_sac_config);
+	p_seg_obb_->SetParameters(seg_obb_config);
+
+	p_registration_ = GetRegistration3D(lmicp_config);
+	p_recognition_ = GetRecognition3DPPF(ppf_config);
+	p_seg_obb_.reset(GetSegmentationOBB());
+	sac_transform = Eigen::Matrix4f::Identity();
+	object_transform = Eigen::Matrix4f::Identity();
+	//load ply model
+	if (false == p_sensor_->LoadPLY(ModelFileName, object_model))
+	{
+		LOG(ERROR) << "LoadModel Error!";
+	}
+	else
+		p_sensor_->ConvertPointsMMtoM(object_model);
+
+	cloud_models.push_back(object_model);
+	p_recognition_->TrainPPFModel(cloud_models);
 }
 
 bool PoseEstimation::Algorithm_B(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>& object_pose)

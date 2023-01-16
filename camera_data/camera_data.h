@@ -47,7 +47,7 @@ class CameraData :public ICameraData
 	bool LoadPLY(std::string file_name, PointCloud::Ptr object_model);
 	bool Load2DImage(cv::Mat image, std::string file_name);
 	void ShowPointCloud(const PointCloud::Ptr pointcloud, std::string window_name);
-	void ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, std::string window_name);
+	void ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, size_t spin_time, std::string cloudname, unsigned char r, unsigned char g, unsigned char b);
 	void ShowImage(const cv::Mat image, std::string window_name);
 	
 	JsonOutType ReadJsonFile(const std::string file_name, const std::string key_name, const char* out_type);
@@ -59,6 +59,8 @@ class CameraData :public ICameraData
 	void DownSample(const PointCloud::Ptr cloud, const Eigen::Vector4f subsampling_leaf_size);
 	void CalculateNormals(const PointCloud::Ptr cloud, const float search_radius, PointCloudWithNormals::Ptr cloud_normal);
 	void RemoveInvalidPoints(const PointCloud::Ptr cloud_in, PointCloud::Ptr cloud_out);
-};
 
+private:
+	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer_nonblock;
+};
 

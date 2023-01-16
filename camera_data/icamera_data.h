@@ -32,7 +32,8 @@ class ICameraData
 	virtual bool LoadPLY(std::string file_name, PointCloud::Ptr object_model) = 0;
 	virtual bool Load2DImage(cv::Mat image, std::string file_name) = 0;
 	virtual void ShowPointCloud(const PointCloud::Ptr pointcloud, std::string window_name) = 0;
-	virtual void ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, std::string window_name) = 0;
+	virtual void ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, size_t spin_time,
+		std::string cloudname,unsigned char r, unsigned char g, unsigned char b) = 0;
 	virtual void ShowImage(const cv::Mat image, std::string window_name) = 0;
  	virtual JsonOutType ReadJsonFile(std::string file_name, std::string key_name, const char* out_type) = 0;
 	virtual JsonOutType ReadJsonString(std::string json_string, std::string key_name, const char* out_type) = 0;

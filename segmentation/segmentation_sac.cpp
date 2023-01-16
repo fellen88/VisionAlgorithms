@@ -3,18 +3,9 @@
 #include "stdafx.h"
 #include "segmentation_sac.h"
 
-SegmentationSAC::SegmentationSAC(const std::string config_path)
+SegmentationSAC::SegmentationSAC()
 {
 	p_seg_cameradata_ = GetCameraData();
-	distance_threshold = 0.005;
-	JsonOutType json_reader;
-	json_reader = p_seg_cameradata_->ReadJsonFile(config_path, "DistanceThreshold", "float");
-	if (json_reader.success)
-		distance_threshold = json_reader.json_float;
-	json_reader = p_seg_cameradata_->ReadJsonFile(config_path, "Sample3D", "float");
-	if (json_reader.success)
-		sample_3d = json_reader.json_float;
-	subsampling_leaf_size = Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f);
 }
 
 SegmentationSAC::~SegmentationSAC()
@@ -54,8 +45,27 @@ bool SegmentationSAC::segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud
 	return true;
 }
 
-ISegmentation* GetSegmentationSAC(const std::string config_path)
+bool SegmentationSAC::SetParameters(const std::string config_file)
 {
-	ISegmentation* p_isegmentation_ = new SegmentationSAC(config_path);
+	distance_threshold = 0.005;
+	JsonOutType json_reader;
+	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "DistanceThreshold", "float");
+	if (json_reader.success)
+		distance_threshold = json_reader.json_float;
+	else
+		return false;
+	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "Sample3D", "float");
+	if (json_reader.success)
+		sample_3d = json_reader.json_float;
+	else
+		return false;
+	subsampling_leaf_size = Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f);
+
+	return true;
+}
+
+ISegmentation* GetSegmentationSAC()
+{
+	ISegmentation* p_isegmentation_ = new SegmentationSAC();
 	return p_isegmentation_;
 }

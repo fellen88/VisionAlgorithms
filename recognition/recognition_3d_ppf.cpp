@@ -26,6 +26,10 @@ Recognition3DPPF::Recognition3DPPF(std::string config)
 	json_reader = p_dataprocess_->ReadJsonFile(config, "SceneReferencePointSamplingRate", "int");
 	if (json_reader.success)
 		point_sampling_rate = json_reader.json_int;
+	
+	json_reader = p_dataprocess_->ReadJsonFile(config, "PPF_Visualization", "bool");
+	if (json_reader.success)
+		ppf_visualization = json_reader.json_bool;
 }
 
 Recognition3DPPF::~Recognition3DPPF()
@@ -72,14 +76,18 @@ bool Recognition3DPPF::Compute(const PointCloud::Ptr cloud_scene,
 		pcl::transformPointCloud(
 			*cloud_model_temp, *cloud_output, final_transformation);
 
-		const std::string mode_name = "model_" + std::to_string(model_i);
-		pcl::visualization::PCLVisualizer viewer("PPF Object Recognition - Results");
-		viewer.setBackgroundColor(0, 0, 0);
-		pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZ> random_color(cloud_output->makeShared());
-		viewer.addPointCloud(cloud_scene_temp);
-		viewer.addPointCloud(cloud_output, random_color, mode_name);
-		viewer.spin();
-		PCL_INFO("Showing model %s\n", mode_name.c_str());
+		if (ppf_visualization)
+		{
+		  const std::string mode_name = "model_" + std::to_string(model_i);
+			pcl::visualization::PCLVisualizer viewer("PPF Object Recognition - Results");
+			viewer.setBackgroundColor(0, 0, 0);
+			pcl::visualization::PointCloudColorHandlerCustom<PointT> scene_color(cloud_scene, 0, 255, 0); //设置点云显示颜色
+			pcl::visualization::PointCloudColorHandlerCustom<PointT> output_color(cloud_output, 255 ,0, 0); //设置点云显示颜色
+			viewer.addPointCloud(cloud_scene, scene_color);
+			viewer.addPointCloud(cloud_output, output_color, mode_name);
+			viewer.spin();
+			PCL_INFO("Showing model %s\n", mode_name.c_str());
+		}
 	}
 	return true;
 }
