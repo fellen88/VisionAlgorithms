@@ -1,6 +1,4 @@
-﻿// pose_estimation.cpp
-//
-#include "stdafx.h"
+﻿#include "stdafx.h"
 
 #define __POSE_ESTIMATION_EXPORT
 #include "pose_estimation.h"
@@ -163,13 +161,14 @@ bool PoseEstimation::Algorithm_A(const pcl::PointCloud<pcl::PointXYZRGBNormal>& 
 		p_registration_->LM_ICP(object_scan_segsac, sac_output, object_output, object_transform);
 		object_transform = object_transform * sac_transform;
 		//part refine
-	  pcl::transformPointCloud(*object_model_part, *object_model_part, object_transform);
+		PointCloud::Ptr model_part_transform(new PointCloud());
+	  pcl::transformPointCloud(*object_model_part, *model_part_transform, object_transform);
 		
 		{
 			pcl::ScopeTime scope_time("OBB");//计算算法运行时间
-			p_seg_obb_->segment(object_scan, object_model_part, obb_output);
+			p_seg_obb_->segment(object_scan, model_part_transform, obb_output);
 		}
-		p_registration_refine_->LM_ICP(obb_output, object_model_part, object_output, object_transform_refine);
+		p_registration_refine_->LM_ICP(obb_output, model_part_transform, object_output, object_transform_refine);
 
 		object_transform = object_transform_refine * object_transform;
 		cout << object_transform << endl;

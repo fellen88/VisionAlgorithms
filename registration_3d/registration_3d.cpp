@@ -111,6 +111,7 @@ void Registration3D::LM_ICP(const PointCloud::Ptr cloud_src, const PointCloud::P
 
 	if (cloud_src->points.size() < 100 || cloud_tgt->points.size() < 100)
 	{
+		LOG(ERROR) << "points.size() < 100, return !";
 		return;
 	}
 	//为了一致性和速度，下采样
