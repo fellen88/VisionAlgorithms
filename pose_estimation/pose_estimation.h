@@ -12,13 +12,12 @@ namespace val
 	class PoseEstimation : public IPoseEstimation
 	{
 	public:
-		PoseEstimation(const char algorithm_version);
+		PoseEstimation(char algorithm_vision, std::string config_file);
 		~PoseEstimation();
 
-		void Init_AccuracyGrasp();
-		bool Algorithm_A(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char viewpoint, std::vector<double>& object_pose);
-		void Init_Cylinder();
-		bool Algorithm_B(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>& object_pose);
+		void UpdateParameters(std::string config);
+		void Init_AccuracyGrasp(std::string config_file);
+		bool Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>& object_pose);
 
 	private:
 		std::shared_ptr<ICameraData> p_sensor_;
@@ -27,11 +26,24 @@ namespace val
 		IRecognition* p_recognition_;
 		std::shared_ptr<ISegmentation> p_seg_sac_;
 		std::shared_ptr<ISegmentation> p_seg_obb_;
+		std::shared_ptr<ISegmentation> p_seg_bound_;
+		std::shared_ptr<ISegmentation> p_seg_eucli_;
 
 		bool pose_flag;
 		bool debug_visualization;
 		bool sensor_offline;
+		bool part_refine;
 		float sample_3d;
+		float normal_search_radius;
+		float curvature_thredhold;
+
+		float DertaX;
+		float DertaY;
+		float DertaZ;
+		float DertaRX;
+		float DertaRY;
+		float DertaRZ;
+
 
 		cv::Mat object_depth;
 		cv::Mat object_color;
@@ -39,22 +51,37 @@ namespace val
 		std::string object_label;
 
 		PointCloud::Ptr object_model;
-		PointCloud::Ptr object_model_part;
+		PointCloud::Ptr object_model_part1;
+		PointCloud::Ptr object_model_part2;
 		PointCloud::Ptr object_scan;
 		PointCloud::Ptr object_output;
 		PointCloud::Ptr object_model_segsac;
 		PointCloud::Ptr object_scan_segsac;
+		PointCloud::Ptr object_model_downsample;
+		PointCloud::Ptr object_scan_downsample;
+		PointCloud::Ptr object_model_segeucli;
+		PointCloud::Ptr object_scan_segeucli;
+		PointCloud::Ptr object_model_edge;
+		PointCloud::Ptr object_scene_edge;
 		PointCloud::Ptr sac_output;
 		PointCloud::Ptr obb_output;
+		PointCloud::Ptr obb_part1;
+		PointCloud::Ptr obb_part2;
 		PointCloudWithNormals::Ptr object_scene_normal;
+		PointCloudWithNormals::Ptr object_model_normal;
+		PointCloudWithCurvatures::Ptr object_scene_curvature;
+		PointCloudWithCurvatures::Ptr object_model_curvature;
 
 		Eigen::Matrix4f object_transform;
+		Eigen::Matrix4f object_transform_init;
 		Eigen::Matrix4f object_transform_refine;
 		Eigen::Matrix4f sac_transform;
 		Eigen::Vector3f object_eulerangle;
 
 		std::string seg_sac_config;
 		std::string seg_obb_config;
+		std::string seg_bound_config;
+		std::string seg_eucli_config;
 		std::string ppf_config;
 		std::string lmicp_config;
 		std::string lmicp_refine_config;

@@ -30,6 +30,12 @@
     <ClInclude Include="segmentation_obb.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="segmentation_euclidean.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="segmentation_boundary.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -45,6 +51,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="segmentation_obb.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="segmentation_euclidean.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="segmentation_boundary.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

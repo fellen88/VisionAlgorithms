@@ -109,9 +109,9 @@ void Registration3D::LM_ICP(const PointCloud::Ptr cloud_src, const PointCloud::P
 {
 	final_transform = Eigen::Matrix4f::Identity();
 
-	if (cloud_src->points.size() < 100 || cloud_tgt->points.size() < 100)
+	if (cloud_src->points.size() < 10 || cloud_tgt->points.size() < 10)
 	{
-		LOG(ERROR) << "points.size() < 100, return !";
+		LOG(ERROR) << "points.size() < 10, return !";
 		return;
 	}
 	//为了一致性和速度，下采样

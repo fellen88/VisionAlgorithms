@@ -19,7 +19,7 @@ public:
 	bool segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg);
 	bool SetParameters(const std::string config_file);
 private:
-	ICameraData* p_obb_cameradata_;
+	std::shared_ptr<ICameraData> p_obb_cameradata_;
 	float sample_3d;
 	bool debug_visualization;
 	float l_offset;

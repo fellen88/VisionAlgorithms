@@ -174,7 +174,7 @@ void CameraData::ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, si
 		{
 			viewer_nonblock.reset(new pcl::visualization::PCLVisualizer("viewer_nonblock"));
 		}
-		viewer_nonblock->removePointCloud(cloudname); //根据给定的ID，从屏幕中去除一个点云。参数是ID
+		//viewer_nonblock->removePointCloud(cloudname); //根据给定的ID，从屏幕中去除一个点云。参数是ID
 		pcl::visualization::PointCloudColorHandlerCustom<PointT> cloudcolor(pointcloud, r, g, b); //设置点云显示颜色
 		viewer_nonblock->addPointCloud(pointcloud, cloudcolor, cloudname);
 		viewer_nonblock->spinOnce(spin_time);
@@ -524,6 +524,8 @@ void CameraData::VectorPointstoPCL(std::vector<double> points_normals, PointClou
 
 void CameraData::DownSample(const PointCloud::Ptr cloud, const Eigen::Vector4f subsampling_leaf_size)
 {
+	if (subsampling_leaf_size[1] < 0.000001)
+		return;
 	pcl::VoxelGrid<pcl::PointXYZ> subsampling_filter;
 	subsampling_filter.setInputCloud(cloud);
 	subsampling_filter.setLeafSize(subsampling_leaf_size);
@@ -533,7 +535,7 @@ void CameraData::DownSample(const PointCloud::Ptr cloud, const Eigen::Vector4f s
 void CameraData::CalculateNormals(const PointCloud::Ptr cloud, const float search_radius, PointCloudWithNormals::Ptr cloud_normals)
 {
 	PointNormals::Ptr normals(new PointNormals());
-	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normal_estimation_filter;
+	pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> normal_estimation_filter;
 	normal_estimation_filter.setInputCloud(cloud);
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr search_tree(new pcl::search::KdTree<pcl::PointXYZ>);
 	normal_estimation_filter.setSearchMethod(search_tree);
@@ -543,14 +545,86 @@ void CameraData::CalculateNormals(const PointCloud::Ptr cloud, const float searc
 	concatenateFields(*cloud, *normals, *cloud_normals);
 }
 
+void CameraData::CurvaturesEstimation(const PointCloud::Ptr cloud, const float search_radius, PointCloudWithNormals::Ptr cloud_normals, PointCloudWithCurvatures::Ptr cloud_curvatures)
+{
+	//计算法向
+	PointNormals::Ptr normals(new PointNormals());
+	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normal_estimation_filter;
+	normal_estimation_filter.setInputCloud(cloud);
+	pcl::search::KdTree<pcl::PointXYZ>::Ptr search_tree(new pcl::search::KdTree<pcl::PointXYZ>);
+	normal_estimation_filter.setSearchMethod(search_tree);
+	normal_estimation_filter.setRadiusSearch(search_radius);
+	normal_estimation_filter.compute(*normals);
+	//concatenateFields(*cloud, *normals, *cloud_normals);
+	//计算曲率-------------------------------------------------------------------------------------
+	pcl::PrincipalCurvaturesEstimation<pcl::PointXYZ, pcl::Normal, pcl::PrincipalCurvatures>pc;
+	pc.setInputCloud(cloud);
+	pc.setInputNormals(normals);
+	pc.setSearchMethod(search_tree);
+	//pc.setRadiusSearch(search_radius);
+	pc.setKSearch(5);
+	pc.compute(*cloud_curvatures);
+
+	pcl::visualization::PCLVisualizer viewer("PCL Viewer");
+	viewer.addPointCloudPrincipalCurvatures<pcl::PointXYZ, pcl::Normal>(cloud, normals, cloud_curvatures, 5, 0.001, "cloud_curvatures");
+	viewer.spin();
+}
+
 void CameraData::RemoveInvalidPoints(const PointCloud::Ptr cloud_in, PointCloud::Ptr cloud_out)
 {
 	LOG(INFO) << "points number before remove invalid points:" << cloud_in->size();
-	LOG(INFO) << "is dense :" << cloud_in->is_dense;
+	//LOG(INFO) << "is dense :" << cloud_in->is_dense;
 	cloud_in->is_dense = false;
 	std::vector<int> mapping;
-	pcl::removeNaNFromPointCloud(*cloud_in, *cloud_out, mapping);
-	LOG(INFO) << "points number after remove invalid points:" << cloud_in->size();
+	pcl::removeNaNFromPointCloud(*cloud_in, *cloud_in, mapping);
+
+	cloud_out->points.resize(cloud_in->points.size());
+	size_t j = 0;
+	for (size_t i = 0; i < cloud_in->points.size(); i++)
+	{
+		if (cloud_in->points[i].z > 0.3 && cloud_in->points[i].z < 0.6)
+		{
+			cloud_out->points[j] = cloud_in->points[i];
+			j++;
+		}
+	}
+	cloud_out->points.resize(j);
+	LOG(INFO) << "points number after remove invalid points:" << cloud_out->size();
+}
+
+void CameraData::EdgeWithNormal(const PointCloud::Ptr cloud_in, const float search_radius, const float curvature_thredhold, PointCloudWithNormals::Ptr cloud_normals, PointCloud::Ptr cloud_out)
+{
+	CalculateNormals(cloud_in, search_radius, cloud_normals);
+	cloud_out->points.resize(cloud_normals->points.size());
+	size_t j = 0;
+	for (size_t i = 0; i < cloud_normals->size(); i++)
+	{
+		if (cloud_normals->points[i].curvature > curvature_thredhold)
+		{
+			cloud_out->points[j].x = cloud_normals->points[i].x;
+			cloud_out->points[j].y = cloud_normals->points[i].y;
+			cloud_out->points[j].z = cloud_normals->points[i].z;
+			j++;
+		}
+	}
+	cloud_out->points.resize(j);
+}
+
+//获取路径名中的子目录:strPath为路径名，strSubPath为输出的子目录，
+//nSearch为从尾向前检索的级别(默认为1级)
+bool CameraData::GetSubPath(const std::string& strPath, std::string& strSubPath, int nSearch)
+{
+	if (-1 == nSearch || strPath.empty())
+		return false;
+	std::string::size_type nPos1 = std::string::npos;
+	nPos1 = strPath.find_last_of("\\");
+	if (nPos1 != -1)
+	{
+		strSubPath = strPath.substr(nPos1 + 1, strPath.length() - nPos1);
+		int nNewSearch = nSearch > 1 ? nSearch - 1 : -1;
+		GetSubPath(strPath.substr(0, nPos1), strSubPath, nNewSearch);
+	}
+	return true;
 }
 
 ICameraData* GetCameraData()

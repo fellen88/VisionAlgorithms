@@ -30,6 +30,10 @@
 
 //pcl法向量
 #include <pcl/features/normal_3d.h>
+#include <pcl/features/normal_3d_omp.h>
+
+//pcl曲率
+#include<pcl/features/principal_curvatures.h>
 
 //pcl可视化
 #include <pcl/visualization/pcl_visualizer.h>
@@ -42,3 +46,4 @@ typedef pcl::PointCloud<PointT> PointCloud;
 typedef pcl::PointNormal PointNormalT;
 typedef pcl::PointCloud<PointNormalT> PointCloudWithNormals;
 typedef pcl::PointCloud<pcl::Normal> PointNormals;
+typedef pcl::PointCloud<pcl::PrincipalCurvatures> PointCloudWithCurvatures;

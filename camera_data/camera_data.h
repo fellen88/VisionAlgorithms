@@ -58,7 +58,10 @@ class CameraData :public ICameraData
 	void VectorPointstoPCL(std::vector<double> points_normals, PointCloud::Ptr pointcloud, PointCloudWithNormals::Ptr pointcloud_normals);
 	void DownSample(const PointCloud::Ptr cloud, const Eigen::Vector4f subsampling_leaf_size);
 	void CalculateNormals(const PointCloud::Ptr cloud, const float search_radius, PointCloudWithNormals::Ptr cloud_normal);
+	void CurvaturesEstimation(const PointCloud::Ptr cloud, const float search_radius, PointCloudWithNormals::Ptr cloud_normals, PointCloudWithCurvatures::Ptr cloud_curvatures);
 	void RemoveInvalidPoints(const PointCloud::Ptr cloud_in, PointCloud::Ptr cloud_out);
+	void EdgeWithNormal(const PointCloud::Ptr cloud_in, const float search_radius, const float curvature_thredhold, PointCloudWithNormals::Ptr cloud_normals, PointCloud::Ptr cloud_out);
+	bool GetSubPath(const std::string& strPath, std::string& strSubPath, int nSearch);
 
 private:
 	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer_nonblock;

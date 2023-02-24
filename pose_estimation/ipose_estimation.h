@@ -19,14 +19,12 @@ namespace val  //vision algorithm library
 		enum GraspName
 		{
 			AccuracyGrasp,
-
-			Cylinder = 6,
+			BinPicking,
 		};
 		virtual ~IPoseEstimation() = 0;
-		virtual bool Algorithm_A(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>& object_pose) = 0;
-		virtual bool Algorithm_B(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>& object_pose) = 0;
+		virtual bool Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>& object_pose) = 0;
 	};
 }
-__POSE_ESTIMATION_API  val::IPoseEstimation* GetInstance(char str);
+__POSE_ESTIMATION_API  val::IPoseEstimation* GetInstance(char algorithm_vision, std::string config_file);
 
 #endif

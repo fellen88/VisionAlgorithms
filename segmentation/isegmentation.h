@@ -19,6 +19,8 @@ class ISegmentation
 
 __SEGMENTATION_API ISegmentation*  GetSegmentationSAC();
 __SEGMENTATION_API ISegmentation*  GetSegmentationOBB();
+__SEGMENTATION_API ISegmentation*  GetSegmentationBoundary();
+__SEGMENTATION_API ISegmentation*  GetSegmentationEuclidean();
 
 #endif
 

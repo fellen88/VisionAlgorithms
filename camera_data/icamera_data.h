@@ -42,7 +42,10 @@ class ICameraData
 	virtual void VectorPointstoPCL(std::vector<double> points_normals, PointCloud::Ptr pointcloud, PointCloudWithNormals::Ptr pointcloud_normals) = 0;
 	virtual void DownSample(const PointCloud::Ptr cloud, const Eigen::Vector4f subsampling_leaf_size) = 0;
 	virtual void CalculateNormals(const PointCloud::Ptr cloud, const float search_radius, PointCloudWithNormals::Ptr cloud_normal) = 0;
+	virtual void CurvaturesEstimation(const PointCloud::Ptr cloud, const float search_radius, PointCloudWithNormals::Ptr cloud_normals, PointCloudWithCurvatures::Ptr cloud_curvatures) = 0;
+	virtual void EdgeWithNormal(const PointCloud::Ptr cloud_in, const float search_radius, const float curvature_thredhold, PointCloudWithNormals::Ptr cloud_normals, PointCloud::Ptr cloud_out) = 0;
 	virtual void RemoveInvalidPoints(const PointCloud::Ptr cloud_in, PointCloud::Ptr cloud_out) = 0;
+	virtual bool GetSubPath(const std::string& strPath, std::string& strSubPath, int nSearch) = 0;
 };
 
 extern "C" __declspec(dllexport) ICameraData* APIENTRY GetCameraData();

@@ -4,17 +4,13 @@
 #include <pcl/common/transforms.h>
 
 
-SegmentationOBB::SegmentationOBB()
+SegmentationOBB::SegmentationOBB():
+p_obb_cameradata_(GetCameraData())
 {
-	p_obb_cameradata_ = GetCameraData();
 }
 
 SegmentationOBB::~SegmentationOBB()
 {
-	if (p_obb_cameradata_ != nullptr)
-	{
-		delete p_obb_cameradata_;
-	}
 }
 
 bool SegmentationOBB::segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)

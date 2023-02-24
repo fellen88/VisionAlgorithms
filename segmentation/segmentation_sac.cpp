@@ -3,17 +3,13 @@
 #include "stdafx.h"
 #include "segmentation_sac.h"
 
-SegmentationSAC::SegmentationSAC()
+SegmentationSAC::SegmentationSAC():
+	p_seg_cameradata_(GetCameraData())
 {
-	p_seg_cameradata_ = GetCameraData();
 }
 
 SegmentationSAC::~SegmentationSAC()
 {
-	if (p_seg_cameradata_ != nullptr)
-	{
-		delete p_seg_cameradata_;
-	}
 }
 
 bool SegmentationSAC::segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
