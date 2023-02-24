@@ -274,7 +274,7 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 			object_transform = object_transform_refine * object_transform;
 		}
 		cout << object_transform << endl;
-		object_transform = object_transform * object_transform_init;
+		object_transform = object_transform_init * object_transform;
 		cout << object_transform << endl;
 
 		p_sensor_->Matrix2EulerAngle(object_transform, object_eulerangle);
