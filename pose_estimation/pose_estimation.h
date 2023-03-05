@@ -12,27 +12,32 @@ namespace val
 	class PoseEstimation : public IPoseEstimation
 	{
 	public:
-		PoseEstimation(char algorithm_vision, std::string config_file);
+		PoseEstimation(unsigned char algorithm_vision, std::string config_file);
 		~PoseEstimation();
 
 		void UpdateParameters(std::string config);
-		void Init_AccuracyGrasp(std::string config_file);
+		void Init_BinPicking(std::string config);
+		bool Compute_BinPicking(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, Eigen::Matrix4f & object_pose);
 		bool Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>& object_pose);
 
 	private:
 		std::shared_ptr<ICameraData> p_sensor_;
 		IRegistration3D* p_registration_;
 		IRegistration3D* p_registration_refine_;
-		IRecognition* p_recognition_;
+		std::shared_ptr<IRecognition> p_recog_ppf_;
 		std::shared_ptr<ISegmentation> p_seg_sac_;
 		std::shared_ptr<ISegmentation> p_seg_obb_;
+		std::shared_ptr<ISegmentation> p_seg_obb_instance_;
 		std::shared_ptr<ISegmentation> p_seg_bound_;
 		std::shared_ptr<ISegmentation> p_seg_eucli_;
+		std::shared_ptr<ISegmentation> p_seg_eucli_refine_;
 
 		bool pose_flag;
 		bool debug_visualization;
 		bool sensor_offline;
 		bool part_refine;
+		std::string instance_seg;
+		bool edge_normal;
 		float sample_3d;
 		float normal_search_radius;
 		float curvature_thredhold;
@@ -61,8 +66,12 @@ namespace val
 		PointCloud::Ptr object_scan_downsample;
 		PointCloud::Ptr object_model_segeucli;
 		PointCloud::Ptr object_scan_segeucli;
+		PointCloud::Ptr object_model_instance;
+		PointCloud::Ptr object_scan_instance;
 		PointCloud::Ptr object_model_edge;
 		PointCloud::Ptr object_scene_edge;
+		PointCloud::Ptr object_model_preprocess;
+		PointCloud::Ptr object_scan_preprocess;
 		PointCloud::Ptr sac_output;
 		PointCloud::Ptr obb_output;
 		PointCloud::Ptr obb_part1;
@@ -80,8 +89,10 @@ namespace val
 
 		std::string seg_sac_config;
 		std::string seg_obb_config;
+		std::string seg_obb_instance_config;
 		std::string seg_bound_config;
 		std::string seg_eucli_config;
+		std::string seg_eucli_refine_config;
 		std::string ppf_config;
 		std::string lmicp_config;
 		std::string lmicp_refine_config;
@@ -90,6 +101,8 @@ namespace val
 		std::string ModelFileName;
 		std::string ModelPartFileName;
 		std::string ScanFileName;
+
+		unsigned char grasp_method;
 	};
 }
 
