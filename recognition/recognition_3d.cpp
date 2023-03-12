@@ -11,9 +11,3 @@ Recognition3D::Recognition3D()
 Recognition3D::~Recognition3D()
 {
 }
-
-bool Recognition3D::Compute()
-{
-	return false;
-}
-

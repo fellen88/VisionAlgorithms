@@ -13,10 +13,11 @@ class Recognition3DPPF : public Recognition3D
 public:
 	ICameraData* p_dataprocess_;
 
-	Recognition3DPPF(std::string config);
+	Recognition3DPPF();
 	~Recognition3DPPF();
 
-	bool Compute(const PointCloud::Ptr cloud_scene, const std::vector<PointCloud::Ptr> cloud_models);
+	bool SetParameters(const std::string config_file);
+	bool Compute(const PointCloud::Ptr cloud_scene, const std::vector<PointCloud::Ptr> cloud_models, Eigen::Matrix4f transformation);
 	bool TrainPPFModel(std::vector<PointCloud::Ptr> cloud_models);
 
 private:
@@ -26,6 +27,8 @@ private:
 	float search_radius;
 	float position_clustering_threshold;
 	int rotation_Clustering_threshold;
+	float position_clustering_threshold_train;
+	int rotation_Clustering_threshold_train;
 	int point_sampling_rate;
 	std::vector<pcl::PPFHashMapSearch::Ptr> hashmap_search_vector;
 	bool ppf_visualization;
@@ -33,4 +36,3 @@ private:
 
 #endif
 
-#pragma once

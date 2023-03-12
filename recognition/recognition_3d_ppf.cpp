@@ -1,10 +1,19 @@
 #include"stdafx.h"
 #include "recognition_3d_ppf.h"
 
-Recognition3DPPF::Recognition3DPPF(std::string config)
+Recognition3DPPF::Recognition3DPPF()
 {
 	p_dataprocess_ = GetCameraData();
 
+	
+}
+
+Recognition3DPPF::~Recognition3DPPF()
+{
+}
+
+bool Recognition3DPPF::SetParameters(const std::string config)
+{
 	JsonOutType json_reader;
 	json_reader = p_dataprocess_->ReadJsonFile(config, "Sample3D", "float");
 	if (json_reader.success)
@@ -23,21 +32,28 @@ Recognition3DPPF::Recognition3DPPF(std::string config)
 	if (json_reader.success)
 		rotation_Clustering_threshold = json_reader.json_int;
 
+	json_reader = p_dataprocess_->ReadJsonFile(config, "PositionClusteringThreshold_Train", "float");
+	if (json_reader.success)
+		position_clustering_threshold_train = json_reader.json_float;
+
+	json_reader = p_dataprocess_->ReadJsonFile(config, "RotationClusteringThreshold_Train", "int");
+	if (json_reader.success)
+		rotation_Clustering_threshold_train = json_reader.json_int;
+
 	json_reader = p_dataprocess_->ReadJsonFile(config, "SceneReferencePointSamplingRate", "int");
 	if (json_reader.success)
 		point_sampling_rate = json_reader.json_int;
-	
+
 	json_reader = p_dataprocess_->ReadJsonFile(config, "PPF_Visualization", "bool");
 	if (json_reader.success)
 		ppf_visualization = json_reader.json_bool;
-}
 
-Recognition3DPPF::~Recognition3DPPF()
-{
+	return true;
 }
 
 bool Recognition3DPPF::Compute(const PointCloud::Ptr cloud_scene,
-	                             const std::vector<PointCloud::Ptr> cloud_models)
+	                             const std::vector<PointCloud::Ptr> cloud_models, 
+																Eigen::Matrix4f transformation)
 {
 	PointCloudWithNormals::Ptr cloud_scene_normals(new PointCloudWithNormals());
 	PointCloud::Ptr cloud_scene_temp(new PointCloud());
@@ -52,7 +68,6 @@ bool Recognition3DPPF::Compute(const PointCloud::Ptr cloud_scene,
 	PCL_INFO("Registering PPF models to scene ...\n");
 	for (std::size_t model_i = 0; model_i < cloud_models.size(); ++model_i)
 	{
-
 		pcl::PPFRegistration<pcl::PointNormal, pcl::PointNormal> ppf_registration;
 		// set parameters for the PPF registration procedure
 		ppf_registration.setSceneReferencePointSamplingRate(point_sampling_rate);
@@ -112,15 +127,15 @@ bool Recognition3DPPF::TrainPPFModel(std::vector<PointCloud::Ptr> cloud_models)
 		ppf_estimator.compute(*cloud_model_ppf);
 
 		pcl::PPFHashMapSearch::Ptr hashmap_search(
-			new pcl::PPFHashMapSearch(rotation_Clustering_threshold / 180.0f * float(M_PI), position_clustering_threshold));
+			new pcl::PPFHashMapSearch(rotation_Clustering_threshold_train / 180.0f * float(M_PI), position_clustering_threshold_train));
 		hashmap_search->setInputFeatureCloud(cloud_model_ppf);
 		hashmap_search_vector.push_back(hashmap_search);
 	}
 	return true;
 }
 
-IRecognition* GetRecognition3DPPF(std::string config)
+IRecognition* GetRecognition3DPPF()
 {
-	IRecognition* p_irecognition = new Recognition3DPPF(config);
+	IRecognition* p_irecognition = new Recognition3DPPF();
 	return p_irecognition;
 } 

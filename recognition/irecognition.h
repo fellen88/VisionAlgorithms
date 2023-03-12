@@ -6,11 +6,11 @@
 class IRecognition 
 {
 	public:
-		virtual bool Compute() = 0;
-	  virtual bool Compute(const PointCloud::Ptr cloud_scene, const std::vector<PointCloud::Ptr> cloud_models) = 0;
-	  virtual bool TrainPPFModel(std::vector<PointCloud::Ptr> cloud_models) = 0;
+	virtual bool SetParameters(const std::string config_file) = 0;
+	virtual bool Compute(const PointCloud::Ptr cloud_scene, const std::vector<PointCloud::Ptr> cloud_models, Eigen::Matrix4f transformation) = 0;
+	virtual bool TrainPPFModel(std::vector<PointCloud::Ptr> cloud_models) = 0;
 };
 
-extern "C" __declspec(dllexport) IRecognition* APIENTRY GetRecognition3DPPF(std::string config);
+extern "C" __declspec(dllexport) IRecognition* APIENTRY GetRecognition3DPPF();
 
 #endif

@@ -93,7 +93,7 @@ namespace val
 		std::string seg_bound_config;
 		std::string seg_eucli_config;
 		std::string seg_eucli_refine_config;
-		std::string ppf_config;
+		std::string recog_ppf_config;
 		std::string lmicp_config;
 		std::string lmicp_refine_config;
 		std::vector<PointCloud::Ptr> cloud_models;
