@@ -18,8 +18,8 @@ int main()
 
 	//3D视觉算法调用:初始化实例
 	//std::string project_name = "BinPicking";
-	//std::string project_name = "BinPicking_BYD";
-	std::string project_name = "BinPicking_MAHLE";
+	std::string project_name = "BinPicking_BYD";
+	//std::string project_name = "BinPicking_MAHLE";
 
 	std::string config_byd_1 = ".\\" + project_name + "\\Config_1\\bin_picking.json";
 

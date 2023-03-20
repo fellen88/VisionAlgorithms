@@ -34,22 +34,25 @@ PoseEstimation::PoseEstimation(unsigned char algorithm, std::string config_file)
 	p_sensor_(GetCameraData()),
 	p_recog_ppf_(nullptr),
 	p_seg_sac_(nullptr),
-	p_seg_obb_(nullptr),
-	p_seg_bound_(nullptr),
+	p_refine_seg_obb_(nullptr),
+	p_refine_seg_bound_(nullptr),
+	p_instance_seg_bound_(nullptr),
 	p_seg_eucli_(nullptr),
-	p_seg_eucli_refine_(nullptr)
+	p_refine_seg_eucli_(nullptr),
+	p_regist_lmicp_(nullptr),
+	p_refine_regist_lmicp_(nullptr)
 {
 	grasp_method = algorithm;
 
 	switch (algorithm)
 	{
-		case BinPicking:
-			Init_BinPicking(config_file);
-			break;
+	case BinPicking:
+		Init_BinPicking(config_file);
+		break;
 
-		default:
-			LOG(ERROR) << "GraspName Error !";
-			break;
+	default:
+		LOG(ERROR) << "GraspName Error !";
+		break;
 	}
 }
 
@@ -61,30 +64,27 @@ void PoseEstimation::UpdateParameters(std::string config)
 {
 	std::string JsonFileName = config;
 	JsonOutType json_reader;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "DebugVisualization", "bool");
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Visualization", "bool");
 	if (json_reader.success)
 		debug_visualization = json_reader.json_bool;
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SensorOffline", "bool");
 	if (json_reader.success)
 		sensor_offline = json_reader.json_bool;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "PartRefine", "bool");
-	if (json_reader.success)
-		part_refine = json_reader.json_bool;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "InstanceSeg", "string");
-	if (json_reader.success)
-		instance_seg = json_reader.json_string;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Edge_Normal", "bool");
-	if (json_reader.success)
-		edge_normal = json_reader.json_bool;
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Sample3D", "float");
 	if (json_reader.success)
 		sample_3d = json_reader.json_float;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Normal_Search_Radius", "float");
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "InstanceSeg", "string");
 	if (json_reader.success)
-		normal_search_radius = json_reader.json_float;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Curvature_Thredhold", "float");
+		instance_seg = json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "InstanceBoundary", "bool");
 	if (json_reader.success)
-		curvature_thredhold = json_reader.json_float;
+		edge_normal = json_reader.json_bool;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Refine_1", "bool");
+	if (json_reader.success)
+		refine_1 = json_reader.json_bool;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Refine_2", "bool");
+	if (json_reader.success)
+		refine_2 = json_reader.json_bool;
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "ObjectModelPath", "string");
 	if (json_reader.success)
 		ModelFileName = json_reader.json_string;
@@ -98,6 +98,9 @@ void PoseEstimation::UpdateParameters(std::string config)
 	p_sensor_->GetSubPath(config, config_file, 1);
 	p_sensor_->GetSubPath(config, project_file, 3);
 	config_path = config.erase(config.find(config_file), config_file.size());
+	LOG(INFO) << "********************************************";
+	LOG(INFO) << "project name: " << project_file;
+	LOG(INFO) << "********************************************";
 
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegSAC_Config", "string");
 	if (json_reader.success)
@@ -120,78 +123,89 @@ void PoseEstimation::UpdateParameters(std::string config)
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegBoundary_Config", "string");
 	if (json_reader.success)
 		seg_bound_config = config_path + json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Instance_SegBoundary_Config", "string");
+	if (json_reader.success)
+		instance_seg_bound_config = config_path + json_reader.json_string;
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegEucli_Config", "string");
 	if (json_reader.success)
 		seg_eucli_config = config_path + json_reader.json_string;
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegEucli_Refine_Config", "string");
 	if (json_reader.success)
 		seg_eucli_refine_config = config_path + json_reader.json_string;
-
-	p_seg_sac_->SetParameters(seg_sac_config);
-	p_seg_obb_->SetParameters(seg_obb_config);
-	p_seg_bound_->SetParameters(seg_bound_config);
-	p_seg_eucli_refine_->SetParameters(seg_eucli_refine_config);
-	p_recog_ppf_->SetParameters(recog_ppf_config);
 }
 
 void PoseEstimation::Init_BinPicking(std::string config)
 {
-	p_seg_sac_.reset(GetSegmentationSAC());
-	p_seg_obb_.reset(GetSegmentationOBB());
+	//reset shared_ptr
+	p_refine_seg_obb_.reset(GetSegmentationOBB());
 	p_seg_obb_instance_.reset(GetSegmentationOBB());
-	p_seg_bound_.reset(GetSegmentationBoundary());
+	p_refine_seg_bound_.reset(GetSegmentationBoundary());
+	p_instance_seg_bound_.reset(GetSegmentationBoundary());
 	p_seg_eucli_.reset(GetSegmentationEuclidean());
-	p_seg_eucli_refine_.reset(GetSegmentationEuclidean());
+	p_refine_seg_eucli_.reset(GetSegmentationEuclidean());
 	p_recog_ppf_.reset(GetRecognition3DPPF());
-
-	//set parameters
-	UpdateParameters(config);
-	p_registration_ = GetRegistration3D(lmicp_config);
-	p_registration_refine_ = GetRegistration3D(lmicp_refine_config);
+	p_regist_lmicp_.reset(GetRegistrationLMICP());
+	p_refine_regist_lmicp_.reset(GetRegistrationLMICP());
 
 	//init variable
 	sac_transform = Eigen::Matrix4f::Identity();
 	object_transform = Eigen::Matrix4f::Identity();
 	object_transform_init = Eigen::Matrix4f::Identity();
 	object_transform_refine = Eigen::Matrix4f::Identity();
+
+	//set parameters
+	UpdateParameters(config);
+	p_regist_lmicp_->SetParameters(lmicp_config);
+	if (refine_1 || refine_2)
+	{
+		p_refine_seg_obb_->SetParameters(seg_obb_config);
+		p_refine_seg_bound_->SetParameters(seg_bound_config);
+		p_refine_seg_eucli_->SetParameters(seg_eucli_refine_config);
+		p_refine_regist_lmicp_->SetParameters(lmicp_refine_config);
+	}
+
 	//load ply model
-		std::string project_file;
-		p_sensor_->GetSubPath(config, project_file, 3);
-		if (false == p_sensor_->LoadPLY(project_file + "\\" + ModelFileName, object_model))
+	std::string project_file;
+	p_sensor_->GetSubPath(config, project_file, 3);
+	if (false == p_sensor_->LoadPLY(project_file + "\\" + ModelFileName, object_model))
+	{
+		LOG(ERROR) << "LoadModel Error!";
+	}
+	else
+		p_sensor_->ConvertPointsMMtoM(object_model);
+	if (true == refine_1)
+	{
+		if (false == p_sensor_->LoadPLY(project_file + "\\" + ModelFileName.erase(ModelFileName.find("."), 4) + "_refine_1.ply", object_model_part1))
 		{
-			LOG(ERROR) << "LoadModel Error!";
+			LOG(ERROR) << "Load" + project_file + "\\" + ModelFileName.erase(ModelFileName.find("."), 4) + "_refine_1.ply" + " Error!";
 		}
 		else
-			p_sensor_->ConvertPointsMMtoM(object_model);
-		if (true == part_refine)
+			p_sensor_->ConvertPointsMMtoM(object_model_part1);
+	}
+	if (true == refine_2)
+	{
+		if (false == p_sensor_->LoadPLY(project_file + "\\" + ModelFileName + "_refine_2.ply", object_model_part2))
 		{
-			if (false == p_sensor_->LoadPLY(project_file + "\\" + ModelFileName.erase(ModelFileName.find("."), 4) + "_part_1.ply", object_model_part1))
-			{
-				LOG(ERROR) << "Load Model Part1 Error!";
-			}
-			else
-				p_sensor_->ConvertPointsMMtoM(object_model_part1);
-			if (false == p_sensor_->LoadPLY(project_file + "\\" + ModelFileName + "_part_2.ply", object_model_part2))
-			{
-				LOG(ERROR) << "Load Model Part2 Error!";
-			}
-			else
-				p_sensor_->ConvertPointsMMtoM(object_model_part2);
+			LOG(ERROR) << "Load" + project_file + "\\" + ModelFileName + "_refine_2.ply" + "Error!";
 		}
+		else
+			p_sensor_->ConvertPointsMMtoM(object_model_part2);
+	}
 
-	//model preprocessing
+	//downsampling
 	pcl::copyPointCloud(*object_model, *object_model_downsample);
 	p_sensor_->DownSample(object_model_downsample, Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f));
 	//instance
 	if ("Euclidean" == instance_seg)
 	{
 		p_seg_eucli_->SetParameters(seg_eucli_config);
-		p_seg_eucli_->segment(object_model_downsample, nullptr, object_model_segeucli);
+		p_seg_eucli_->Segment(object_model_downsample, nullptr, object_model_segeucli);
 		pcl::copyPointCloud(*object_model_segeucli, *object_model_instance);
 	}
 	else if ("PPF_OBB" == instance_seg)
 	{
-	  p_seg_obb_instance_->SetParameters(seg_obb_instance_config);
+		p_recog_ppf_->SetParameters(recog_ppf_config);
+		p_seg_obb_instance_->SetParameters(seg_obb_instance_config);
 		cloud_models.push_back(object_model);
 		p_recog_ppf_->TrainPPFModel(cloud_models);
 	}
@@ -202,7 +216,8 @@ void PoseEstimation::Init_BinPicking(std::string config)
 	//edge normal
 	if (true == edge_normal)
 	{
-		p_sensor_->EdgeWithNormal(object_model_instance, normal_search_radius, curvature_thredhold, object_model_normal, object_model_edge);
+		p_instance_seg_bound_->SetParameters(instance_seg_bound_config);
+		p_instance_seg_bound_->Segment(object_model_instance, nullptr, object_model_edge);
 		pcl::copyPointCloud(*object_model_edge, *object_model_preprocess);
 	}
 	else
@@ -217,7 +232,7 @@ bool PoseEstimation::Compute_BinPicking(const pcl::PointCloud<pcl::PointXYZRGBNo
 	//object instance
 	if ("Euclidean" == instance_seg)
 	{
-		p_seg_eucli_->segment(object_scan_downsample, nullptr, object_scan_segeucli);
+		p_seg_eucli_->Segment(object_scan_downsample, nullptr, object_scan_segeucli);
 		pcl::copyPointCloud(*object_scan_segeucli, *object_scan_instance);
 	}
 	else if ("PPF_OBB" == instance_seg)
@@ -225,7 +240,7 @@ bool PoseEstimation::Compute_BinPicking(const pcl::PointCloud<pcl::PointXYZRGBNo
 		p_recog_ppf_->Compute(object_scan_downsample, cloud_models, object_transform);
 		PointCloud::Ptr model_instance_transformed(new PointCloud());
 		pcl::transformPointCloud(*object_model_instance, *model_instance_transformed, object_transform);
-		p_seg_obb_instance_->segment(object_scan_downsample, model_instance_transformed, object_scan_instance);
+		p_seg_obb_instance_->Segment(object_scan_downsample, model_instance_transformed, object_scan_instance);
 	}
 	else
 		pcl::copyPointCloud(*object_scan_downsample, *object_scan_instance);
@@ -233,7 +248,7 @@ bool PoseEstimation::Compute_BinPicking(const pcl::PointCloud<pcl::PointXYZRGBNo
 	//object edge 
 	if (true == edge_normal)
 	{
-		p_sensor_->EdgeWithNormal(object_scan_instance, normal_search_radius, curvature_thredhold, object_scene_normal, object_scene_edge);
+		p_instance_seg_bound_->Segment(object_scan_instance, nullptr, object_scene_edge);
 		pcl::copyPointCloud(*object_scene_edge, *object_scan_preprocess);
 	}
 	else
@@ -245,43 +260,59 @@ bool PoseEstimation::Compute_BinPicking(const pcl::PointCloud<pcl::PointXYZRGBNo
 		p_sensor_->ShowPointCloud(object_model_edge, "object_model_edge");
 	}
 	//registration
-	p_registration_->SAC_IA(object_model_preprocess, object_scan_preprocess, sac_output, sac_transform, 0.003, debug_visualization);
-	p_registration_->LM_ICP(object_scan_preprocess, sac_output, object_output, object_transform);
+	p_regist_lmicp_->SAC_IA(object_model_preprocess, object_scan_preprocess, sac_output, sac_transform, 0.003, debug_visualization);
+	p_regist_lmicp_->LM_ICP(object_scan_preprocess, sac_output, object_output, object_transform);
 	object_transform = object_transform * sac_transform;
 
 	//registration refine
-	if (part_refine)
+	if (refine_1 || refine_2)
 	{
-		//OBB Segmentation
 		PointCloud::Ptr model_part1_transformed(new PointCloud());
-		pcl::transformPointCloud(*object_model_part1, *model_part1_transformed, object_transform);
-		p_seg_obb_->segment(object_scan, model_part1_transformed, obb_part1);
 		PointCloud::Ptr model_part2_transformed(new PointCloud());
-		pcl::transformPointCloud(*object_model_part2, *model_part2_transformed, object_transform);
-		p_seg_obb_->segment(object_scan, model_part2_transformed, obb_part2);
 		PointCloud::Ptr model_part_transformed(new PointCloud());
+		PointCloud::Ptr euclidean_part1(new PointCloud());
+		PointCloud::Ptr euclidean_part2(new PointCloud());
+		PointCloud::Ptr euclidean_part(new PointCloud());
+		PointCloud::Ptr model_part_boundary(new PointCloud());
+		PointCloud::Ptr obb_part_boundary(new PointCloud());
+		if (refine_1)
+		{
+			//OBB Segmentation
+			pcl::transformPointCloud(*object_model_part1, *model_part1_transformed, object_transform);
+			p_refine_seg_obb_->Segment(object_scan, model_part1_transformed, obb_part1);
+		}
+		if (refine_2)
+		{
+			//OBB Segmentation
+			pcl::transformPointCloud(*object_model_part2, *model_part2_transformed, object_transform);
+			p_refine_seg_obb_->Segment(object_scan, model_part2_transformed, obb_part2);
+		}
 		*model_part_transformed = *model_part1_transformed + *model_part2_transformed;
 		*obb_output = *obb_part1 + *obb_part2;
 		//Euclidean
-		PointCloud::Ptr euclidean_part1(new PointCloud());
-		p_seg_eucli_refine_->segment(obb_part1, nullptr, euclidean_part1);
-		PointCloud::Ptr euclidean_part2(new PointCloud());
-		p_seg_eucli_refine_->segment(obb_part2, nullptr, euclidean_part2);
-		PointCloud::Ptr euclidean_part(new PointCloud());
+		if(refine_1)
+			p_refine_seg_eucli_->Segment(obb_part1, nullptr, euclidean_part1);
+		if(refine_2)
+			p_refine_seg_eucli_->Segment(obb_part2, nullptr, euclidean_part2);
 		*euclidean_part = *euclidean_part1 + *euclidean_part2;
 		//Boundary  
-		PointCloud::Ptr model_part_boundary(new PointCloud());
-		p_seg_bound_->segment(model_part_transformed, nullptr, model_part_boundary);
-		PointCloud::Ptr obb_part_boundary(new PointCloud());
-		p_seg_bound_->segment(euclidean_part, nullptr, obb_part_boundary);
+		p_refine_seg_bound_->Segment(model_part_transformed, nullptr, model_part_boundary);
+		p_refine_seg_bound_->Segment(euclidean_part, nullptr, obb_part_boundary);
 		//LM-ICP Refine
-	  p_registration_->SAC_IA(model_part_boundary, obb_part_boundary, sac_output, sac_transform, 0.002, debug_visualization);
-		p_registration_refine_->LM_ICP(obb_part_boundary, sac_output, object_output, object_transform_refine);
-		object_transform = object_transform_refine * object_transform * sac_transform;
+		if (refine_1&&refine_2)
+		{
+			p_refine_regist_lmicp_->LM_ICP(obb_part_boundary, model_part_boundary, object_output, object_transform_refine);
+			object_transform = object_transform_refine * object_transform;
+		}
+		else
+		{
+			p_refine_regist_lmicp_->SAC_IA(model_part_boundary, obb_part_boundary, sac_output, sac_transform, 0.002, debug_visualization);
+			p_refine_regist_lmicp_->LM_ICP(obb_part_boundary, sac_output, object_output, object_transform_refine);
+			object_transform = object_transform_refine * object_transform * sac_transform;
+		}
 	}
-
 	//output
-	cout << object_transform << endl;
+	LOG(INFO) << "transformation matrix: \n \0.000000f" << object_transform;
 	object_pose = object_transform;
 
 	return true;
@@ -298,7 +329,7 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 		}
 		else
 			LOG(INFO) << "Load PLY on sensor off mode";
-			p_sensor_->ConvertPointsMMtoM(object_scan);
+		p_sensor_->ConvertPointsMMtoM(object_scan);
 	}
 	else
 	{
@@ -314,7 +345,7 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 			p_sensor_->ConvertPointsMMtoM(object_scan);
 		}
 	}
-	
+
 	if (debug_visualization)
 	{
 		p_sensor_->ShowPointCloud(object_model, "object_model");
@@ -324,18 +355,18 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 	Eigen::Matrix4f object_pose_matrix;
 	switch (grasp_method)
 	{
-		case AccuracyGrasp:
-			break;
-		
-		case BinPicking:
-			Compute_BinPicking(object_points, object_pose_matrix);
-			break;
+	case AccuracyGrasp:
+		break;
 
-		default:
-			LOG(ERROR) << "GraspName Error !";
-			break;
+	case BinPicking:
+		Compute_BinPicking(object_points, object_pose_matrix);
+		break;
+
+	default:
+		LOG(ERROR) << "GraspName Error !";
+		break;
 	}
-	
+
 	p_sensor_->Matrix2EulerAngle(object_pose_matrix, object_eulerangle);
 
 	object_pose.clear();

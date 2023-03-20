@@ -14,7 +14,7 @@ fpfhFeature::Ptr Features::ComputeFpfh(PointCloud::Ptr input_cloud, pcl::search:
 	fpfhFeature::Ptr fpfh(new fpfhFeature);
 	//pcl::FPFHEstimation<pcl::PointXYZ,pcl::Normal,pcl::FPFHSignature33> est_fpfh;
 	pcl::FPFHEstimationOMP<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> est_fpfh;
-	est_fpfh.setNumberOfThreads(4); //指定4核计算
+	est_fpfh.setNumberOfThreads(8); //指定8核计算
 	est_fpfh.setInputCloud(input_cloud);
 	est_fpfh.setInputNormals(point_normal);
 	est_fpfh.setSearchMethod(tree);

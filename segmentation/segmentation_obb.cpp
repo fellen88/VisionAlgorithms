@@ -13,7 +13,7 @@ SegmentationOBB::~SegmentationOBB()
 {
 }
 
-bool SegmentationOBB::segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
+bool SegmentationOBB::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
 {
 	pcl::MomentOfInertiaEstimation <pcl::PointXYZ> feature_extractor;
 	PointCloud::Ptr cloud_model_temp(new PointCloud());

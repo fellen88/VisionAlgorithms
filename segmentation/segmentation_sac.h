@@ -16,7 +16,7 @@ class SegmentationSAC : public ISegmentation
 public:
 	SegmentationSAC();
 	~SegmentationSAC();
-	bool segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg);
+	bool Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg);
 	bool SetParameters(const std::string config_file);
 private:
 	std::shared_ptr<ICameraData> p_seg_cameradata_;

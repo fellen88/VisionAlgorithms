@@ -18,13 +18,16 @@
     <ClInclude Include="stdafx.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="registration_3d.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="features.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="iregistration_3d.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="registration_sac_ia.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="registration_lm_icp.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -32,13 +35,13 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="registration_3d.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="features.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="registration_lm_icp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

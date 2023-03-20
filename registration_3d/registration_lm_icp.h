@@ -33,12 +33,10 @@ class Registration3D : public IRegistration3D, public Features
 	bool debug_visualization;
 	float max_correspondence_distance;
 
-  Registration3D(const std::string config_file);
+  Registration3D();
+	bool SetParameters(const std::string config_file);
   void SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr transformed_cloud, Eigen::Matrix4f &SAC_transform, float downsample, bool debug_v);
   void LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, float downsample, bool debug_v);
-  void DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, float downsample, bool debug_v);
-	void ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, float downsample, bool debug_v);
-	Eigen::Matrix4f GetTransformation();
 };
 
 #endif

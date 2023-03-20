@@ -16,7 +16,7 @@ class SegmentationEuclidean : public ISegmentation
 public:
 	SegmentationEuclidean();
 	~SegmentationEuclidean();
-	bool segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg);
+	bool Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg);
 	bool SetParameters(const std::string config_file);
 
 private:

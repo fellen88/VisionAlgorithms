@@ -1,25 +1,34 @@
 ﻿
-#include "registration_3d.h"
+#include "registration_lm_icp.h"
 #include "features.h"
 #include <math.h>
 
-Registration3D::Registration3D(const std::string config_file) :
+Registration3D::Registration3D() :
 	sac_output(new pcl::PointCloud<pcl::PointXYZ>),
 	icp_output(new pcl::PointCloud<pcl::PointXYZ>)
 {
 	p_regist_cameradata_ = GetCameraData();
+}
+
+bool Registration3D::SetParameters(const std::string config_file)
+{
 	JsonOutType json_reader;
 	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "Sample3D_ICP", "float");
 	if (json_reader.success)
 		sample_3d = json_reader.json_float;
+	else
+		return false;
 	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "DebugVisualization", "bool");
 	if (json_reader.success)
 		debug_visualization = json_reader.json_bool;
+	else
+		return false;
 	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "MaxCorrespondenceDistance", "float");
 	if (json_reader.success)
 		max_correspondence_distance = json_reader.json_float;
+	else
+		return false;
 }
-
 void Registration3D::SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &sac_transform, float downsample, bool debug_v)
 {
 	sac_transform = Eigen::Matrix4f::Identity();
@@ -223,32 +232,8 @@ void Registration3D::LM_ICP(const PointCloud::Ptr cloud_src, const PointCloud::P
 	}
 }
 
-void Registration3D::DCP(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f & final_transform, float downsample, bool debug_v)
+IRegistration3D* GetRegistrationLMICP()
 {
-
-}
-
-void Registration3D::ComputeTransformation(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, float downsample, bool debug_v)
-{
-	{
-		pcl::ScopeTime scope_time("*SAC_IA");//计算算法运行时间
-		SAC_IA(cloud_src, cloud_tgt, sac_output, sac_transform, downsample, debug_v);
-	}
-	{
-		pcl::ScopeTime scope_time("*LM_ICP");//计算算法运行时间
-		LM_ICP(cloud_tgt, sac_output, icp_output, icp_transform, sample_3d, debug_v);
-	}
-
-	final_transform = icp_transform * sac_transform;
-}
-
-Eigen::Matrix4f Registration3D::GetTransformation()
-{
-	return final_transform;
-}
-
-IRegistration3D* GetRegistration3D(const std::string config_file)
-{
-	IRegistration3D* p_iregistration = new Registration3D(config_file);
+	IRegistration3D* p_iregistration = new Registration3D();
 	return p_iregistration;
 }

@@ -36,7 +36,7 @@ unsigned char SegmentationEuclidean::colors[20 * 3] = {
 204, 255, 153, //			20
 };
 
-bool SegmentationEuclidean::segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
+bool SegmentationEuclidean::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
 {
 	// ´´½¨kdÊ÷
 	pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);

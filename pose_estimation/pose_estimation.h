@@ -22,20 +22,22 @@ namespace val
 
 	private:
 		std::shared_ptr<ICameraData> p_sensor_;
-		IRegistration3D* p_registration_;
-		IRegistration3D* p_registration_refine_;
+		std::shared_ptr< IRegistration3D> p_regist_lmicp_;
+		std::shared_ptr< IRegistration3D> p_refine_regist_lmicp_;
 		std::shared_ptr<IRecognition> p_recog_ppf_;
 		std::shared_ptr<ISegmentation> p_seg_sac_;
-		std::shared_ptr<ISegmentation> p_seg_obb_;
+		std::shared_ptr<ISegmentation> p_refine_seg_obb_;
 		std::shared_ptr<ISegmentation> p_seg_obb_instance_;
-		std::shared_ptr<ISegmentation> p_seg_bound_;
+		std::shared_ptr<ISegmentation> p_refine_seg_bound_;
+		std::shared_ptr<ISegmentation> p_instance_seg_bound_;
 		std::shared_ptr<ISegmentation> p_seg_eucli_;
-		std::shared_ptr<ISegmentation> p_seg_eucli_refine_;
+		std::shared_ptr<ISegmentation> p_refine_seg_eucli_;
 
 		bool pose_flag;
 		bool debug_visualization;
 		bool sensor_offline;
-		bool part_refine;
+		bool refine_1;
+		bool refine_2;
 		std::string instance_seg;
 		bool edge_normal;
 		float sample_3d;
@@ -91,6 +93,7 @@ namespace val
 		std::string seg_obb_config;
 		std::string seg_obb_instance_config;
 		std::string seg_bound_config;
+		std::string instance_seg_bound_config;
 		std::string seg_eucli_config;
 		std::string seg_eucli_refine_config;
 		std::string recog_ppf_config;

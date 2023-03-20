@@ -10,7 +10,7 @@ SegmentationBoundary::~SegmentationBoundary()
 {
 }
 
-bool SegmentationBoundary::segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
+bool SegmentationBoundary::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
 {
 	pcl::PointCloud<pcl::Boundary> boundaries; //保存边界估计结果
 	pcl::BoundaryEstimation<pcl::PointXYZ, pcl::Normal, pcl::Boundary> boundEst; //定义一个进行边界特征估计的对象
