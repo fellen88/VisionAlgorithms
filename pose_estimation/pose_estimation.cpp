@@ -2,6 +2,8 @@
 
 #define __POSE_ESTIMATION_EXPORT
 #include "pose_estimation.h"
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
 using namespace val;
 
@@ -58,6 +60,23 @@ PoseEstimation::PoseEstimation(unsigned char algorithm, std::string config_file)
 
 PoseEstimation::~PoseEstimation()
 {
+}
+
+void val::PoseEstimation::EulerAngle2Matrix(Eigen::Vector3f & euler_angle, Eigen::Matrix4f & transformation_matrix)
+{
+	euler_angle = euler_angle * M_PI / 180;
+	Eigen::AngleAxisd rollAngle(Eigen::AngleAxisd(euler_angle(2), Eigen::Vector3d::UnitX()));
+	Eigen::AngleAxisd pitchAngle(Eigen::AngleAxisd(euler_angle(1), Eigen::Vector3d::UnitY()));
+	Eigen::AngleAxisd yawAngle(Eigen::AngleAxisd(euler_angle(0), Eigen::Vector3d::UnitZ()));
+
+	Eigen::Matrix3d rotation_matrix;
+	rotation_matrix = yawAngle * pitchAngle*rollAngle;
+
+	for(size_t i = 0; i < 3; i++)
+		for (size_t j = 0; j < 3; j++)
+		{
+			transformation_matrix(i, j) = rotation_matrix(i, j);
+		}
 }
 
 void PoseEstimation::UpdateParameters(std::string config)
@@ -192,6 +211,37 @@ void PoseEstimation::Init_BinPicking(std::string config)
 			p_sensor_->ConvertPointsMMtoM(object_model_part2);
 	}
 
+#pragma region GraspPose
+	std::string JsonFileName = config;
+	JsonOutType json_reader;
+	float X, Y, Z, RX, RY, RZ;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "X", "float");
+	if (json_reader.success)
+		X = json_reader.json_float;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Y", "float");
+	if (json_reader.success)
+		Y = json_reader.json_float;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Z", "float");
+	if (json_reader.success)
+		Z = json_reader.json_float;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "RX", "float");
+	if (json_reader.success)
+		RX = json_reader.json_float;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "RY", "float");
+	if (json_reader.success)
+		RY = json_reader.json_float;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "RZ", "float");
+	if (json_reader.success)
+		RZ = json_reader.json_float;
+	object_transform_init(0, 3) = X;
+	object_transform_init(1, 3) = Y;
+	object_transform_init(2, 3) = Z;
+
+	// 初始化欧拉角（rpy）,对应绕x轴，绕y轴，绕z轴的旋转角度
+	Eigen::Vector3f euler_angle(RX, RY, RZ);
+	EulerAngle2Matrix(euler_angle, object_transform_init);
+#pragma endregion
+
 	//downsampling
 	pcl::copyPointCloud(*object_model, *object_model_downsample);
 	p_sensor_->DownSample(object_model_downsample, Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f));
@@ -226,9 +276,12 @@ void PoseEstimation::Init_BinPicking(std::string config)
 
 bool PoseEstimation::Compute_BinPicking(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, Eigen::Matrix4f& object_pose)
 {
-	//downsampling
+	//downsampling and transformation
+	pcl::transformPointCloud(*object_scan, *object_scan, object_transform_init.inverse());
 	pcl::copyPointCloud(*object_scan, *object_scan_downsample);
 	p_sensor_->DownSample(object_scan_downsample, Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f));
+
+
 	//object instance
 	if ("Euclidean" == instance_seg)
 	{
@@ -312,7 +365,11 @@ bool PoseEstimation::Compute_BinPicking(const pcl::PointCloud<pcl::PointXYZRGBNo
 		}
 	}
 	//output
-	LOG(INFO) << "transformation matrix: \n \0.000000f" << object_transform;
+	LOG(INFO) << "transformation matrix: \n " << object_transform;
+	cout << object_transform << endl;
+	object_transform = object_transform_init * object_transform;
+	LOG(INFO) << "transformation matrix: \n " << object_transform;
+	cout << object_transform << endl;
 	object_pose = object_transform;
 
 	return true;
@@ -376,7 +433,7 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 	object_pose.push_back(object_eulerangle[2] * 180 / M_PI);
 	object_pose.push_back(object_eulerangle[1] * 180 / M_PI);
 	object_pose.push_back(object_eulerangle[0] * 180 / M_PI);
-
+	
 	return true;
 }
 

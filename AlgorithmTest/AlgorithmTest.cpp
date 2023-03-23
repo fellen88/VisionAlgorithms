@@ -39,6 +39,10 @@ int main()
 			view_point = 1;
 			//3D视觉算法调用:计算目标位姿
 			p_byd_1_->Compute(object_points, view_point, object_pose);
+			for (auto it = object_pose.begin(); it != object_pose.end(); ++it) {
+				std::cout << *it << " ";
+			}
+			std::cout << std::endl;
 		}
 		else if (input == 'r')
 			p_byd_1_.reset(GetInstance(val::IPoseEstimation::BinPicking, config_byd_1));

@@ -15,6 +15,7 @@ namespace val
 		PoseEstimation(unsigned char algorithm_vision, std::string config_file);
 		~PoseEstimation();
 
+		void EulerAngle2Matrix(Eigen::Vector3f & euler_angle, Eigen::Matrix4f & transformation_matrix);
 		void UpdateParameters(std::string config);
 		void Init_BinPicking(std::string config);
 		bool Compute_BinPicking(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, Eigen::Matrix4f & object_pose);

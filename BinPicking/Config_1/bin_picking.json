@@ -1,0 +1,30 @@
+{
+  /*Porject Name: BYD*/
+  "Visualization": false,                     //可视化开关
+  "SensorOffline": false,                     //传感器离线测试开关
+  "Sample3D": 0.002,                          //点云采样距离
+  "InstanceSeg": "Euclidean",                 //实例分割方法 Euclidean | PPF_OBB | None
+  "InstanceBoundary": true,                   //实例边缘特征提取开关
+  "Refine_1": true,                           //优化模型 1 开关
+  "Refine_2": true,                           //优化模型 2 开关
+  "ObjectModelPath": "Model_3D//model_1.ply", //3D模型文件名
+  "PointCloudPath": "PointCloud//test_1.ply", //离线测试点云文件名
+  //Grasp Pose
+  "X": -0.138,                                //抓取位姿 X  (毫米)
+  "Y": -0.031,                                //抓取位姿 Y
+  "Z": 0.476,                                 //抓取位姿 Z
+  "RX": 0.39,                                 //抓取位姿 RX （度）
+  "RY": 0.04,                                 //抓取位姿 RY
+  "RZ": 132.47,                               //抓取位姿 RZ
+  //Vision Algorithms Configuration
+  "SegSAC_Config": "seg_sac.json",
+  "Recog_PPF_Config": "instance_recog_ppf.json",
+  "SegOBB_Config": "refine_seg_obb.json",
+  "SegOBB_Instance_Config": "instance_seg_obb.json",
+  "SegBoundary_Config": "refine_seg_boundary.json",
+  "Instance_SegBoundary_Config": "instance_seg_boundary.json",
+  "SegEucli_Config": "instance_seg_euclidean.json",
+  "SegEucli_Refine_Config": "refine_seg_euclidean.json",
+  "LMICP_Config": "lm_icp.json",
+  "LMICP_Refine_Config": "refine_lm_icp.json",
+}
