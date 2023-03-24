@@ -1,0 +1,41 @@
+{
+  "ModelType": 0,
+  "MethodType": 0,
+  "MaxIterations": 1000,
+  "DistanceThreshold": 0.003,
+  "Negative": true,
+  "Sample3D": 0.001,
+  "DebugVisualization": true
+}
+
+/* enum ModelType
+  {
+    SACMODEL_PLANE, 0
+    SACMODEL_LINE,  1
+    SACMODEL_CIRCLE2D,
+    SACMODEL_CIRCLE3D,
+    SACMODEL_SPHERE,
+    SACMODEL_CYLINDER,
+    SACMODEL_CONE,
+    SACMODEL_TORUS,
+    SACMODEL_PARALLEL_LINE,
+    SACMODEL_PERPENDICULAR_PLANE,
+    SACMODEL_PARALLEL_LINES,
+    SACMODEL_NORMAL_PLANE,
+    SACMODEL_NORMAL_SPHERE,
+    SACMODEL_REGISTRATION,
+    SACMODEL_REGISTRATION_2D,
+    SACMODEL_PARALLEL_PLANE,
+    SACMODEL_NORMAL_PARALLEL_PLANE,
+    SACMODEL_STICK
+  };*/
+
+  //MethodType:
+ /*const static int SAC_RANSAC  = 0;
+  const static int SAC_LMEDS   = 1;
+  const static int SAC_MSAC    = 2;
+  const static int SAC_RRANSAC = 3;
+  const static int SAC_RMSAC   = 4;
+  const static int SAC_MLESAC  = 5;
+  const static int SAC_PROSAC  = 6;*/
+

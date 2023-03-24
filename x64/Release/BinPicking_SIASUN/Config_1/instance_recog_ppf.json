@@ -1,0 +1,10 @@
+{
+  "Sample3D": 0.001,
+  "NormalSearchRadius": 0.003,
+  "PositionClusteringThreshold": 0.006,
+  "RotationClusteringThreshold": 12.0,
+  "PositionClusteringThreshold_Train": 0.003,
+  "RotationClusteringThreshold_Train": 3.0,
+  "SceneReferencePointSamplingRate": 10,
+  "PPF_Visualization":true 
+}

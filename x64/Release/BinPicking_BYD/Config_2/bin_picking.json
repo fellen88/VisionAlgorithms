@@ -1,0 +1,22 @@
+{
+  //Porject Name: BYD
+  "DebugVisualization": false,
+  "SensorOffline": false,
+  "InstanceSeg": "Euclidean", //Euclidean | PPF_OBB | None
+  "Sample3D": 0.002,
+  "Edge_Normal": true,
+  "Refine_1": true,
+  "Refine_2": true,
+  "ObjectModelPath": "Model_3D//model_1.ply",
+  "PointCloudPath": "PointCloud//test_1.ply",
+  "Recog_PPF_Config": "instance_recog_ppf.json",
+  "SegSAC_Config": "seg_sac.json",
+  "SegOBB_Config": "refine_seg_obb.json",
+  "SegOBB_Instance_Config": "instance_seg_obb.json",
+  "SegBoundary_Config": "refine_seg_boundary.json",
+  "Instance_SegBoundary_Config": "instance_seg_boundary.json",
+  "SegEucli_Config": "instance_seg_euclidean.json",
+  "SegEucli_Refine_Config": "refine_seg_euclidean.json",
+  "LMICP_Config": "lm_icp.json",
+  "LMICP_Refine_Config": "refine_lm_icp.json"
+}

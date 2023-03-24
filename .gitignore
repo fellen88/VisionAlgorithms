@@ -4,10 +4,12 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 #$ VisionAlgorithms
-
 3rdParty/
-Vision_UserManual.pdf
-
+*.ply
+*.pcd
+*.png
+*.exe
+*.pdf
 #$ End VisionAlgorithms
 
 # User-specific files
@@ -29,6 +31,17 @@ mono_crash.*
 [Rr]elease/
 [Rr]eleases/
 x64/
+
+#$ VisionAlgorithms
+!/x64/
+![Rr]elease/
+Remote/
+*.dll
+*.lib
+*.exp
+include/
+#$ End VisionAlgorithms
+
 x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
