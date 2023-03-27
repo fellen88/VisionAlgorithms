@@ -26,5 +26,5 @@
   "SegEucli_Config": "instance_seg_euclidean.json",
   "SegEucli_Refine_Config": "refine_seg_euclidean.json",
   "LMICP_Config": "lm_icp.json",
-  "LMICP_Refine_Config": "refine_lm_icp.json",
+  "LMICP_Refine_Config": "refine_lm_icp.json"
 }

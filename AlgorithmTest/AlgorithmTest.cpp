@@ -26,7 +26,7 @@ int main()
 	std::shared_ptr<val::IPoseEstimation> p_byd_1_(GetInstance(val::IPoseEstimation::BinPicking, config_byd_1));
 
 	//加载测试点云数据
-	pcl::io::loadPLYFile(project_name + "\\PointCloud\\test_1.ply", object_points);
+	pcl::io::loadPLYFile(".\\" + project_name + "\\PointCloud\\test_1.ply", object_points);
 	char input;
 
 	while (true)

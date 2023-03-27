@@ -1,12 +1,12 @@
 @echo off
 
-set project_name=.\BinPicking_BYD\
+set project_name=BinPicking_BYD
 set sdk_version=Vision_1.0.0
 
 cd %project_name%
 dir
 
-@echo update UserManual
+::@echo update UserManual
 ::xcopy ..\Doc\Vision_UserManual.pdf  /d /y
 
 @echo update .dll
@@ -22,6 +22,10 @@ xcopy ..\..\..\bin_picking\bin_picking.h   %sdk_version%\include  /d /y
 
 @echo update .lib
 xcopy ..\vision_bin_picking.lib                   %sdk_version%\lib  /d /y
+
+@echo compress .rar
+cd ..
+"C:\Program Files\WinRAR\WinRAR.exe" a -ep1 %project_name%.rar %project_name%
 
 
 pause
