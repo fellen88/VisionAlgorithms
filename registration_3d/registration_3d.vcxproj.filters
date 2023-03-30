@@ -44,5 +44,8 @@
     <ClCompile Include="registration_lm_icp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="registration_sac_ia.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

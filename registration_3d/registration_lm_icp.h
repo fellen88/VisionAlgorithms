@@ -2,7 +2,6 @@
 #define REGISTRATION_H  
 
 #include "stdafx.h"
-#include "features.h"
 #include "iregistration_3d.h"
 #include "../camera_data/camera_data.h"
 #ifdef _DEBUG
@@ -14,18 +13,36 @@
 #include <pcl/registration/icp.h> 
 #include <pcl/registration/icp_nl.h>
 #include <pcl/registration/transforms.h>
-#include <pcl/features/moment_of_inertia_estimation.h>
 
-class Registration3D : public IRegistration3D, public Features
+// 定义新的点表达方�?< x, y, z, curvature > 坐标+曲率
+class MyPointRepresentation : public pcl::PointRepresentation <PointNormalT> //继承关系
+{
+	using pcl::PointRepresentation<PointNormalT>::nr_dimensions_;
+public:
+	MyPointRepresentation()
+	{
+		//指定维数
+		nr_dimensions_ = 4;
+	}
+	//重载函数copyToFloatArray，以定义�?己的特征向量
+	virtual void copyToFloatArray(const PointNormalT &p, float * out) const
+	{
+		//< x, y, z, curvature > 坐标xyz和曲�?
+		out[0] = p.x;
+		out[1] = p.y;
+		out[2] = p.z;
+		out[3] = p.curvature;
+	}
+};
+
+class Registration3D : public IRegistration3D
 {
   public:
 
   bool DEBUG_VISUALIZER;
 
 	Eigen::Matrix4f final_transform;
-	Eigen::Matrix4f sac_transform;
 	Eigen::Matrix4f icp_transform;
-	PointCloud::Ptr sac_output;
 	PointCloud::Ptr icp_output;
 
 	ICameraData* p_regist_cameradata_;
@@ -35,8 +52,7 @@ class Registration3D : public IRegistration3D, public Features
 
   Registration3D();
 	bool SetParameters(const std::string config_file);
-  void SAC_IA(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr transformed_cloud, Eigen::Matrix4f &SAC_transform, float downsample, bool debug_v);
-  void LM_ICP (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, float downsample, bool debug_v);
+  void Align(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform);
 };
 
 #endif

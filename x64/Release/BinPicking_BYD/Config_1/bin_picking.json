@@ -17,14 +17,16 @@
   "RY": 0.04,                                 //抓取位姿 RY
   "RZ": 132.47,                               //抓取位姿 RZ
   //Vision Algorithms Configuration
-  "SegSAC_Config": "seg_sac.json",
-  "Recog_PPF_Config": "instance_recog_ppf.json",
-  "SegOBB_Config": "refine_seg_obb.json",
-  "SegOBB_Instance_Config": "instance_seg_obb.json",
-  "SegBoundary_Config": "refine_seg_boundary.json",
-  "Instance_SegBoundary_Config": "instance_seg_boundary.json",
-  "SegEucli_Config": "instance_seg_euclidean.json",
-  "SegEucli_Refine_Config": "refine_seg_euclidean.json",
-  "LMICP_Config": "lm_icp.json",
-  "LMICP_Refine_Config": "refine_lm_icp.json"
+  "Instance_Seg_Euclidean": "instance_seg_euclidean.json",
+  "Instance_Recog_PPF": "instance_recog_ppf.json",
+  "Instance_Seg_OBB": "instance_seg_obb.json",
+  "Instance_Seg_Boundary": "instance_seg_boundary.json",
+  "Regist_SACIA": "regist_sacia.json",
+  "Regist_LMICP": "regist_lmicp.json",
+  "Refine_Seg_Euclidean": "refine_seg_euclidean.json",
+  "Refine_Seg_OBB": "refine_seg_obb.json",
+  "Refine_Seg_Boundary": "refine_seg_boundary.json",
+  "Refine_Regist_SACIA": "refine_regist_sacia.json",
+  "Refine_Regist_LMICP": "refine_regist_lmicp.json",
+  "Seg_SAC": "seg_sac.json"
 }

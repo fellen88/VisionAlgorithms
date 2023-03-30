@@ -25,6 +25,8 @@ namespace val
 		std::shared_ptr<ICameraData> p_sensor_;
 		std::shared_ptr< IRegistration3D> p_regist_lmicp_;
 		std::shared_ptr< IRegistration3D> p_refine_regist_lmicp_;
+		std::shared_ptr< IRegistration3D> p_regist_sacia_;
+		std::shared_ptr< IRegistration3D> p_refine_regist_sacia_;
 		std::shared_ptr<IRecognition> p_recog_ppf_;
 		std::shared_ptr<ISegmentation> p_seg_sac_;
 		std::shared_ptr<ISegmentation> p_refine_seg_obb_;
@@ -100,6 +102,8 @@ namespace val
 		std::string recog_ppf_config;
 		std::string lmicp_config;
 		std::string lmicp_refine_config;
+		std::string regist_sacia_config;
+		std::string refine_regist_sacia_config;
 		std::vector<PointCloud::Ptr> cloud_models;
 
 		std::string ModelFileName;

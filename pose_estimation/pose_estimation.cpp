@@ -33,16 +33,7 @@ PoseEstimation::PoseEstimation(unsigned char algorithm, std::string config_file)
 	object_scene_normal(new PointCloudWithNormals()),
 	object_model_edge(new PointCloud()),
 	object_scene_edge(new PointCloud()),
-	p_sensor_(GetCameraData()),
-	p_recog_ppf_(nullptr),
-	p_seg_sac_(nullptr),
-	p_refine_seg_obb_(nullptr),
-	p_refine_seg_bound_(nullptr),
-	p_instance_seg_bound_(nullptr),
-	p_seg_eucli_(nullptr),
-	p_refine_seg_eucli_(nullptr),
-	p_regist_lmicp_(nullptr),
-	p_refine_regist_lmicp_(nullptr)
+	p_sensor_(GetCameraData())
 {
 	grasp_method = algorithm;
 
@@ -117,40 +108,47 @@ void PoseEstimation::UpdateParameters(std::string config)
 	p_sensor_->GetSubPath(config, config_file, 1);
 	p_sensor_->GetSubPath(config, project_file, 3);
 	config_path = config.erase(config.find(config_file), config_file.size());
+	//TODO:OBJECT NUMBER
 	LOG(INFO) << "********************************************";
 	LOG(INFO) << "project name: " << project_file;
 	LOG(INFO) << "********************************************";
 
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Instance_Seg_Euclidean", "string");
+	if (json_reader.success)
+		seg_eucli_config = config_path + json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Instance_Recog_PPF", "string");
+	if (json_reader.success)
+		recog_ppf_config = config_path + json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Instance_Seg_OBB", "string");
+	if (json_reader.success)
+		seg_obb_instance_config = config_path + json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Instance_Seg_Boundary", "string");
+	if (json_reader.success)
+		instance_seg_bound_config = config_path + json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Regist_SACIA", "string");
+	if (json_reader.success)
+		regist_sacia_config = config_path + json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Regist_LMICP", "string");
+	if (json_reader.success)
+		lmicp_config = config_path + json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Refine_Seg_Euclidean", "string");
+	if (json_reader.success)
+		seg_eucli_refine_config = config_path + json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Refine_Seg_OBB", "string");
+	if (json_reader.success)
+		seg_obb_config = config_path + json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Refine_Seg_Boundary", "string");
+	if (json_reader.success)
+		seg_bound_config = config_path + json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Refine_Regist_SACIA", "string");
+	if (json_reader.success)
+		refine_regist_sacia_config = config_path + json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Refine_Regist_LMICP", "string");
+	if (json_reader.success)
+		lmicp_refine_config = config_path + json_reader.json_string;
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegSAC_Config", "string");
 	if (json_reader.success)
 		seg_sac_config = config_path + json_reader.json_string;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Recog_PPF_Config", "string");
-	if (json_reader.success)
-		recog_ppf_config = config_path + json_reader.json_string;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "LMICP_Config", "string");
-	if (json_reader.success)
-		lmicp_config = config_path + json_reader.json_string;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "LMICP_Refine_Config", "string");
-	if (json_reader.success)
-		lmicp_refine_config = config_path + json_reader.json_string;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegOBB_Config", "string");
-	if (json_reader.success)
-		seg_obb_config = config_path + json_reader.json_string;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegOBB_Instance_Config", "string");
-	if (json_reader.success)
-		seg_obb_instance_config = config_path + json_reader.json_string;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegBoundary_Config", "string");
-	if (json_reader.success)
-		seg_bound_config = config_path + json_reader.json_string;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Instance_SegBoundary_Config", "string");
-	if (json_reader.success)
-		instance_seg_bound_config = config_path + json_reader.json_string;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegEucli_Config", "string");
-	if (json_reader.success)
-		seg_eucli_config = config_path + json_reader.json_string;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SegEucli_Refine_Config", "string");
-	if (json_reader.success)
-		seg_eucli_refine_config = config_path + json_reader.json_string;
 }
 
 void PoseEstimation::Init_BinPicking(std::string config)
@@ -165,6 +163,8 @@ void PoseEstimation::Init_BinPicking(std::string config)
 	p_recog_ppf_.reset(GetRecognition3DPPF());
 	p_regist_lmicp_.reset(GetRegistrationLMICP());
 	p_refine_regist_lmicp_.reset(GetRegistrationLMICP());
+	p_regist_sacia_.reset(GetRegistrationSACIA());
+	p_refine_regist_sacia_.reset(GetRegistrationSACIA());
 
 	//init variable
 	sac_transform = Eigen::Matrix4f::Identity();
@@ -175,12 +175,14 @@ void PoseEstimation::Init_BinPicking(std::string config)
 	//set parameters
 	UpdateParameters(config);
 	p_regist_lmicp_->SetParameters(lmicp_config);
+	p_regist_sacia_->SetParameters(regist_sacia_config);
 	if (refine_1 || refine_2)
 	{
 		p_refine_seg_obb_->SetParameters(seg_obb_config);
 		p_refine_seg_bound_->SetParameters(seg_bound_config);
 		p_refine_seg_eucli_->SetParameters(seg_eucli_refine_config);
 		p_refine_regist_lmicp_->SetParameters(lmicp_refine_config);
+		p_refine_regist_sacia_->SetParameters(regist_sacia_config);
 	}
 
 	//load ply model
@@ -313,8 +315,8 @@ bool PoseEstimation::Compute_BinPicking(const pcl::PointCloud<pcl::PointXYZRGBNo
 		p_sensor_->ShowPointCloud(object_model_edge, "object_model_edge");
 	}
 	//registration
-	p_regist_lmicp_->SAC_IA(object_model_preprocess, object_scan_preprocess, sac_output, sac_transform, 0.003, debug_visualization);
-	p_regist_lmicp_->LM_ICP(object_scan_preprocess, sac_output, object_output, object_transform);
+	p_regist_sacia_->Align(object_model_preprocess, object_scan_preprocess, sac_output, sac_transform);
+	p_regist_lmicp_->Align(object_scan_preprocess, sac_output, object_output, object_transform);
 	object_transform = object_transform * sac_transform;
 
 	//registration refine
@@ -354,13 +356,13 @@ bool PoseEstimation::Compute_BinPicking(const pcl::PointCloud<pcl::PointXYZRGBNo
 		//LM-ICP Refine
 		if (refine_1&&refine_2)
 		{
-			p_refine_regist_lmicp_->LM_ICP(obb_part_boundary, model_part_boundary, object_output, object_transform_refine);
+			p_refine_regist_lmicp_->Align(obb_part_boundary, model_part_boundary, object_output, object_transform_refine);
 			object_transform = object_transform_refine * object_transform;
 		}
 		else
 		{
-			p_refine_regist_lmicp_->SAC_IA(model_part_boundary, obb_part_boundary, sac_output, sac_transform, 0.002, debug_visualization);
-			p_refine_regist_lmicp_->LM_ICP(obb_part_boundary, sac_output, object_output, object_transform_refine);
+			p_refine_regist_sacia_->Align(model_part_boundary, obb_part_boundary, sac_output, sac_transform);
+			p_refine_regist_lmicp_->Align(obb_part_boundary, sac_output, object_output, object_transform_refine);
 			object_transform = object_transform_refine * object_transform * sac_transform;
 		}
 	}
