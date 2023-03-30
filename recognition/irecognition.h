@@ -3,6 +3,13 @@
 
 #include "stdafx.h"
 #include "../camera_data/camera_data.h"
+
+#ifdef RECOGNITION_EXPORTS
+#define RECOGNITION_API __declspec(dllexport)
+#else
+#define RECOGNITION_API __declspec(dllimport)
+#endif
+
 class IRecognition 
 {
 	public:
@@ -11,6 +18,6 @@ class IRecognition
 	virtual bool TrainPPFModel(std::vector<PointCloud::Ptr> cloud_models) = 0;
 };
 
-extern "C" __declspec(dllexport) IRecognition* APIENTRY GetRecognition3DPPF();
+RECOGNITION_API IRecognition* APIENTRY GetRecognition3DPPF();
 
 #endif

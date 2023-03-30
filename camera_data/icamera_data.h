@@ -1,5 +1,13 @@
-#pragma once
+#ifndef CAMERADATA_H
+#define CAMERADATA_H
+
 #include "stdafx.h"
+
+#ifdef CAMERADATA_EXPORTS
+#define CAMERADATA_API __declspec(dllexport)
+#else
+#define CAMERADATA_API __declspec(dllimport)
+#endif
 
 struct JsonOutType
 {
@@ -48,4 +56,6 @@ class ICameraData
 	virtual bool GetSubPath(const std::string& strPath, std::string& strSubPath, int nSearch) = 0;
 };
 
-extern "C" __declspec(dllexport) ICameraData* APIENTRY GetCameraData();
+CAMERADATA_API ICameraData* APIENTRY GetCameraData();
+
+#endif

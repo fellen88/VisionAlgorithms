@@ -1,7 +1,6 @@
 #ifndef SEGMENTATION_EUCLIDEAN_H_
 #define SEGMENTATION_EUCLIDEAN_H_
 
-#define __SEGMEANTATION_EXPORT
 #include"isegmentation.h"
 #include "../camera_data/camera_data.h"
 

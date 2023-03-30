@@ -1,7 +1,6 @@
 #ifndef SEGMENTATION_BOUNDARY_H_
 #define SEGMENTATION_BOUNDARY_H_
 
-#define __SEGMEANTATION_EXPORT
 #include"isegmentation.h"
 #include "../camera_data/camera_data.h"
 

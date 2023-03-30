@@ -11,18 +11,17 @@
 
 int main()
 {
-	//位姿估计算法使用变量定义
+	//3D视觉算法：变量定义与初始化
 	pcl::PointCloud<pcl::PointXYZRGBNormal> object_points;
 	std::vector<double> object_pose;
 	unsigned char view_point = 0;
 
-	//3D视觉算法调用:初始化实例
-	//std::string project_name = "BinPicking";
+	//3D视觉算法:获取实例指针
 	std::string project_name = "BinPicking_BYD";
-	//std::string project_name = "BinPicking_MAHLE";
+	std::string object_number = "1";
 
-	std::string config_object_1 = ".\\" + project_name + "\\Config_1\\bin_picking.json";
-	std::shared_ptr<val::IPoseEstimation> p_object_1_(GetInstance(val::IPoseEstimation::BinPicking, config_object_1));
+	std::string config_object_x = ".\\" + project_name + "\\Config_" + object_number + "\\bin_picking.json";
+	std::shared_ptr<val::IPoseEstimation> p_object_x_(GetInstance(val::IPoseEstimation::BinPicking, config_object_x));
 
 	//加载测试点云数据
 	pcl::io::loadPLYFile(".\\" + project_name + "\\PointCloud\\test_1.ply", object_points);
@@ -32,19 +31,21 @@ int main()
 	{
 		std::cout << "input 's' to start /'r' to reset parameters / 'e' to end :" << std::endl;
 		std::cin >> input;
+
 		if (input == 's')
 		{
 			//采集拍照点1 目标场景点云
 			view_point = 1;
-			//3D视觉算法调用:计算目标位姿
-			p_object_1_->Compute(object_points, view_point, object_pose);
+			//3D视觉算法:计算目标位姿
+			p_object_x_->Compute(object_points, view_point, object_pose);
+			//输出抓取目标位姿计算结果
 			for (auto it = object_pose.begin(); it != object_pose.end(); ++it) {
 				std::cout << *it << " ";
 			}
 			std::cout << std::endl;
 		}
 		else if (input == 'r')
-			p_object_1_.reset(GetInstance(val::IPoseEstimation::BinPicking, config_object_1));
+			p_object_x_.reset(GetInstance(val::IPoseEstimation::BinPicking, config_object_x));
 		else if (input == 'e')
 			break;
 		else

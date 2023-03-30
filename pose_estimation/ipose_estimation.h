@@ -5,10 +5,10 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 
-#ifdef __POSE_ESTIMATION_EXPORT
-#define __POSE_ESTIMATION_API __declspec(dllexport)
+#ifdef POSE_ESTIMATION_EXPORTS
+#define POSE_ESTIMATION_API __declspec(dllexport)
 #else
-#define __POSE_ESTIMATION_API __declspec(dllimport)
+#define POSE_ESTIMATION_API __declspec(dllimport)
 #endif
 
 namespace val  //vision algorithm library
@@ -25,6 +25,6 @@ namespace val  //vision algorithm library
 		virtual bool Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>& object_pose) = 0;
 	};
 }
-__POSE_ESTIMATION_API  val::IPoseEstimation* GetInstance(char algorithm_vision, std::string config_file);
+POSE_ESTIMATION_API  val::IPoseEstimation* GetInstance(char algorithm_vision, std::string config_file);
 
 #endif

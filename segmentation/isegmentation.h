@@ -3,10 +3,10 @@
 
 #include "stdafx.h"
 
-#ifdef __SEGMEANTATION_EXPORT
-#define __SEGMENTATION_API __declspec(dllexport)
+#ifdef SEGMENTATION_EXPORTS
+#define SEGMENTATION_API __declspec(dllexport)
 #else
-#define __SEGMENTATION_API __declspec(dllimport)
+#define SEGMENTATION_API __declspec(dllimport)
 #endif
 
 class ISegmentation
@@ -17,10 +17,10 @@ class ISegmentation
 	virtual bool SetParameters(const std::string config_file) = 0;
 };
 
-__SEGMENTATION_API ISegmentation*  GetSegmentationSAC();
-__SEGMENTATION_API ISegmentation*  GetSegmentationOBB();
-__SEGMENTATION_API ISegmentation*  GetSegmentationBoundary();
-__SEGMENTATION_API ISegmentation*  GetSegmentationEuclidean();
+SEGMENTATION_API ISegmentation*  GetSegmentationSAC();
+SEGMENTATION_API ISegmentation*  GetSegmentationOBB();
+SEGMENTATION_API ISegmentation*  GetSegmentationBoundary();
+SEGMENTATION_API ISegmentation*  GetSegmentationEuclidean();
 
 #endif
 
