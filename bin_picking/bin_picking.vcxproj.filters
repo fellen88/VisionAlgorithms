@@ -24,6 +24,9 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ibin_picking.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="bin_picking.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -33,6 +36,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ibin_picking.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="bin_picking.cpp">

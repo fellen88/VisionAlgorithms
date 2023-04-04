@@ -1,5 +1,6 @@
 {
   /*Porject Name: BYD*/
+  //Global Setting
   "Visualization": false,                     //可视化开关
   "SensorOffline": false,                     //传感器离线测试开关
   "Sample3D": 0.002,                          //点云采样距离

@@ -18,8 +18,8 @@ namespace val
 		void EulerAngle2Matrix(Eigen::Vector3f & euler_angle, Eigen::Matrix4f & transformation_matrix);
 		void UpdateParameters(std::string config);
 		void Init_BinPicking(std::string config);
-		bool Compute_BinPicking(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, Eigen::Matrix4f & object_pose);
-		bool Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>& object_pose);
+		bool Compute_ModelBased(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, Eigen::Matrix4f & object_pose);
+		bool Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>* object_pose);
 
 	private:
 		std::shared_ptr<ICameraData> p_sensor_;

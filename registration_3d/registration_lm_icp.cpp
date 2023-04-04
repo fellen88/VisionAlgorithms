@@ -26,6 +26,8 @@ bool Registration3D::SetParameters(const std::string config_file)
 		max_correspondence_distance = json_reader.json_float;
 	else
 		return false;
+
+	return true;
 }
 
 void Registration3D::Align(const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform)

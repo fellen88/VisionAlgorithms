@@ -1,22 +1,39 @@
-﻿// 下列 ifdef 块是创建使从 DLL 导出更简单的
-// 宏的标准方法。此 DLL 中的所有文件都是用命令行上定义的 BINPICKING_EXPORTS
-// 符号编译的。在使用此 DLL 的
-// 任何项目上不应定义此符号。这样，源文件中包含此文件的任何其他项目都会将
-// BINPICKING_API 函数视为是从 DLL 导入的，而此 DLL 则将用此宏定义的
-// 符号视为是被导出的。
-#ifdef BINPICKING_EXPORTS
-#define BINPICKING_API __declspec(dllexport)
+#ifndef BIN_PICKING_H_
+#define BIN_PICKING_H_
+
+#include "ibin_picking.h"
+
+#include"../camera_data/icamera_data.h"
+#ifdef _DEBUG
+#pragma comment (lib, "../X64/Debug/vision_camera_data.lib")
 #else
-#define BINPICKING_API __declspec(dllimport)
+#pragma comment (lib, "../X64/Release/vision_camera_data.lib")
 #endif
 
-// 此类是从 dll 导出的
-class BINPICKING_API Cbinpicking {
-public:
-	Cbinpicking(void);
-	// TODO: 在此处添加方法。
-};
+#include "../pose_estimation/ipose_estimation.h"
+#ifdef _DEBUG
+#pragma comment (lib, "../X64/Debug/vision_pose_estimation.lib")
+#else
+#pragma comment (lib, "../X64/Release/vision_pose_estimation.lib")
+#endif
 
-extern BINPICKING_API int nbinpicking;
+namespace val  //vision algorithm library
+{
+	class BinPicking : public IBinPicking
+	{
+	public:
+		BinPicking(unsigned char algorithm, std::string config_file);
+		~BinPicking();
 
-BINPICKING_API int fnbinpicking(void);
+		bool Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, std::vector<double>* object_pose);
+
+	private:
+		unsigned char grasp_method;
+		Eigen::Vector3f object_eulerangle;
+		std::shared_ptr<ICameraData> p_photoneo_;
+		std::shared_ptr<IPoseEstimation> p_pose_estimation_;
+
+	};
+}
+
+#endif

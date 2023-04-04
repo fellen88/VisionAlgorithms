@@ -275,8 +275,35 @@ void PoseEstimation::Init_BinPicking(std::string config)
 		pcl::copyPointCloud(*object_model_instance, *object_model_preprocess);
 }
 
-bool PoseEstimation::Compute_BinPicking(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, Eigen::Matrix4f& object_pose)
+bool PoseEstimation::Compute_ModelBased(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, Eigen::Matrix4f& object_pose)
 {
+	//sensor offine/online mode
+	if (sensor_offline)
+	{
+		if (false == p_sensor_->LoadPLY(ScanFileName, object_scan))
+		{
+			LOG(ERROR) << "LoadPointCloud Error!";
+			return false;
+		}
+		else
+			LOG(INFO) << "Load PLY on sensor off mode";
+		p_sensor_->ConvertPointsMMtoM(object_scan);
+	}
+	else
+	{
+		if (object_points.size() < 1000)
+		{
+			LOG(ERROR) << "input pointcloud size < 1000";
+			return false;
+		}
+		else
+		{
+			LOG(INFO) << "Read pointcloud data on sensor on mode";
+			pcl::copyPointCloud(object_points, *object_scan);
+			p_sensor_->ConvertPointsMMtoM(object_scan);
+		}
+	}
+
 	//downsampling and transformation
 	pcl::transformPointCloud(*object_scan, *object_scan, object_transform_init.inverse());
 	pcl::copyPointCloud(*object_scan, *object_scan_downsample);
@@ -308,6 +335,7 @@ bool PoseEstimation::Compute_BinPicking(const pcl::PointCloud<pcl::PointXYZRGBNo
 	else
 		pcl::copyPointCloud(*object_scan_instance, *object_scan_preprocess);
 
+	//TODO:visulation
 	if (debug_visualization)
 	{
 		p_sensor_->ShowPointCloud(object_scene_edge, "object_scene_edge");
@@ -376,7 +404,7 @@ bool PoseEstimation::Compute_BinPicking(const pcl::PointCloud<pcl::PointXYZRGBNo
 	return true;
 }
 
-bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>& object_pose)
+bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>* object_pose)
 {
 	if (sensor_offline)
 	{
@@ -417,7 +445,7 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 		break;
 
 	case BinPicking:
-		Compute_BinPicking(object_points, object_pose_matrix);
+		Compute_ModelBased(object_points, object_pose_matrix);
 		break;
 
 	default:
@@ -427,13 +455,13 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 
 	p_sensor_->Matrix2EulerAngle(object_pose_matrix, object_eulerangle);
 
-	object_pose.clear();
-	object_pose.push_back(object_pose_matrix(0, 3));
-	object_pose.push_back(object_pose_matrix(1, 3));
-	object_pose.push_back(object_pose_matrix(2, 3));
-	object_pose.push_back(object_eulerangle[2] * 180 / M_PI);
-	object_pose.push_back(object_eulerangle[1] * 180 / M_PI);
-	object_pose.push_back(object_eulerangle[0] * 180 / M_PI);
+	object_pose->clear();
+	object_pose->push_back(object_pose_matrix(0, 3));
+	object_pose->push_back(object_pose_matrix(1, 3));
+	object_pose->push_back(object_pose_matrix(2, 3));
+	object_pose->push_back(object_eulerangle[2] * 180 / M_PI);
+	object_pose->push_back(object_eulerangle[1] * 180 / M_PI);
+	object_pose->push_back(object_eulerangle[0] * 180 / M_PI);
 	
 	return true;
 }
