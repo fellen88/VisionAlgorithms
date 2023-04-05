@@ -10,10 +10,13 @@ using namespace val;
 
 BinPicking::BinPicking(unsigned char algorithm, std::string config_file)
 {
+	picking_method = ModelBased;
+
 	switch (algorithm)
 	{
 	case ModelBased:
-		p_pose_estimation_.reset(GetInstance(val::IPoseEstimation::BinPicking, config_file));
+		p_photoneo_.reset(GetCameraData());
+		p_pose_estimation_.reset(GetInstance(config_file));
 		break;
 
 	case ModelBasedDL:
@@ -36,10 +39,10 @@ bool val::BinPicking::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obj
 {
 	Eigen::Matrix4f object_pose_matrix;
 
-	switch (grasp_method)
+	switch (picking_method)
 	{
 	case ModelBased:
-		p_pose_estimation_->Compute_ModelBased(object_points, object_pose_matrix);
+		p_pose_estimation_->Compute(object_points, object_pose_matrix);
 		break;
 
 	case ModelBasedDL:
@@ -49,7 +52,7 @@ bool val::BinPicking::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obj
 		break;
 
 	default:
-		LOG(ERROR) << "Picking Method Error !";
+		LOG(ERROR) << "Compute Picking Method Error !";
 		break;
 	}
 

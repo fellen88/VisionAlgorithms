@@ -12,14 +12,13 @@ namespace val
 	class PoseEstimation : public IPoseEstimation
 	{
 	public:
-		PoseEstimation(unsigned char algorithm_vision, std::string config_file);
+		PoseEstimation(std::string config_file);
 		~PoseEstimation();
 
 		void EulerAngle2Matrix(Eigen::Vector3f & euler_angle, Eigen::Matrix4f & transformation_matrix);
 		void UpdateParameters(std::string config);
-		void Init_BinPicking(std::string config);
-		bool Compute_ModelBased(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, Eigen::Matrix4f & object_pose);
-		bool Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>* object_pose);
+		void Init_Compute(std::string config);
+		bool Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, Eigen::Matrix4f & object_pose);
 
 	private:
 		std::shared_ptr<ICameraData> p_sensor_;
@@ -36,7 +35,6 @@ namespace val
 		std::shared_ptr<ISegmentation> p_seg_eucli_;
 		std::shared_ptr<ISegmentation> p_refine_seg_eucli_;
 
-		bool pose_flag;
 		bool debug_visualization;
 		bool sensor_offline;
 		bool refine_1;
@@ -44,16 +42,6 @@ namespace val
 		std::string instance_seg;
 		bool edge_normal;
 		float sample_3d;
-		float normal_search_radius;
-		float curvature_thredhold;
-
-		float DertaX;
-		float DertaY;
-		float DertaZ;
-		float DertaRX;
-		float DertaRY;
-		float DertaRZ;
-
 
 		cv::Mat object_depth;
 		cv::Mat object_color;
@@ -109,8 +97,6 @@ namespace val
 		std::string ModelFileName;
 		std::string ModelPartFileName;
 		std::string ScanFileName;
-
-		unsigned char grasp_method;
 	};
 }
 

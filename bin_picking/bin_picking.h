@@ -28,7 +28,7 @@ namespace val  //vision algorithm library
 		bool Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, std::vector<double>* object_pose);
 
 	private:
-		unsigned char grasp_method;
+		unsigned char picking_method;
 		Eigen::Vector3f object_eulerangle;
 		std::shared_ptr<ICameraData> p_photoneo_;
 		std::shared_ptr<IPoseEstimation> p_pose_estimation_;

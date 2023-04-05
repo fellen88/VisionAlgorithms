@@ -16,16 +16,10 @@ namespace val  //vision algorithm library
 	class IPoseEstimation
 	{
 	public:
-		enum GraspName
-		{
-			AccuracyGrasp,
-			BinPicking,
-		};
 		virtual ~IPoseEstimation() = 0;
-		virtual bool Compute_ModelBased(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, Eigen::Matrix4f & object_pose) = 0;
-		virtual bool Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, unsigned char view_point, std::vector<double>* object_pose) = 0;
+		virtual bool Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, Eigen::Matrix4f & object_pose) = 0;
 	};
 }
-POSE_ESTIMATION_API  val::IPoseEstimation* GetInstance(char algorithm_vision, std::string config_file);
+POSE_ESTIMATION_API  val::IPoseEstimation* GetInstance(std::string config_file);
 
 #endif
