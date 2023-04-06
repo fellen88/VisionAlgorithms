@@ -1,7 +1,7 @@
-#ifndef BIN_PICKING_H_
-#define BIN_PICKING_H_
+#ifndef GP_MODEL_BASED_H_
+#define GP_MODEL_BASED_H_
 
-#include "ibin_picking.h"
+#include "grasp_pose.h"
 
 #include"../camera_data/icamera_data.h"
 #ifdef _DEBUG
@@ -19,15 +19,19 @@
 
 namespace val  //vision algorithm library
 {
-	class BinPicking : public IBinPicking
+	class GraspPoseModelBased : public GraspPose
 	{
 	public:
-		BinPicking(unsigned char algorithm, std::string config_file);
-		~BinPicking();
+		GraspPoseModelBased(std::string config_file);
+		~GraspPoseModelBased();
 
-		bool Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, std::vector<double>* object_pose);
+		void SetInputPointCloud(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points);
+		void GetGraspPose(std::vector<double>* object_pose);
 
 	private:
+		pcl::PointCloud<pcl::PointXYZRGBNormal> object_point_cloud;
+		Eigen::Matrix4f object_pose_matrix;
+
 		unsigned char picking_method;
 		Eigen::Vector3f object_eulerangle;
 		std::shared_ptr<ICameraData> p_photoneo_;

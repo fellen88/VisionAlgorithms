@@ -21,27 +21,27 @@
     <ClInclude Include="framework.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="grasp_pose.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ibin_picking.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="bin_picking.h">
+    <ClInclude Include="gp_model_based.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="grasp_pose.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ibin_picking.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="bin_picking.cpp">
+    <ClCompile Include="gp_model_based.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

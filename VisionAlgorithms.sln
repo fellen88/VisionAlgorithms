@@ -19,9 +19,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "camera_data", "camera_data\camera_data.vcxproj", "{820F58E1-4F75-4997-B9FF-F325A534AC57}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "recognition", "recognition\recognition.vcxproj", "{B5E1437F-4EB7-49CC-8261-7CCB15DDB87C}"
-	ProjectSection(ProjectDependencies) = postProject
-		{FC9DBE76-8E21-4438-B683-F8618D173794} = {FC9DBE76-8E21-4438-B683-F8618D173794}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "segmentation", "segmentation\segmentation.vcxproj", "{4358463A-0BF6-4BC6-B4D8-990766527956}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -30,10 +27,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "segmentation", "segmentatio
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AlgorithmTest", "AlgorithmTest\AlgorithmTest.vcxproj", "{FCD365B8-64DB-4216-AB4E-91D3C965AE81}"
 	ProjectSection(ProjectDependencies) = postProject
-		{3C87F9D6-3D70-483C-BFCD-4094C57C176A} = {3C87F9D6-3D70-483C-BFCD-4094C57C176A}
+		{E1B88C1D-F319-47CC-99AD-6C0207A89A3B} = {E1B88C1D-F319-47CC-99AD-6C0207A89A3B}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin_picking", "bin_picking\bin_picking.vcxproj", "{3C87F9D6-3D70-483C-BFCD-4094C57C176A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "grasp_pose", "grasp_pose\grasp_pose.vcxproj", "{E1B88C1D-F319-47CC-99AD-6C0207A89A3B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{6044219A-7052-498F-8AC0-1D691E928680} = {6044219A-7052-498F-8AC0-1D691E928680}
 		{820F58E1-4F75-4997-B9FF-F325A534AC57} = {820F58E1-4F75-4997-B9FF-F325A534AC57}
@@ -127,18 +124,18 @@ Global
 		{FCD365B8-64DB-4216-AB4E-91D3C965AE81}.Remote|x64.Build.0 = Remote|x64
 		{FCD365B8-64DB-4216-AB4E-91D3C965AE81}.Remote|x86.ActiveCfg = Remote|Win32
 		{FCD365B8-64DB-4216-AB4E-91D3C965AE81}.Remote|x86.Build.0 = Remote|Win32
-		{3C87F9D6-3D70-483C-BFCD-4094C57C176A}.Debug|x64.ActiveCfg = Debug|x64
-		{3C87F9D6-3D70-483C-BFCD-4094C57C176A}.Debug|x64.Build.0 = Debug|x64
-		{3C87F9D6-3D70-483C-BFCD-4094C57C176A}.Debug|x86.ActiveCfg = Debug|Win32
-		{3C87F9D6-3D70-483C-BFCD-4094C57C176A}.Debug|x86.Build.0 = Debug|Win32
-		{3C87F9D6-3D70-483C-BFCD-4094C57C176A}.Release|x64.ActiveCfg = Release|x64
-		{3C87F9D6-3D70-483C-BFCD-4094C57C176A}.Release|x64.Build.0 = Release|x64
-		{3C87F9D6-3D70-483C-BFCD-4094C57C176A}.Release|x86.ActiveCfg = Release|Win32
-		{3C87F9D6-3D70-483C-BFCD-4094C57C176A}.Release|x86.Build.0 = Release|Win32
-		{3C87F9D6-3D70-483C-BFCD-4094C57C176A}.Remote|x64.ActiveCfg = Release|x64
-		{3C87F9D6-3D70-483C-BFCD-4094C57C176A}.Remote|x64.Build.0 = Release|x64
-		{3C87F9D6-3D70-483C-BFCD-4094C57C176A}.Remote|x86.ActiveCfg = Release|Win32
-		{3C87F9D6-3D70-483C-BFCD-4094C57C176A}.Remote|x86.Build.0 = Release|Win32
+		{E1B88C1D-F319-47CC-99AD-6C0207A89A3B}.Debug|x64.ActiveCfg = Debug|x64
+		{E1B88C1D-F319-47CC-99AD-6C0207A89A3B}.Debug|x64.Build.0 = Debug|x64
+		{E1B88C1D-F319-47CC-99AD-6C0207A89A3B}.Debug|x86.ActiveCfg = Debug|Win32
+		{E1B88C1D-F319-47CC-99AD-6C0207A89A3B}.Debug|x86.Build.0 = Debug|Win32
+		{E1B88C1D-F319-47CC-99AD-6C0207A89A3B}.Release|x64.ActiveCfg = Release|x64
+		{E1B88C1D-F319-47CC-99AD-6C0207A89A3B}.Release|x64.Build.0 = Release|x64
+		{E1B88C1D-F319-47CC-99AD-6C0207A89A3B}.Release|x86.ActiveCfg = Release|Win32
+		{E1B88C1D-F319-47CC-99AD-6C0207A89A3B}.Release|x86.Build.0 = Release|Win32
+		{E1B88C1D-F319-47CC-99AD-6C0207A89A3B}.Remote|x64.ActiveCfg = Release|x64
+		{E1B88C1D-F319-47CC-99AD-6C0207A89A3B}.Remote|x64.Build.0 = Release|x64
+		{E1B88C1D-F319-47CC-99AD-6C0207A89A3B}.Remote|x86.ActiveCfg = Release|Win32
+		{E1B88C1D-F319-47CC-99AD-6C0207A89A3B}.Remote|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

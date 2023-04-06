@@ -1,0 +1,2 @@
+#define GRASPPOSE_API __declspec(dllexport)
+#define GRASPPOSE_API __declspec(dllimport)
