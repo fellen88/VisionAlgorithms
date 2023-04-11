@@ -1,0 +1,22 @@
+  /*Porject Name: Grasp_BYD*/
+  /*Object Number: Object_1*/
+{
+  //Pose Estimation
+  "Visualization": false,                     //可视化开关
+  "CameraOffline": false,                     //相机离线测试开关
+  "Sample3D": 0.002,                          //点云采样距离
+  "InstanceSeg": "Euclidean",                 //实例分割方法   Euclidean | PPF_OBB | None
+  "InstanceKeyPoint": "Boundary",             //实例关键点     Boundary  | ISS | None
+  "Registrarion": "Global+ICP",                   //配准方法       Global+ICP | Global | ICP | None
+  "RefineModelNum": 2,                           //优化模型个数
+  "ObjectModelPath": "Model_3D//model.ply", //3D模型文件名
+  "PointCloudPath": "PointCloud//test.ply", //离线测试点云文件名
+  //Grasp Pose of Model
+  "UseModelPose": true,
+  "X": -0.138,                                //抓取位姿 X  (毫米)
+  "Y": -0.031,                                //抓取位姿 Y
+  "Z": 0.476,                                 //抓取位姿 Z
+  "RX": 0.39,                                 //抓取位姿 RX （度）
+  "RY": 0.04,                                 //抓取位姿 RY
+  "RZ": 132.47                                //抓取位姿 RZ
+}

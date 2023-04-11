@@ -19,9 +19,6 @@ namespace val  //vision algorithm library
 		virtual ~GraspPose() = 0;
 
 		virtual void SetInputPointCloud(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points) = 0;
-		//virtual void SetInputColorImage() = 0;
-		//virtual void SetInputDepthImage() = 0;
-
 		virtual void GetGraspPose(std::vector<double>* object_pose) = 0;
 	};
 }

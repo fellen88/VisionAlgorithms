@@ -63,7 +63,11 @@ class CameraData :public ICameraData
 	void EdgeWithNormal(const PointCloud::Ptr cloud_in, const float search_radius, const float curvature_thredhold, PointCloudWithNormals::Ptr cloud_normals, PointCloud::Ptr cloud_out);
 	bool GetSubPath(const std::string& strPath, std::string& strSubPath, int nSearch);
 
+	bool GetPointCloud(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, PointCloud::Ptr object_scan);
+
 private:
 	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer_nonblock;
+	bool sensor_offline;
+	std::string ScanFileName;
 };
 

@@ -14,16 +14,15 @@ int main()
 	//3D视觉算法：变量定义与初始化
 	pcl::PointCloud<pcl::PointXYZRGBNormal> object_points;
 	std::vector<double> object_pose;
-
 	//3D视觉算法:获取实例指针
-	std::string project_name = "BinPicking_BYD";
-	std::string object_number = "1";
+	std::string project_name  = "Grasp_BYD";
+	std::string object_number = "Object_1";
 
-	std::string config_object_x = ".\\" + project_name + "\\Config_" + object_number + "\\bin_picking.json";
+	std::string config_object_x = ".\\" + project_name +"\\"+ object_number + "\\Config" + "\\grasp_pose.json";
 	std::shared_ptr<val::GraspPose> p_object_x_(GetModelBasedPtr(config_object_x));
 
 	//加载测试点云数据
-	pcl::io::loadPLYFile(".\\" + project_name + "\\PointCloud\\test_" + object_number + ".ply", object_points);
+	pcl::io::loadPLYFile(".\\" + project_name +"\\"+ object_number  + "\\PointCloud\\test.ply", object_points);
 	char input;
 
 	while (true)
@@ -37,7 +36,8 @@ int main()
 			p_object_x_->SetInputPointCloud(object_points);
 			p_object_x_->GetGraspPose(&object_pose);
 			//输出抓取目标位姿计算结果
-			for (auto it = object_pose.begin(); it != object_pose.end(); ++it) {
+			for (auto it = object_pose.begin(); it != object_pose.end(); ++it)
+			{
 				std::cout << *it << " ";
 			}
 			std::cout << std::endl;

@@ -37,11 +37,17 @@ namespace val
 
 		bool debug_visualization;
 		bool sensor_offline;
-		bool refine_1;
-		bool refine_2;
+		int refine_model_num;
 		std::string instance_seg;
-		bool edge_normal;
+		std::string instance_keypoint;
 		float sample_3d;
+		bool use_model_pose;
+		float X, Y, Z, RX, RY, RZ;
+
+		std::string project_file;
+		std::string object_file;
+		std::string config_file;
+		std::string config_path;
 
 		cv::Mat object_depth;
 		cv::Mat object_color;
@@ -80,22 +86,24 @@ namespace val
 		Eigen::Matrix4f sac_transform;
 		Eigen::Vector3f object_eulerangle;
 
-		std::string seg_sac_config;
-		std::string seg_obb_config;
-		std::string seg_obb_instance_config;
-		std::string seg_bound_config;
-		std::string instance_seg_bound_config;
-		std::string seg_eucli_config;
-		std::string seg_eucli_refine_config;
-		std::string recog_ppf_config;
-		std::string lmicp_config;
-		std::string lmicp_refine_config;
-		std::string regist_sacia_config;
+
+		std::string	instance_recog_ppf_config;
+		std::string instance_seg_obb_config;
+		std::string keypoint_seg_boundary_config;
+		std::string refine_regist_lmicp_config;
 		std::string refine_regist_sacia_config;
+		std::string refine_seg_boundary_config;
+		std::string refine_seg_euclidean_config;
+		std::string refine_seg_obb_config;
+		std::string regist_lmicp_config;
+		std::string regist_sacia_config;
+		std::string seg_euclidean_config;
+		std::string seg_sac_config;
+		
+
 		std::vector<PointCloud::Ptr> cloud_models;
 
 		std::string ModelFileName;
-		std::string ModelPartFileName;
 		std::string ScanFileName;
 	};
 }

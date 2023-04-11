@@ -3,6 +3,6 @@
   "AngleThreshold": 5, // M_PI/AnglThreshold
   "BoundaryRadius": 0.002,
   "Sample3D": 0.00,
-  "Visualization_bound": false
+  "Visualization_bound":true 
 }
 

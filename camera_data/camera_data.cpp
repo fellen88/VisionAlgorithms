@@ -626,6 +626,36 @@ bool CameraData::GetSubPath(const std::string& strPath, std::string& strSubPath,
 	}
 	return true;
 }
+bool CameraData::GetPointCloud(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, PointCloud::Ptr object_scan)
+{
+	//sensor offine/online mode
+	if (sensor_offline)
+	{
+		if (false == LoadPLY(ScanFileName, object_scan))
+		{
+			LOG(ERROR) << "LoadPointCloud Error!";
+			return false;
+		}
+		else
+			LOG(INFO) << "Load PLY on sensor off mode";
+		ConvertPointsMMtoM(object_scan);
+	}
+	else
+	{
+		if (object_points.size() < 1000)
+		{
+			LOG(ERROR) << "input pointcloud size < 1000";
+			return false;
+		}
+		else
+		{
+			LOG(INFO) << "Read pointcloud data on sensor on mode";
+			pcl::copyPointCloud(object_points, *object_scan);
+			ConvertPointsMMtoM(object_scan);
+		}
+	}
+
+}
 
 ICameraData* GetCameraData()
 {
