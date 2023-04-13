@@ -92,6 +92,7 @@ bool SegmentationOBB::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud
 		pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZ> RandomColor(cloud_seg);//ÉèÖÃËæ»úÑÕÉ«
 		viewer->addPointCloud<pcl::PointXYZ>(cloud_seg, RandomColor, "points");
 		viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "points");
+		viewer->spin();
 	}
 
 	return true;

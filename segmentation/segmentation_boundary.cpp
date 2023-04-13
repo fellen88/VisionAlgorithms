@@ -46,6 +46,11 @@ bool SegmentationBoundary::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr 
 bool SegmentationBoundary::SetParameters(const std::string config_file)
 {
 	JsonOutType json_reader;
+	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "Sample3D_Boundary", "float");
+	if (json_reader.success)
+		sample_3d = json_reader.json_float;
+	else
+		return false;
 	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "NormalRadius", "float");
 	if (json_reader.success)
 		normal_radius = json_reader.json_float;
@@ -61,6 +66,7 @@ bool SegmentationBoundary::SetParameters(const std::string config_file)
 		boundary_radius = json_reader.json_float;
 	else
 		return false;
+	subsampling_leaf_size = Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f);
 	return true;
 }
 ISegmentation* GetSegmentationBoundary()

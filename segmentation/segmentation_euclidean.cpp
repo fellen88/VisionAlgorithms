@@ -38,9 +38,12 @@ unsigned char SegmentationEuclidean::colors[20 * 3] = {
 
 bool SegmentationEuclidean::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
 {
+	PointCloud::Ptr cloud_scene_temp(new PointCloud());
+	pcl::copyPointCloud(*cloud_scene, *cloud_scene_temp);
+	p_seg_cameradata_->DownSample(cloud_scene_temp, subsampling_leaf_size);
 	// 创建kd树
 	pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
-	tree->setInputCloud(cloud_scene);
+	tree->setInputCloud(cloud_scene_temp);
 
 	// 设置分割参数
 	std::vector<pcl::PointIndices> cluster_indices;
@@ -49,7 +52,7 @@ bool SegmentationEuclidean::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr
 	ec.setMinClusterSize(min_cluster_size);		//设置最小聚类点数
 	ec.setMaxClusterSize(max_cluster_size);	//设置最大聚类点数
 	ec.setSearchMethod(tree);
-	ec.setInputCloud(cloud_scene);
+	ec.setInputCloud(cloud_scene_temp);
 	ec.extract(cluster_indices);
 
 	int v1(0);
@@ -61,7 +64,7 @@ bool SegmentationEuclidean::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr
 		viewer->createViewPort(0.0, 0.0, 0.5, 1.0, v1); //设置第一个视口在X轴、Y轴的最小值、最大值，取值在0-1之间
 		viewer->setBackgroundColor(0.1, 0.1, 0.1, v1);
 		viewer->addText("cloud_in", 10, 10, "v1 text", v1);
-		viewer->addPointCloud<PointT>(cloud_scene, "cloud_in", v1);
+		viewer->addPointCloud<PointT>(cloud_scene_temp, "cloud_in", v1);
 		viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "cloud_in", v1);
 
 		viewer->createViewPort(0.5, 0.0, 1.0, 1.0, v2);
@@ -77,7 +80,7 @@ bool SegmentationEuclidean::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr
 		pcl::PointCloud<PointT>::Ptr cloud_cluster(new pcl::PointCloud<PointT>);
 
 		for (std::vector<int>::const_iterator pit = it->indices.begin(); pit != it->indices.end(); pit++)
-			cloud_cluster->points.push_back(cloud_scene->points[*pit]);
+			cloud_cluster->points.push_back(cloud_scene_temp->points[*pit]);
 		cloud_cluster->width = cloud_cluster->points.size();
 		cloud_cluster->height = 1;
 		cloud_cluster->is_dense = true;
@@ -143,7 +146,7 @@ bool SegmentationEuclidean::SetParameters(const std::string config_file)
 		visualization_eucli = json_reader.json_bool;
 	else
 		return false;
-
+	subsampling_leaf_size = Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f);
 	return true;
 }
 

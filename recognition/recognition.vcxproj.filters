@@ -44,5 +44,8 @@
     <ClCompile Include="recognition_3d_ppf.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="recognition_3d_cg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

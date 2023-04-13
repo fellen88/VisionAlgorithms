@@ -74,9 +74,6 @@ void PoseEstimation::UpdateParameters(std::string config)
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "SensorOffline", "bool");
 	if (json_reader.success)
 		sensor_offline = json_reader.json_bool;
-	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Sample3D", "float");
-	if (json_reader.success)
-		sample_3d = json_reader.json_float;
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "InstanceSeg", "string");
 	if (json_reader.success)
 		instance_seg = json_reader.json_string;
@@ -164,7 +161,7 @@ void PoseEstimation::Init_Compute(std::string config)
 		p_refine_seg_bound_->SetParameters(refine_seg_boundary_config);
 		p_refine_seg_eucli_->SetParameters(refine_seg_euclidean_config);
 		p_refine_regist_lmicp_->SetParameters(refine_regist_lmicp_config);
-		p_refine_regist_sacia_->SetParameters(refine_regist_sacia_config);
+		//p_refine_regist_sacia_->SetParameters(refine_regist_sacia_config);
 	}
 
 	//load ply model
@@ -203,14 +200,11 @@ void PoseEstimation::Init_Compute(std::string config)
 		EulerAngle2Matrix(euler_angle, object_transform_init);
 	}
 
-	//downsampling
-	pcl::copyPointCloud(*object_model, *object_model_downsample);
-	p_sensor_->DownSample(object_model_downsample, Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f));
 	//instance
 	if ("Euclidean" == instance_seg)
 	{
 		p_seg_eucli_->SetParameters(seg_euclidean_config);
-		p_seg_eucli_->Segment(object_model_downsample, nullptr, object_model_segeucli);
+		p_seg_eucli_->Segment(object_model, nullptr, object_model_segeucli);
 		pcl::copyPointCloud(*object_model_segeucli, *object_model_instance);
 	}
 	else if ("PPF_OBB" == instance_seg)
@@ -222,7 +216,7 @@ void PoseEstimation::Init_Compute(std::string config)
 	}
 	else
 	{
-		pcl::copyPointCloud(*object_model_downsample, *object_model_instance);
+		pcl::copyPointCloud(*object_model, *object_model_instance);
 	}
 	//edge normal
 	if ("Boundary" == instance_keypoint)
@@ -269,25 +263,22 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 	{
 		pcl::transformPointCloud(*object_scan, *object_scan, object_transform_init.inverse());
 	}
-	pcl::copyPointCloud(*object_scan, *object_scan_downsample);
-	p_sensor_->DownSample(object_scan_downsample, Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f));
-
 
 	//object instance
 	if ("Euclidean" == instance_seg)
 	{
-		p_seg_eucli_->Segment(object_scan_downsample, nullptr, object_scan_segeucli);
+		p_seg_eucli_->Segment(object_scan, nullptr, object_scan_segeucli);
 		pcl::copyPointCloud(*object_scan_segeucli, *object_scan_instance);
 	}
 	else if ("PPF_OBB" == instance_seg)
 	{
-		p_recog_ppf_->Compute(object_scan_downsample, cloud_models, object_transform);
+		p_recog_ppf_->Compute(object_scan, cloud_models, object_transform);
 		PointCloud::Ptr model_instance_transformed(new PointCloud());
 		pcl::transformPointCloud(*object_model_instance, *model_instance_transformed, object_transform);
-		p_seg_obb_instance_->Segment(object_scan_downsample, model_instance_transformed, object_scan_instance);
+		p_seg_obb_instance_->Segment(object_scan, model_instance_transformed, object_scan_instance);
 	}
 	else
-		pcl::copyPointCloud(*object_scan_downsample, *object_scan_instance);
+		pcl::copyPointCloud(*object_scan, *object_scan_instance);
 
 	//object edge 
 	if ("Boundary" == instance_keypoint)
@@ -308,6 +299,8 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 	p_regist_sacia_->Align(object_model_preprocess, object_scan_preprocess, sac_output, sac_transform);
 	p_regist_lmicp_->Align(object_scan_preprocess, sac_output, object_output, object_transform);
 	object_transform = object_transform * sac_transform;
+	LOG(INFO) << "transformation matrix after registration: \n " << object_transform;
+	cout << endl << object_transform << endl;
 
 	//registration refine
 	if (refine_model_num > 0)
@@ -345,16 +338,18 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 		object_transform = object_transform_refine * object_transform;
 	}
 	//output
-	LOG(INFO) << "transformation matrix: \n " << object_transform;
+	LOG(INFO) << "transformation matrix after refine: \n " << object_transform;
 	cout << endl << object_transform << endl;
-	object_transform = object_transform_init * object_transform;
-	LOG(INFO) << "transformation matrix: \n " << object_transform;
-	cout << endl <<object_transform << endl;
-	object_pose = object_transform;
+	if (use_model_pose)
+	{
+		object_transform = object_transform_init * object_transform;
+		LOG(INFO) << "transformation matrix after model pose: \n " << object_transform;
+		cout << endl <<object_transform << endl;
+		object_pose = object_transform;
+	}
 
 	return true;
 }
-
 
 IPoseEstimation * GetInstance(std::string config_file)
 {
