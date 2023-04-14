@@ -31,7 +31,7 @@
 							<!-- pcl_octree_release.lib; -->
 							<!-- pcl_outofcore_release.lib; -->
 							<!-- pcl_people_release.lib; -->
-							<!-- pcl_recognition_release.lib; -->
+							pcl_recognition_release.lib;
 							pcl_registration_release.lib;
 							<!-- pcl_sample_consensus_release.lib; -->
 							pcl_search_release.lib;
@@ -41,6 +41,7 @@
 							<!-- pcl_tracking_release.lib; -->
 							pcl_visualization_release.lib;
 							
+              flann.lib;
 														
 							vtkalglib-8.1.lib;
 							vtkChartsCore-8.1.lib;

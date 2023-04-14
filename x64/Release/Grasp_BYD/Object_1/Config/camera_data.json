@@ -1,6 +1,0 @@
-{
-  /*Porject Name: BYD*/
-  "CameraName": "photoneo", //可视化开关
-  "LengthUnit": "mm",   //点云单位
-  "SensorOffline": false //传感器离线测试开关
-}

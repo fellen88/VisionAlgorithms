@@ -3,9 +3,9 @@
 
 #include "recognition_3d.h"
 #ifdef _DEBUG
-#pragma comment (lib, "../X64/Debug/vision_camera_data.lib")
+#pragma comment (lib, "../X64/Debug/gpd_camera_data.lib")
 #else
-#pragma comment (lib, "../X64/Release/vision_camera_data.lib")
+#pragma comment (lib, "../X64/Release/gpd_camera_data.lib")
 #endif
 
 class Recognition3DPPF : public Recognition3D

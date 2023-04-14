@@ -143,7 +143,6 @@ showHelp(char *filename)
 
 void test()
 {
-
 	pcl::PointCloud<PointType>::Ptr model(new pcl::PointCloud<PointType>());
 	pcl::PointCloud<PointType>::Ptr model_keypoints(new pcl::PointCloud<PointType>());
 	pcl::PointCloud<PointType>::Ptr scene(new pcl::PointCloud<PointType>());

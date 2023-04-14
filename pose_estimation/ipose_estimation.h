@@ -11,7 +11,7 @@
 #define POSE_ESTIMATION_API __declspec(dllimport)
 #endif
 
-namespace val  //vision algorithm library
+namespace gpd
 {
 	class IPoseEstimation
 	{
@@ -20,6 +20,6 @@ namespace val  //vision algorithm library
 		virtual bool Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, Eigen::Matrix4f & object_pose) = 0;
 	};
 }
-POSE_ESTIMATION_API  val::IPoseEstimation* GetInstance(std::string config_file);
+POSE_ESTIMATION_API  gpd::IPoseEstimation* GetInstance(std::string config_file);
 
 #endif

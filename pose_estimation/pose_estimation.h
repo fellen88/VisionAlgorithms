@@ -7,7 +7,7 @@
 #include"../recognition/irecognition.h"
 #include"../segmentation/isegmentation.h"
 
-namespace val
+namespace gpd
 {
 	class PoseEstimation : public IPoseEstimation
 	{

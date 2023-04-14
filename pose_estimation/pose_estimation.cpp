@@ -4,7 +4,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-using namespace val;
+using namespace gpd;
 
 PoseEstimation::PoseEstimation(std::string config_file) :
 	object_model(new pcl::PointCloud<pcl::PointXYZ>),
@@ -41,7 +41,7 @@ PoseEstimation::~PoseEstimation()
 {
 }
 
-void val::PoseEstimation::EulerAngle2Matrix(Eigen::Vector3f & euler_angle, Eigen::Matrix4f & transformation_matrix)
+void PoseEstimation::EulerAngle2Matrix(Eigen::Vector3f & euler_angle, Eigen::Matrix4f & transformation_matrix)
 {
 	euler_angle = euler_angle * M_PI / 180;
 	Eigen::AngleAxisd rollAngle(Eigen::AngleAxisd(euler_angle(2), Eigen::Vector3d::UnitX()));
@@ -173,18 +173,18 @@ void PoseEstimation::Init_Compute(std::string config)
 		p_sensor_->ConvertPointsMMtoM(object_model);
 	if (refine_model_num > 0)
 	{
-		if (false == p_sensor_->LoadPLY(project_file + "\\"+ object_file+"\\" + ModelFileName.erase(ModelFileName.find("."), 4) + "_refine_1.ply", object_model_part1))
+		if (false == p_sensor_->LoadPLY(project_file + "\\"+ object_file+"\\" + ModelFileName.erase(ModelFileName.find("."), 4) + "_refine_a.ply", object_model_part1))
 		{
-			LOG(ERROR) << "Load" + project_file + "\\" + ModelFileName.erase(ModelFileName.find("."), 4) + "_refine_1.ply" + " Error!";
+			LOG(ERROR) << "Load" + project_file + "\\" + ModelFileName.erase(ModelFileName.find("."), 4) + "_refine_a.ply" + " Error!";
 		}
 		else
 			p_sensor_->ConvertPointsMMtoM(object_model_part1);
 	}
 	if (refine_model_num > 1)
 	{
-		if (false == p_sensor_->LoadPLY(project_file + "\\" + object_file + "\\" + ModelFileName + "_refine_2.ply", object_model_part2))
+		if (false == p_sensor_->LoadPLY(project_file + "\\" + object_file + "\\" + ModelFileName + "_refine_b.ply", object_model_part2))
 		{
-			LOG(ERROR) << "Load" + project_file + "\\" + ModelFileName + "_refine_2.ply" + "Error!";
+			LOG(ERROR) << "Load" + project_file + "\\" + ModelFileName + "_refine_b.ply" + "Error!";
 		}
 		else
 			p_sensor_->ConvertPointsMMtoM(object_model_part2);

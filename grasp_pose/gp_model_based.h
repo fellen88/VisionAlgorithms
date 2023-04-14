@@ -5,19 +5,19 @@
 
 #include"../camera_data/icamera_data.h"
 #ifdef _DEBUG
-#pragma comment (lib, "../X64/Debug/vision_camera_data.lib")
+#pragma comment (lib, "../X64/Debug/gpd_camera_data.lib")
 #else
-#pragma comment (lib, "../X64/Release/vision_camera_data.lib")
+#pragma comment (lib, "../X64/Release/gpd_camera_data.lib")
 #endif
 
 #include "../pose_estimation/ipose_estimation.h"
 #ifdef _DEBUG
-#pragma comment (lib, "../X64/Debug/vision_pose_estimation.lib")
+#pragma comment (lib, "../X64/Debug/gpd_pose_estimation.lib")
 #else
-#pragma comment (lib, "../X64/Release/vision_pose_estimation.lib")
+#pragma comment (lib, "../X64/Release/gpd_pose_estimation.lib")
 #endif
 
-namespace val  //vision algorithm library
+namespace gpd  //grasp pose detector
 {
 	class GraspPoseModelBased : public GraspPose
 	{

@@ -11,7 +11,7 @@
 #define GRASPPOSE_API __declspec(dllimport)
 #endif
 
-namespace val  //vision algorithm library
+namespace  gpd  //grasp pose detector
 {
 	class GraspPose 
 	{
@@ -23,6 +23,6 @@ namespace val  //vision algorithm library
 	};
 }
 
-GRASPPOSE_API  val::GraspPose * GetModelBasedPtr(std::string config_file);
+GRASPPOSE_API  gpd::GraspPose * GetModelBasedPtr(std::string config_file);
 
 #endif

@@ -6,7 +6,7 @@
 #include "grasp_pose.h"
 
 
-using namespace val;
+using namespace gpd;
 
 GraspPose::~GraspPose()
 {

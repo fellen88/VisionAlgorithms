@@ -5,10 +5,11 @@
 #include "iregistration_3d.h"
 #include "../camera_data/camera_data.h"
 #ifdef _DEBUG
-#pragma comment (lib, "../X64/Debug/vision_camera_data.lib")
+#pragma comment (lib, "../X64/Debug/gpd_camera_data.lib")
 #else
-#pragma comment (lib, "../X64/Release/vision_camera_data.lib")
+#pragma comment (lib, "../X64/Release/gpd_camera_data.lib")
 #endif
+
 //Åä×¼
 #include <pcl/registration/transforms.h>
 #include <pcl/features/moment_of_inertia_estimation.h>

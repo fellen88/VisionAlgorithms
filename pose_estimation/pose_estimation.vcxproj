@@ -126,7 +126,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-    <TargetName>vision_$(ProjectName)</TargetName>
+    <TargetName>gpd_$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Remote|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -227,7 +227,7 @@
 									  C:\Program Files\PCL 1.9.1\3rdParty\FLANN\lib;
 									  C:\Program Files\PCL 1.9.1\3rdParty\Qhull\lib;
 									  C:\Program Files\PCL 1.9.1\3rdParty\VTK\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vision_camera_data.lib;vision_registration_3d.lib;vision_recognition.lib;vision_segmentation.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gpd_camera_data.lib;gpd_registration_3d.lib;gpd_recognition.lib;gpd_segmentation.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Remote|x64'">

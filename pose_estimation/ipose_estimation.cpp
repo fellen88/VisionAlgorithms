@@ -2,7 +2,7 @@
 
 #include "ipose_estimation.h"
 
-using namespace val;
+using namespace gpd;
 
 IPoseEstimation::~IPoseEstimation()
 {
