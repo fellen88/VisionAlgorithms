@@ -80,6 +80,9 @@ void PoseEstimation::UpdateParameters(std::string config)
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "InstanceKeyPoint", "string");
 	if (json_reader.success)
 		instance_keypoint = json_reader.json_string;
+	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "Registrarion", "string");
+	if (json_reader.success)
+		registration = json_reader.json_string;
 	json_reader = p_sensor_->ReadJsonFile(JsonFileName, "RefineModelNum", "int");
 	if (json_reader.success)
 		refine_model_num = json_reader.json_int;
@@ -126,16 +129,20 @@ void PoseEstimation::Init_Compute(std::string config)
 	p_seg_eucli_.reset(GetSegmentationEuclidean());
 	p_refine_seg_eucli_.reset(GetSegmentationEuclidean());
 	p_recog_ppf_.reset(GetRecognition3DPPF());
+	p_recog_cg_.reset(GetRecognition3DCG());
 	p_regist_lmicp_.reset(GetRegistrationLMICP());
 	p_refine_regist_lmicp_.reset(GetRegistrationLMICP());
 	p_regist_sacia_.reset(GetRegistrationSACIA());
 	p_refine_regist_sacia_.reset(GetRegistrationSACIA());
+	p_recog_cg_.reset(GetRecognition3DCG());
+
 
 	//init variable
 	sac_transform = Eigen::Matrix4f::Identity();
 	object_transform = Eigen::Matrix4f::Identity();
 	object_transform_init = Eigen::Matrix4f::Identity();
 	object_transform_refine = Eigen::Matrix4f::Identity();
+	object_instance_number = 0;
 
 	//set parameters
 	UpdateParameters(config);
@@ -152,9 +159,11 @@ void PoseEstimation::Init_Compute(std::string config)
 	regist_sacia_config = config_path + "regist_sacia.json";
 	seg_euclidean_config = config_path + "seg_euclidean.json";
 	seg_sac_config = config_path + "seg_sac.json";
+	recog_cg_config = config_path + "recognition_cg.json";
 
 	p_regist_lmicp_->SetParameters(regist_lmicp_config);
 	p_regist_sacia_->SetParameters(regist_sacia_config);
+
 	if (refine_model_num > 0)
 	{
 		p_refine_seg_obb_->SetParameters(refine_seg_obb_config);
@@ -207,12 +216,20 @@ void PoseEstimation::Init_Compute(std::string config)
 		p_seg_eucli_->Segment(object_model, nullptr, object_model_segeucli);
 		pcl::copyPointCloud(*object_model_segeucli, *object_model_instance);
 	}
-	else if ("PPF_OBB" == instance_seg)
+	//else if ("PPF_OBB" == instance_seg)
+	//{
+	//	p_recog_ppf_->SetParameters(instance_recog_ppf_config);
+	//	p_seg_obb_instance_->SetParameters(instance_seg_obb_config);
+	//	cloud_models.push_back(object_model);
+	//	p_recog_ppf_->TrainModel(cloud_models);
+	//}
+	else if ("CG_OBB" == instance_seg)
 	{
-		p_recog_ppf_->SetParameters(instance_recog_ppf_config);
-		p_seg_obb_instance_->SetParameters(instance_seg_obb_config);
+		p_recog_cg_->SetParameters(recog_cg_config);
+		//p_seg_obb_instance_->SetParameters(instance_seg_obb_config);
 		cloud_models.push_back(object_model);
-		p_recog_ppf_->TrainPPFModel(cloud_models);
+	  //p_recog_ppf_->TrainModel(cloud_models);
+		pcl::copyPointCloud(*object_model, *object_model_instance);
 	}
 	else
 	{
@@ -270,12 +287,26 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 		p_seg_eucli_->Segment(object_scan, nullptr, object_scan_segeucli);
 		pcl::copyPointCloud(*object_scan_segeucli, *object_scan_instance);
 	}
-	else if ("PPF_OBB" == instance_seg)
+	//else if ("PPF_OBB" == instance_seg)
+	//{
+	//	p_recog_ppf_->Recognize(object_scan, cloud_models, object_transform);
+	//	PointCloud::Ptr model_instance_transformed(new PointCloud());
+	//	pcl::transformPointCloud(*object_model_instance, *model_instance_transformed, object_transform);
+	//	p_seg_obb_instance_->Segment(object_scan, model_instance_transformed, object_scan_instance);
+	//}
+	else if ("CG_OBB" == instance_seg)
 	{
-		p_recog_ppf_->Compute(object_scan, cloud_models, object_transform);
-		PointCloud::Ptr model_instance_transformed(new PointCloud());
-		pcl::transformPointCloud(*object_model_instance, *model_instance_transformed, object_transform);
-		p_seg_obb_instance_->Segment(object_scan, model_instance_transformed, object_scan_instance);
+		p_recog_cg_->Recognize(object_scan, cloud_models, object_transform, object_instance_number);
+		if (object_instance_number > 0)
+		{
+			PointCloud::Ptr model_instance_transformed(new PointCloud());
+			pcl::transformPointCloud(*object_model_instance, *model_instance_transformed, object_transform);
+			LOG(INFO) << "transformation matrix after cg: \n " << object_transform;
+			cout << endl << object_transform << endl;
+			//p_seg_obb_instance_->Segment(object_scan, model_instance_transformed, object_scan_instance);
+		}
+		else
+			return false;
 	}
 	else
 		pcl::copyPointCloud(*object_scan, *object_scan_instance);
@@ -295,12 +326,16 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 		p_sensor_->ShowPointCloud(object_scene_edge, "object_scene_edge");
 		p_sensor_->ShowPointCloud(object_model_edge, "object_model_edge");
 	}
+
 	//registration
-	p_regist_sacia_->Align(object_model_preprocess, object_scan_preprocess, sac_output, sac_transform);
-	p_regist_lmicp_->Align(object_scan_preprocess, sac_output, object_output, object_transform);
-	object_transform = object_transform * sac_transform;
-	LOG(INFO) << "transformation matrix after registration: \n " << object_transform;
-	cout << endl << object_transform << endl;
+	if ("IA_ICP" == registration)
+	{
+		p_regist_sacia_->Align(object_model_preprocess, object_scan_preprocess, sac_output, sac_transform);
+		p_regist_lmicp_->Align(object_scan_preprocess, sac_output, object_output, object_transform);
+		object_transform = object_transform * sac_transform;
+		LOG(INFO) << "transformation matrix after registration: \n " << object_transform;
+		cout << endl << object_transform << endl;
+	}
 
 	//registration refine
 	if (refine_model_num > 0)
@@ -311,6 +346,9 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 		PointCloud::Ptr euclidean_part1(new PointCloud());
 		PointCloud::Ptr euclidean_part2(new PointCloud());
 		PointCloud::Ptr euclidean_part(new PointCloud());
+		PointCloud::Ptr euclidean_model1(new PointCloud());
+		PointCloud::Ptr euclidean_model2(new PointCloud());
+		PointCloud::Ptr euclidean_model(new PointCloud());
 		PointCloud::Ptr model_part_boundary(new PointCloud());
 		PointCloud::Ptr obb_part_boundary(new PointCloud());
 		//OBB Segmentation
@@ -325,21 +363,26 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 		*model_part_transformed = *model_part1_transformed + *model_part2_transformed;
 		*obb_output = *obb_part1 + *obb_part2;
 		//Euclidean
+		p_refine_seg_eucli_->Segment(model_part1_transformed, nullptr, euclidean_model1);
 		p_refine_seg_eucli_->Segment(obb_part1, nullptr, euclidean_part1);
-		if(refine_model_num > 1)
+		if (refine_model_num > 1)
+		{
+			p_refine_seg_eucli_->Segment(model_part2_transformed, nullptr, euclidean_model2);
 			p_refine_seg_eucli_->Segment(obb_part2, nullptr, euclidean_part2);
+		}
+		*euclidean_model = *euclidean_model1 + *euclidean_model2;
 		*euclidean_part = *euclidean_part1 + *euclidean_part2;
 		//Boundary  
-		p_refine_seg_bound_->Segment(model_part_transformed, nullptr, model_part_boundary);
+		p_refine_seg_bound_->Segment(euclidean_model, nullptr, model_part_boundary);
 		p_refine_seg_bound_->Segment(euclidean_part, nullptr, obb_part_boundary);
 		//LM-ICP Refine
 			//p_refine_regist_sacia_->Align(model_part_boundary, obb_part_boundary, sac_output, sac_transform);
 		p_refine_regist_lmicp_->Align(obb_part_boundary, model_part_boundary, object_output, object_transform_refine);
 		object_transform = object_transform_refine * object_transform;
+		//output
+		LOG(INFO) << "transformation matrix after refine: \n " << object_transform;
+		cout << endl << object_transform << endl;
 	}
-	//output
-	LOG(INFO) << "transformation matrix after refine: \n " << object_transform;
-	cout << endl << object_transform << endl;
 	if (use_model_pose)
 	{
 		object_transform = object_transform_init * object_transform;

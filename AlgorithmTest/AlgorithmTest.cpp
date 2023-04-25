@@ -15,14 +15,15 @@ int main()
 	pcl::PointCloud<pcl::PointXYZRGBNormal> object_points;
 	std::vector<double> object_pose;
 	//3D视觉算法:获取实例指针
-	std::string project_name  = "GPD_BYD";
-	std::string object_number = "Object_1";
+	//std::string project_name  = "GPD_BYD";
+	std::string project_name  = "GPD_MAHLE";
+	std::string object_number = "object_1";
 
-	std::string config_object_x = ".\\" + project_name +"\\"+ object_number + "\\Config" + "\\grasp_pose.json";
+	std::string config_object_x = ".\\" + project_name +"\\"+ object_number + "\\config" + "\\grasp_pose.json";
 	std::shared_ptr<gpd::GraspPose> p_object_x_(GetModelBasedPtr(config_object_x));
 
 	//加载测试点云数据
-	pcl::io::loadPLYFile(".\\" + project_name +"\\"+ object_number  + "\\PointCloud\\scene.ply", object_points);
+	pcl::io::loadPLYFile(".\\" + project_name +"\\"+ object_number  + "\\pointcloud\\scene.ply", object_points);
 	char input;
 
 	while (true)

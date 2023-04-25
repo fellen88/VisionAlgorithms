@@ -51,9 +51,9 @@ bool Recognition3DPPF::SetParameters(const std::string config)
 	return true;
 }
 
-bool Recognition3DPPF::Compute(const PointCloud::Ptr cloud_scene,
+bool Recognition3DPPF::Recognize(const PointCloud::Ptr cloud_scene,
 	                             const std::vector<PointCloud::Ptr> cloud_models, 
-																Eigen::Matrix4f transformation)
+																Eigen::Matrix4f& transformation, size_t& output_number)
 {
 	PointCloudWithNormals::Ptr cloud_scene_normals(new PointCloudWithNormals());
 	PointCloud::Ptr cloud_scene_temp(new PointCloud());
@@ -107,7 +107,7 @@ bool Recognition3DPPF::Compute(const PointCloud::Ptr cloud_scene,
 	return true;
 }
 
-bool Recognition3DPPF::TrainPPFModel(std::vector<PointCloud::Ptr> cloud_models)
+bool Recognition3DPPF::TrainModel(std::vector<PointCloud::Ptr> cloud_models)
 {
 	PCL_INFO("Training PPF Models ...\n");
 

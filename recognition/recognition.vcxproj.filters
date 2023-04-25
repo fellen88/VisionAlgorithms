@@ -30,6 +30,9 @@
     <ClInclude Include="recognition_3d_ppf.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="recognition_3d_cg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

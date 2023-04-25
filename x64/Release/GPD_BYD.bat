@@ -1,7 +1,7 @@
 @echo off
 
 set project_name=GPD_BYD
-set sdk_version=GPD_1.0.0
+set sdk_version=gpd_1.0.0
 
 cd %project_name%
 dir

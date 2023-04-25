@@ -27,6 +27,7 @@ namespace gpd
 		std::shared_ptr< IRegistration3D> p_regist_sacia_;
 		std::shared_ptr< IRegistration3D> p_refine_regist_sacia_;
 		std::shared_ptr<IRecognition> p_recog_ppf_;
+		std::shared_ptr<IRecognition> p_recog_cg_;
 		std::shared_ptr<ISegmentation> p_seg_sac_;
 		std::shared_ptr<ISegmentation> p_refine_seg_obb_;
 		std::shared_ptr<ISegmentation> p_seg_obb_instance_;
@@ -40,6 +41,7 @@ namespace gpd
 		int refine_model_num;
 		std::string instance_seg;
 		std::string instance_keypoint;
+		std::string registration;
 		float sample_3d;
 		bool use_model_pose;
 		float X, Y, Z, RX, RY, RZ;
@@ -85,6 +87,7 @@ namespace gpd
 		Eigen::Matrix4f object_transform_refine;
 		Eigen::Matrix4f sac_transform;
 		Eigen::Vector3f object_eulerangle;
+		size_t object_instance_number;
 
 
 		std::string	instance_recog_ppf_config;
@@ -99,6 +102,7 @@ namespace gpd
 		std::string regist_sacia_config;
 		std::string seg_euclidean_config;
 		std::string seg_sac_config;
+		std::string recog_cg_config;
 		
 
 		std::vector<PointCloud::Ptr> cloud_models;

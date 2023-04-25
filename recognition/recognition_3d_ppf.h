@@ -17,8 +17,9 @@ public:
 	~Recognition3DPPF();
 
 	bool SetParameters(const std::string config_file);
-	bool Compute(const PointCloud::Ptr cloud_scene, const std::vector<PointCloud::Ptr> cloud_models, Eigen::Matrix4f transformation);
-	bool TrainPPFModel(std::vector<PointCloud::Ptr> cloud_models);
+	bool Recognize(const PointCloud::Ptr cloud_scene, const std::vector<PointCloud::Ptr> cloud_model, 
+		Eigen::Matrix4f & transformation, size_t& output_number);
+	bool TrainModel(std::vector<PointCloud::Ptr> cloud_models);
 
 private:
 	std::vector<PointCloudWithNormals::Ptr> cloud_models_with_normals;

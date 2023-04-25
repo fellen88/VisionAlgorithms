@@ -9,8 +9,9 @@ public:
 	Recognition3D();
 	~Recognition3D();
 	virtual bool SetParameters(const std::string config_file) = 0;
-	virtual bool Compute(const PointCloud::Ptr cloud_scene, const std::vector<PointCloud::Ptr> cloud_models, Eigen::Matrix4f transformation) = 0;
-	virtual bool TrainPPFModel(std::vector<PointCloud::Ptr> cloud_models) = 0;
+	virtual bool Recognize(const PointCloud::Ptr cloud_scene, const std::vector<PointCloud::Ptr> cloud_model,
+		Eigen::Matrix4f& transformation, size_t& output_number) = 0;
+	virtual bool TrainModel(std::vector<PointCloud::Ptr> cloud_models) = 0;
 
 };
 
