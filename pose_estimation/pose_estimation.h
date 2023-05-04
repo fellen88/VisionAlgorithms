@@ -39,9 +39,8 @@ namespace gpd
 		bool debug_visualization;
 		bool sensor_offline;
 		int refine_model_num;
-		std::string instance_seg;
-		std::string instance_keypoint;
-		std::string registration;
+		std::string instance_method;
+		std::string refine_registration;
 		float sample_3d;
 		bool use_model_pose;
 		float X, Y, Z, RX, RY, RZ;

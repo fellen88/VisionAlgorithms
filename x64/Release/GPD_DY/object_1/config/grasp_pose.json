@@ -4,9 +4,10 @@
   //Pose Estimation
   "Visualization": false,                     //可视化开关
   "CameraOffline": false,                     //相机离线测试开关
-  "Instance": "CG",                           //实例提取方法  
-  "Refine_ModelNum": 1,                       //优化模型个数
-  "Refine_Registrarion": "ICP",               //配准方法       IA_ICP | ICP
+  "InstanceSeg": "CG_OBB",                    //实例分割方法   Euclidean | CG_OBB | None
+  "InstanceKeyPoint": "None",                 //实例关键点     Boundary  | ISS | None
+  "Registrarion": "None",                   //配准方法       IA_ICP | IA | ICP | None
+  "RefineModelNum": 1,                           //优化模型个数
   "ObjectModelPath": "model_3D//model.ply", //3D模型文件名
   "PointCloudPath": "pointcloud//scene.ply", //离线测试点云文件名
   //Grasp Pose of Model

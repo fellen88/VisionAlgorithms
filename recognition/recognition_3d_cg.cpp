@@ -105,9 +105,9 @@ bool gpd::Recognition3DCG::SetParameters(const std::string config_file)
 	json_reader = p_dataprocess_->ReadJsonFile(config_file, "cg_size", "float");
 	if (json_reader.success)
 		cg_size_ = json_reader.json_float;
-	json_reader = p_dataprocess_->ReadJsonFile(config_file, "cg_thresh", "float");
+	json_reader = p_dataprocess_->ReadJsonFile(config_file, "cg_thresh", "int");
 	if (json_reader.success)
-		cg_thresh_ = json_reader.json_float;
+		cg_thresh_ = json_reader.json_int;
 	//ICP
 	json_reader = p_dataprocess_->ReadJsonFile(config_file, "icp_max_iter", "float");
 	if (json_reader.success)
@@ -116,6 +116,9 @@ bool gpd::Recognition3DCG::SetParameters(const std::string config_file)
 	if (json_reader.success)
 		icp_corr_distance_ = json_reader.json_float;
 	//Hypothesis Verification
+	json_reader = p_dataprocess_->ReadJsonFile(config_file, "use_hv", "bool");
+	if (json_reader.success)
+		use_hv_ = json_reader.json_bool;
 	json_reader = p_dataprocess_->ReadJsonFile(config_file, "hv_resolution", "float");
 	if (json_reader.success)
 		hv_resolution_ = json_reader.json_float;
@@ -389,38 +392,41 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 	/**
 	 * Hypothesis Verification
 	 */
-	std::cout << "--- Hypotheses Verification ---" << std::endl;
-	std::vector<bool> hypotheses_mask;  // Mask Vector to identify positive hypotheses
+		std::cout << "--- Hypotheses Verification ---" << std::endl;
+		std::vector<bool> hypotheses_mask;  // Mask Vector to identify positive hypotheses
 
-	pcl::GlobalHypothesesVerification<PointType, PointType> GoHv;
-
-	GoHv.setSceneCloud(scene);  // Scene Cloud
-	GoHv.addModels(registered_instances, true);  //Models to verify
-	GoHv.setResolution(hv_resolution_);
-	GoHv.setResolutionOccupancyGrid(hv_occupancy_grid_resolution_);
-	GoHv.setInlierThreshold(hv_inlier_th_);
-	GoHv.setOcclusionThreshold(hv_occlusion_th_);
-	GoHv.setRegularizer(hv_regularizer_);
-	GoHv.setRadiusClutter(hv_rad_clutter_);
-	GoHv.setClutterRegularizer(hv_clutter_reg_);
-	GoHv.setDetectClutter(hv_detect_clutter_);
-	GoHv.setRadiusNormals(hv_rad_normals_);
-
-	GoHv.verify();
-	GoHv.getMask(hypotheses_mask);  // i-element TRUE if hvModels[i] verifies hypotheses
-
-	for (int i = 0; i < hypotheses_mask.size(); i++)
+	if (use_hv_)
 	{
-		if (hypotheses_mask[i])
+		pcl::GlobalHypothesesVerification<PointType, PointType> GoHv;
+
+		GoHv.setSceneCloud(scene);  // Scene Cloud
+		GoHv.addModels(registered_instances, true);  //Models to verify
+		GoHv.setResolution(hv_resolution_);
+		GoHv.setResolutionOccupancyGrid(hv_occupancy_grid_resolution_);
+		GoHv.setInlierThreshold(hv_inlier_th_);
+		GoHv.setOcclusionThreshold(hv_occlusion_th_);
+		GoHv.setRegularizer(hv_regularizer_);
+		GoHv.setRadiusClutter(hv_rad_clutter_);
+		GoHv.setClutterRegularizer(hv_clutter_reg_);
+		GoHv.setDetectClutter(hv_detect_clutter_);
+		GoHv.setRadiusNormals(hv_rad_normals_);
+
+		GoHv.verify();
+		GoHv.getMask(hypotheses_mask);  // i-element TRUE if hvModels[i] verifies hypotheses
+
+		for (int i = 0; i < hypotheses_mask.size(); i++)
 		{
-			std::cout << "Instance " << i << " is GOOD! <---" << std::endl;
+			if (hypotheses_mask[i])
+			{
+				std::cout << "Instance " << i << " is GOOD! <---" << std::endl;
+			}
+			else
+			{
+				std::cout << "Instance " << i << " is bad!" << std::endl;
+			}
 		}
-		else
-		{
-			std::cout << "Instance " << i << " is bad!" << std::endl;
-		}
+		std::cout << "-------------------------------" << std::endl;
 	}
-	std::cout << "-------------------------------" << std::endl;
 
 	/**
 	 *  Visualization
@@ -469,7 +475,11 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 			//show result of hypotheses
 			std::stringstream ss_instance;
 			ss_instance << "instance_" << i;
-			CloudStyle registeredStyles = hypotheses_mask[i] ? style_green : style_cyan;
+			CloudStyle registeredStyles = style_green;
+			if (use_hv_)
+			{
+				registeredStyles = hypotheses_mask[i] ? style_green : style_cyan;
+			}
 			ss_instance << "_registered" << std::endl;
 			pcl::visualization::PointCloudColorHandlerCustom<PointType> registered_instance_color_handler(registered_instances[i], registeredStyles.r,
 				registeredStyles.g, registeredStyles.b);
@@ -505,24 +515,43 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 	}
 
 	//Output Result
-	for (int i = 0; i < hypotheses_mask.size(); i++)
+	if (use_hv_)
 	{
-		if (hypotheses_mask[i])
+		for (int i = 0; i < hypotheses_mask.size(); i++)
 		{
-			std::cout << "Instance " << i << " is Final Output! <---" << std::endl;
-			std::cout << "-------------------------------" << std::endl;
-			output_transformation = rototranslations[i];
-			output_number = 1;
-			return true;
+			if (hypotheses_mask[i])
+			{
+				std::cout << "Instance " << i << " is Final Output! <---" << std::endl;
+				std::cout << "-------------------------------" << std::endl;
+				output_transformation = rototranslations[i];
+				output_number = 1;
+				return true;
+			}
+			else
+			{
+				std::cout << "No Instance Output! <---" << std::endl;
+				std::cout << "-------------------------------" << std::endl;
+				output_transformation = Eigen::Matrix4f::Identity();
+				output_number = 0;
+				return false;
+			}
 		}
-		else
-		{
-			std::cout << "No Instance Output! <---" << std::endl;
-			std::cout << "-------------------------------" << std::endl;
-			output_transformation = Eigen::Matrix4f::Identity();
-			return false;
-
-		}
+	}
+	else if(rototranslations.size() > 0)
+	{
+		std::cout << "Instance " << 0 << " is Final Output! <---" << std::endl;
+		std::cout << "-------------------------------" << std::endl;
+		output_transformation = rototranslations[0];
+		output_number = 1;
+		return true;
+	}
+	else
+	{
+		std::cout << "No Instance Output! <---" << std::endl;
+		std::cout << "-------------------------------" << std::endl;
+		output_transformation = Eigen::Matrix4f::Identity();
+		output_number = 0;
+		return false;
 	}
 
 }

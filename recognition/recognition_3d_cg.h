@@ -75,6 +75,7 @@ namespace gpd
 		int icp_max_iter_;
 		float icp_corr_distance_;
 
+		bool use_hv_;
 		float hv_resolution_;
 		float hv_occupancy_grid_resolution_;
 		float hv_clutter_reg_;
