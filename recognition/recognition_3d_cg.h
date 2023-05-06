@@ -72,6 +72,8 @@ namespace gpd
 		float descr_rad_;
 		float cg_size_;
 		float cg_thresh_;
+
+		bool use_icp_;
 		int icp_max_iter_;
 		float icp_corr_distance_;
 

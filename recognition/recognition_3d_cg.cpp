@@ -109,6 +109,9 @@ bool gpd::Recognition3DCG::SetParameters(const std::string config_file)
 	if (json_reader.success)
 		cg_thresh_ = json_reader.json_int;
 	//ICP
+	json_reader = p_dataprocess_->ReadJsonFile(config_file, "use_icp", "bool");
+	if (json_reader.success)
+		use_icp_ = json_reader.json_bool;
 	json_reader = p_dataprocess_->ReadJsonFile(config_file, "icp_max_iter", "float");
 	if (json_reader.success)
 		icp_max_iter_ = json_reader.json_float;
@@ -320,6 +323,8 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 	if (rototranslations.size() <= 0)
 	{
 		std::cout << "*** No instances found! ***" << std::endl;
+		output_transformation = Eigen::Matrix4f::Identity();
+		output_number = 0;
 		return false;
 	}
 	else
@@ -360,7 +365,7 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 	 * ICP
 	 */
 	std::vector<pcl::PointCloud<PointType>::ConstPtr> registered_instances;
-	if (true)
+	if (use_icp_)
 	{
 		std::cout << "--- ICP ---------" << std::endl;
 
