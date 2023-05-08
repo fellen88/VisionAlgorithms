@@ -15,7 +15,7 @@
   "cg_thresh": 200,
   //ICP
   "use_icp": true,
-  "icp_max_iter": 10,
+  "icp_max_iter": 20,
   "icp_corr_distance": 0.02,
   //Hypothesis Verification
   "use_hv": false,

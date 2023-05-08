@@ -16,6 +16,11 @@ bool Registration3D::SetParameters(const std::string config_file)
 		sample_3d = json_reader.json_float;
 	else
 		return false;
+	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "MaximumIterations", "float");
+	if (json_reader.success)
+		max_interations = json_reader.json_float;
+	else
+		return false;
 	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "DebugVisualization", "bool");
 	if (json_reader.success)
 		debug_visualization = json_reader.json_bool;
@@ -88,7 +93,7 @@ void Registration3D::Align(const PointCloud::Ptr cloud_src, const PointCloud::Pt
 	reg.setInputSource(points_with_normals_src); //版本不符合，使用下面的语句
 	//reg.setInputCloud (points_with_normals_src); //设置输入点云（待变换的点云）
 	reg.setInputTarget(points_with_normals_tgt); //设置目标点云
-	reg.setMaximumIterations(5); //设置内部优化的迭代次数
+	reg.setMaximumIterations(max_interations); //设置内部优化的迭代次数
 
 	// Run the same optimization in a loop and visualize the results
 	Eigen::Matrix4f Ti = Eigen::Matrix4f::Identity(), prev, targetToSource;
