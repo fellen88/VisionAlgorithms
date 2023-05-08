@@ -49,6 +49,7 @@ class CameraData :public ICameraData
 	void ShowPointCloud(const PointCloud::Ptr pointcloud, std::string window_name);
 	void ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, size_t spin_time, std::string cloudname, unsigned char r, unsigned char g, unsigned char b);
 	void ShowImage(const cv::Mat image, std::string window_name);
+	void ShowPose(const PointCloud::Ptr pointcloud, Eigen::Matrix4f &pose, std::string window_name);
 	
 	JsonOutType ReadJsonFile(const std::string file_name, const std::string key_name, const char* out_type);
 	JsonOutType ReadJsonString(const std::string json_string,const std::string key_name, const char* out_type);

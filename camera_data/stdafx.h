@@ -35,6 +35,9 @@
 //pcl曲率
 #include<pcl/features/principal_curvatures.h>
 
+//pcl	变换
+#include<pcl/common/transforms.h>
+
 //pcl可视化
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/visualization/histogram_visualizer.h> 

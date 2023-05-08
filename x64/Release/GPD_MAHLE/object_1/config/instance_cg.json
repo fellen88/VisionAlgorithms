@@ -1,6 +1,6 @@
 {
   //Visualization
-  "show_result": true,
+  "show_result": false,
   "show_keypoints": true,
   "show_correspondences": false,
   "show_rotated_model": false,

@@ -16,22 +16,9 @@ PoseEstimation::PoseEstimation(std::string config_file) :
 	sac_output(new pcl::PointCloud<pcl::PointXYZ>),
 	obb_output(new pcl::PointCloud<pcl::PointXYZ>),
 	object_output(new pcl::PointCloud<pcl::PointXYZ>),
-	object_scan_segsac(new pcl::PointCloud<pcl::PointXYZ>),
-	object_model_segsac(new pcl::PointCloud<pcl::PointXYZ>),
-	object_scan_downsample(new pcl::PointCloud<pcl::PointXYZ>),
-	object_model_downsample(new pcl::PointCloud<pcl::PointXYZ>),
-	object_scan_segeucli(new pcl::PointCloud<pcl::PointXYZ>),
-	object_model_segeucli(new pcl::PointCloud<pcl::PointXYZ>),
 	object_scan_instance(new pcl::PointCloud<pcl::PointXYZ>),
 	object_model_instance(new pcl::PointCloud<pcl::PointXYZ>),
-	object_scan_preprocess(new pcl::PointCloud<pcl::PointXYZ>),
-	object_model_preprocess(new pcl::PointCloud<pcl::PointXYZ>),
-	object_scene_curvature(new PointCloudWithCurvatures()),
-	object_model_curvature(new PointCloudWithCurvatures()),
-	object_model_normal(new PointCloudWithNormals()),
-	object_scene_normal(new PointCloudWithNormals()),
-	object_model_edge(new PointCloud()),
-	object_scene_edge(new PointCloud()),
+	object_scene_transformed(new pcl::PointCloud<pcl::PointXYZ>),
 	p_sensor_(GetCameraData())
 {
 	Init_Compute(config_file);
@@ -249,35 +236,32 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 		}
 	}
 
-	//visulation
-	if (debug_visualization)
-	{
-		p_sensor_->ShowPointCloud(object_scan, "scene");
-	}
-
 	//model pose transformation
 	if (use_model_pose)
 	{
-		pcl::transformPointCloud(*object_scan, *object_scan, object_transform_init.inverse());
+		pcl::transformPointCloud(*object_scan, *object_scene_transformed, object_transform_init.inverse());
 	}
 
 	//object instance
 	if ("CG" == instance_method)
 	{
-		p_recog_cg_->Recognize(object_scan, cloud_models, object_transform, object_instance_number);
+		p_recog_cg_->Recognize(object_scene_transformed, cloud_models, object_transform, object_instance_number);
 		if (object_instance_number > 0)
 		{
 			PointCloud::Ptr model_instance_transformed(new PointCloud());
 			pcl::transformPointCloud(*object_model_instance, *model_instance_transformed, object_transform);
 			LOG(INFO) << "transformation matrix after cg: \n " << object_transform;
 			cout << endl << object_transform << endl;
-			//p_seg_obb_instance_->Segment(object_scan, model_instance_transformed, object_scan_instance);
+			//p_seg_obb_instance_->Segment(object_scene_transformed, model_instance_transformed, object_scan_instance);
 		}
 		else
+		{
+			object_pose = Eigen::Matrix4f::Identity();
 			return false;
+		}
 	}
 	else
-		pcl::copyPointCloud(*object_scan, *object_scan_instance);
+		pcl::copyPointCloud(*object_scene_transformed, *object_scan_instance);
 
 	//registration refine
 	if (refine_model_num > 0)
@@ -295,12 +279,12 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 		PointCloud::Ptr obb_part_boundary(new PointCloud());
 		//OBB Segmentation
 		pcl::transformPointCloud(*object_model_part1, *model_part1_transformed, object_transform);
-		p_refine_seg_obb_->Segment(object_scan, model_part1_transformed, obb_part1);
+		p_refine_seg_obb_->Segment(object_scene_transformed, model_part1_transformed, obb_part1);
 		if (refine_model_num > 1)
 		{
 			//OBB Segmentation
 			pcl::transformPointCloud(*object_model_part2, *model_part2_transformed, object_transform);
-			p_refine_seg_obb_->Segment(object_scan, model_part2_transformed, obb_part2);
+			p_refine_seg_obb_->Segment(object_scene_transformed, model_part2_transformed, obb_part2);
 		}
 		*model_part_transformed = *model_part1_transformed + *model_part2_transformed;
 		*obb_output = *obb_part1 + *obb_part2;
@@ -333,15 +317,20 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 		//output
 		LOG(INFO) << "transformation matrix after refine: \n " << object_transform;
 		cout << endl << object_transform << endl;
-}
-//model pose transformation
-if (use_model_pose)
-{
-	object_transform = object_transform_init * object_transform;
-	LOG(INFO) << "transformation matrix after model pose: \n " << object_transform;
-	cout << endl <<object_transform << endl;
-	object_pose = object_transform;
-}
+	}
+	//model pose transformation
+	if (use_model_pose)
+	{
+		object_transform = object_transform_init * object_transform;
+		LOG(INFO) << "transformation matrix after model pose: \n " << object_transform;
+		cout << endl <<object_transform << endl;
+		object_pose = object_transform;
+	}
+	//visulization
+	if (debug_visualization)
+	{
+		p_sensor_->ShowPose(object_scan, object_transform, "pose");
+	}
 
 return true;
 }

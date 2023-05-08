@@ -2,5 +2,5 @@
   "Sample3D_ICP": 0.000,
   "MaxCorrespondenceDistance": 0.01,
   "MaximumIterations": 30,
-  "DebugVisualization": true
+  "DebugVisualization":false 
 }

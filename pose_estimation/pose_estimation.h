@@ -60,26 +60,13 @@ namespace gpd
 		PointCloud::Ptr object_model_part2;
 		PointCloud::Ptr object_scan;
 		PointCloud::Ptr object_output;
-		PointCloud::Ptr object_model_segsac;
-		PointCloud::Ptr object_scan_segsac;
-		PointCloud::Ptr object_model_downsample;
-		PointCloud::Ptr object_scan_downsample;
-		PointCloud::Ptr object_model_segeucli;
-		PointCloud::Ptr object_scan_segeucli;
 		PointCloud::Ptr object_model_instance;
 		PointCloud::Ptr object_scan_instance;
-		PointCloud::Ptr object_model_edge;
-		PointCloud::Ptr object_scene_edge;
-		PointCloud::Ptr object_model_preprocess;
-		PointCloud::Ptr object_scan_preprocess;
+		PointCloud::Ptr object_scene_transformed;
 		PointCloud::Ptr sac_output;
 		PointCloud::Ptr obb_output;
 		PointCloud::Ptr obb_part1;
 		PointCloud::Ptr obb_part2;
-		PointCloudWithNormals::Ptr object_scene_normal;
-		PointCloudWithNormals::Ptr object_model_normal;
-		PointCloudWithCurvatures::Ptr object_scene_curvature;
-		PointCloudWithCurvatures::Ptr object_model_curvature;
 
 		Eigen::Matrix4f object_transform;
 		Eigen::Matrix4f object_transform_init;

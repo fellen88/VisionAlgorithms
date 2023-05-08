@@ -439,7 +439,7 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 	if (show_result_)
 	{
 		pcl::visualization::PCLVisualizer viewer("Hypotheses Verification");
-		viewer.setCameraPosition(0, 0, 0, 0, 0, 1, 0, 1, 0); //视点 方向 上方向
+		viewer.setCameraPosition(0, 0, -1, 0, 0, 1, 0, 1, 0); //视点 方向 上方向
 		viewer.addCoordinateSystem(0.1);
 
 		pcl::PointCloud<PointType>::Ptr off_scene_model(new pcl::PointCloud<PointType>());

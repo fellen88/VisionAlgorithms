@@ -185,6 +185,29 @@ void CameraData::ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, si
 	}
 }
 
+void CameraData::ShowPose(const PointCloud::Ptr pointcloud, Eigen::Matrix4f &pose_matrix, std::string window_name)
+{
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> pcl_viewer(new pcl::visualization::PCLVisualizer(window_name));
+	pcl_viewer->setCameraPosition(0, 0, -1, 0, 0, 1, 0, 1, 0); //视点 方向 上方向
+	if (nullptr != pointcloud)
+	{
+		pcl_viewer->addPointCloud(pointcloud);
+		//pcl_viewer->addCoordinateSystem(0.1);
+	}
+	PointCloud::Ptr axis(new PointCloud);
+	PointCloud::Ptr pose(new PointCloud);
+	axis->points.push_back(pcl::PointXYZ(0, 0, 0));
+	axis->points.push_back(pcl::PointXYZ(0.1, 0, 0));
+	axis->points.push_back(pcl::PointXYZ(0, 0.1, 0));
+	axis->points.push_back(pcl::PointXYZ(0, 0, 0.1));
+	pcl::transformPointCloud(*axis, *pose, pose_matrix);
+
+	pcl_viewer->addLine(pose->points[0], pose->points[1], 1.0f, 0.0f, 0.0f, "x vector");
+	pcl_viewer->addLine(pose->points[0], pose->points[2], 0.0f, 1.0f, 0.0f, "y vector");
+	pcl_viewer->addLine(pose->points[0], pose->points[3], 0.0f, 0.0f, 1.0f, "z vector");
+	pcl_viewer->spin();
+}
+
 void CameraData::ShowImage(const cv::Mat image, std::string window_name)
 {
 	if (!image.empty())

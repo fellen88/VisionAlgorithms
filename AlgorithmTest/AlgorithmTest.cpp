@@ -15,8 +15,8 @@ int main()
 	pcl::PointCloud<pcl::PointXYZRGBNormal> object_points;
 	std::vector<double> object_pose;
 	//3D视觉算法:获取实例指针
-	std::string project_name  = "GPD_BYD";
-	//std::string project_name  = "GPD_MAHLE";
+	//std::string project_name  = "GPD_BYD";
+	std::string project_name  = "GPD_MAHLE";
 	//std::string project_name  = "GPD_TEST";
 	std::string object_number = "object_1";
 

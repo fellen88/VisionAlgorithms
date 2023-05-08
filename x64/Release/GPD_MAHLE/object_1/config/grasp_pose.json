@@ -2,7 +2,7 @@
   /*Porject  Name: GPD_MAHLE*/
   /*Object Number: object_1*/
   //Pose Estimation
-  "Visualization": false,                     //可视化开关
+  "Visualization": true,                     //可视化开关
   "CameraOffline": false,                     //相机离线测试开关
   "InstanceMethod": "CG",                           //实例提取方法  
   "RefineModelNum": 1,                       //优化模型个数
