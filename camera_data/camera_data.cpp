@@ -188,7 +188,7 @@ void CameraData::ShowPointCloud_NonBlocking(const PointCloud::Ptr pointcloud, si
 void CameraData::ShowPose(const PointCloud::Ptr pointcloud, Eigen::Matrix4f &pose_matrix, std::string window_name)
 {
   boost::shared_ptr<pcl::visualization::PCLVisualizer> pcl_viewer(new pcl::visualization::PCLVisualizer(window_name));
-	pcl_viewer->setCameraPosition(0, 0, -1, 0, 0, 1, 0, 1, 0); //视点 方向 上方向
+	pcl_viewer->setCameraPosition(-0.3, 0, -0.3, 0, 0, 1, -1, 0, 0); //视点 方向 上方向
 	if (nullptr != pointcloud)
 	{
 		pcl_viewer->addPointCloud(pointcloud);

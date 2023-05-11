@@ -56,17 +56,29 @@ namespace gpd
 		std::string object_label;
 
 		PointCloud::Ptr object_model;
-		PointCloud::Ptr object_model_part1;
-		PointCloud::Ptr object_model_part2;
+		PointCloud::Ptr model_refine_a;
+		PointCloud::Ptr model_refine_b;
+		PointCloud::Ptr scene_transformed;
 		PointCloud::Ptr object_scan;
-		PointCloud::Ptr object_output;
+		PointCloud::Ptr sac_output;
+		PointCloud::Ptr icp_output;
 		PointCloud::Ptr object_model_instance;
 		PointCloud::Ptr object_scan_instance;
-		PointCloud::Ptr object_scene_transformed;
-		PointCloud::Ptr sac_output;
-		PointCloud::Ptr obb_output;
-		PointCloud::Ptr obb_part1;
-		PointCloud::Ptr obb_part2;
+		//refine
+		PointCloud::Ptr model_refine_a_transformed;
+		PointCloud::Ptr model_refine_b_transformed;
+		PointCloud::Ptr obb_a;
+		PointCloud::Ptr obb_b;
+		PointCloud::Ptr boundary_obb_a;
+		PointCloud::Ptr boundary_obb_b;
+		PointCloud::Ptr boundary_refine_a;
+		PointCloud::Ptr boundary_refine_b;
+		PointCloud::Ptr euclidean_obb_a;
+		PointCloud::Ptr euclidean_obb_b;
+		PointCloud::Ptr euclidean_refine_a;
+		PointCloud::Ptr euclidean_refine_b;
+		PointCloud::Ptr euclidean_obb;
+		PointCloud::Ptr euclidean_refine;
 
 		Eigen::Matrix4f object_transform;
 		Eigen::Matrix4f object_transform_init;
@@ -74,21 +86,15 @@ namespace gpd
 		Eigen::Matrix4f sac_transform;
 		Eigen::Vector3f object_eulerangle;
 		size_t object_instance_number;
+		size_t grasp_count;
 
 
-		std::string	instance_recog_ppf_config;
-		std::string instance_seg_obb_config;
-		std::string keypoint_seg_boundary_config;
 		std::string refine_regist_lmicp_config;
 		std::string refine_regist_sacia_config;
 		std::string refine_seg_boundary_config;
 		std::string refine_seg_euclidean_config;
 		std::string refine_seg_obb_config;
-		std::string regist_lmicp_config;
-		std::string regist_sacia_config;
-		std::string seg_euclidean_config;
-		std::string seg_sac_config;
-		std::string recog_cg_config;
+		std::string instance_cg_config;
 		
 
 		std::vector<PointCloud::Ptr> cloud_models;

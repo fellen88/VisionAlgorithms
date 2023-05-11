@@ -43,6 +43,7 @@ bool SegmentationSAC::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud
 
 bool SegmentationSAC::SetParameters(const std::string config_file)
 {
+	LOG(INFO) << "----------> seg_sac parameters:";
 	distance_threshold = 0.005;
 	JsonOutType json_reader;
 	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "DistanceThreshold", "float");

@@ -140,6 +140,7 @@ void Registration3D::Align(const PointCloud::Ptr cloud_src, const PointCloud::Pt
 	if (true == debug_visualization)
 	{
 		boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer("Registration3D"));
+		//viewer->setCameraPosition(-0.3, 0, -0.3, 0, 0, 1, -1, 0, 0); //视点 方向 上方向
 		viewer->removePointCloud("source"); //根据给定的ID，从屏幕中去除一个点云。参数是ID
 		viewer->removePointCloud("target");
 		pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_tgt_h(output, 0, 255, 0); //设置点云显示颜色，下同

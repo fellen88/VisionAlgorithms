@@ -68,7 +68,6 @@ Recognition3DCG::~Recognition3DCG()
 bool gpd::Recognition3DCG::SetParameters(const std::string config_file)
 {
 	//Visualization 
-	std::cout << "recognition_cg config: " << endl;
 	JsonOutType json_reader;
 	json_reader = p_dataprocess_->ReadJsonFile(config_file, "show_result", "bool");
 	if (json_reader.success)
