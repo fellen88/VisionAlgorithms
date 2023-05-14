@@ -555,6 +555,15 @@ void CameraData::DownSample(const PointCloud::Ptr cloud, const Eigen::Vector4f s
 	subsampling_filter.filter(*cloud);
 }
 
+//UniformSampling
+void CameraData::UniformSampling(const PointCloud::Ptr cloud, const float search_radius, PointCloud::Ptr cloud_keypoints)
+{
+	pcl::UniformSampling<pcl::PointXYZ> uniform_sampling_filter;
+	uniform_sampling_filter.setInputCloud(cloud);
+	uniform_sampling_filter.setRadiusSearch(search_radius);
+	uniform_sampling_filter.filter(*cloud_keypoints);
+}
+
 void CameraData::CalculateNormals(const PointCloud::Ptr cloud, const float search_radius, PointCloudWithNormals::Ptr cloud_normals)
 {
 	PointNormals::Ptr normals(new PointNormals());

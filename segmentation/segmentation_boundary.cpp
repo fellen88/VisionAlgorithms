@@ -13,29 +13,28 @@ SegmentationBoundary::~SegmentationBoundary()
 bool SegmentationBoundary::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
 {
 	PointCloud::Ptr cloud_scene_temp(new PointCloud());
-	pcl::copyPointCloud(*cloud_scene, *cloud_scene_temp);
-	p_seg_cameradata_->DownSample(cloud_scene_temp, subsampling_leaf_size);
+	p_seg_cameradata_->UniformSampling(cloud_scene, sample_3d, cloud_scene_temp);
 
-	pcl::PointCloud<pcl::Boundary> boundaries; //±£´æ±ß½ç¹À¼Æ½á¹û
-	pcl::BoundaryEstimation<pcl::PointXYZ, pcl::Normal, pcl::Boundary> boundEst; //¶¨ÒåÒ»¸ö½øĞĞ±ß½çÌØÕ÷¹À¼ÆµÄ¶ÔÏó
-	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normEst; //¶¨ÒåÒ»¸ö·¨Ïß¹À¼ÆµÄ¶ÔÏó
-	pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>); //±£´æ·¨Ïß¹À¼ÆµÄ½á¹û
+	pcl::PointCloud<pcl::Boundary> boundaries; //ä¿å­˜è¾¹ç•Œä¼°è®¡ç»“æœ
+	pcl::BoundaryEstimation<pcl::PointXYZ, pcl::Normal, pcl::Boundary> boundEst; //å®šä¹‰ä¸€ä¸ªè¿›è¡Œè¾¹ç•Œç‰¹å¾ä¼°è®¡çš„å¯¹è±¡
+	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normEst; //å®šä¹‰ä¸€ä¸ªæ³•çº¿ä¼°è®¡çš„å¯¹è±¡
+	pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>); //ä¿å­˜æ³•çº¿ä¼°è®¡çš„ç»“æœ
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_boundary(new pcl::PointCloud<pcl::PointXYZ>);
 	normEst.setInputCloud(cloud_scene_temp);
-	normEst.setRadiusSearch(normal_radius); //ÉèÖÃ·¨Ïß¹À¼ÆµÄ°ë¾¶//normEst.setKSearch(10);//±íÊ¾¼ÆËãµãÔÆ·¨ÏòÁ¿Ê±£¬ËÑË÷µÄµãÔÆ¸öÊı
-	normEst.compute(*normals); //½«·¨Ïß¹À¼Æ½á¹û±£´æÖÁnormals
+	normEst.setRadiusSearch(normal_radius); //è®¾ç½®æ³•çº¿ä¼°è®¡çš„åŠå¾„//normEst.setKSearch(10);//è¡¨ç¤ºè®¡ç®—ç‚¹äº‘æ³•å‘é‡æ—¶ï¼Œæœç´¢çš„ç‚¹äº‘ä¸ªæ•°
+	normEst.compute(*normals); //å°†æ³•çº¿ä¼°è®¡ç»“æœä¿å­˜è‡³normals
 
-	boundEst.setInputCloud(cloud_scene_temp); //ÉèÖÃÊäÈëµÄµãÔÆ
-	boundEst.setInputNormals(normals); //ÉèÖÃ±ß½ç¹À¼ÆµÄ·¨Ïß£¬ÒòÎª±ß½ç¹À¼ÆÒÀÀµÓÚ·¨Ïß
-	boundEst.setRadiusSearch(boundary_radius); //ÉèÖÃ±ß½ç¹À¼ÆËùĞèÒªµÄ°ë¾¶,//ÕâÀïµÄThreadsholdÎªÒ»¸ö¸¡µãÖµ£¬¿ÉÈ¡µãÔÆÄ£ĞÍÃÜ¶ÈµÄ10±¶
-	boundEst.setAngleThreshold(M_PI / angle_threshold); //±ß½ç¹À¼ÆÊ±µÄ½Ç¶ÈãĞÖµM_PI / 4  ²¢¼ÆËãkÁÚÓòµãµÄ·¨Ïß¼Ğ½Ç,Èô´óÓÚãĞÖµÔòÎª±ß½çÌØÕ÷µã
-	boundEst.setSearchMethod(pcl::search::KdTree<pcl::PointXYZ>::Ptr(new pcl::search::KdTree<pcl::PointXYZ>)); //ÉèÖÃËÑË÷·½Ê½KdTree
-	boundEst.compute(boundaries); //½«±ß½ç¹À¼Æ½á¹û±£´æÔÚboundaries
+	boundEst.setInputCloud(cloud_scene_temp); //è®¾ç½®è¾“å…¥çš„ç‚¹äº‘
+	boundEst.setInputNormals(normals); //è®¾ç½®è¾¹ç•Œä¼°è®¡çš„æ³•çº¿ï¼Œå› ä¸ºè¾¹ç•Œä¼°è®¡ä¾èµ–äºæ³•çº¿
+	boundEst.setRadiusSearch(boundary_radius); //è®¾ç½®è¾¹ç•Œä¼°è®¡æ‰€éœ€è¦çš„åŠå¾„,//è¿™é‡Œçš„Threadsholdä¸ºä¸€ä¸ªæµ®ç‚¹å€¼ï¼Œå¯å–ç‚¹äº‘æ¨¡å‹å¯†åº¦çš„10å€
+	boundEst.setAngleThreshold(M_PI / angle_threshold); //è¾¹ç•Œä¼°è®¡æ—¶çš„è§’åº¦é˜ˆå€¼M_PI / 4  å¹¶è®¡ç®—ké‚»åŸŸç‚¹çš„æ³•çº¿å¤¹è§’,è‹¥å¤§äºé˜ˆå€¼åˆ™ä¸ºè¾¹ç•Œç‰¹å¾ç‚¹
+	boundEst.setSearchMethod(pcl::search::KdTree<pcl::PointXYZ>::Ptr(new pcl::search::KdTree<pcl::PointXYZ>)); //è®¾ç½®æœç´¢æ–¹å¼KdTree
+	boundEst.compute(boundaries); //å°†è¾¹ç•Œä¼°è®¡ç»“æœä¿å­˜åœ¨boundaries
 
 	//std::cerr << "AngleThreshold: " << M_PI / 4 << std::endl;
-	//Êä³ö±ß½çµãµÄ¸öÊı
+	//è¾“å‡ºè¾¹ç•Œç‚¹çš„ä¸ªæ•°
 	std::cerr << "boundaries: " << boundaries.points.size() << std::endl;
-	//´æ´¢¹À¼ÆÎª±ß½çµÄµãÔÆÊı¾İ£¬½«±ß½ç½á¹û±£´æÎªpcl::PointXYZÀàĞÍ
+	//å­˜å‚¨ä¼°è®¡ä¸ºè¾¹ç•Œçš„ç‚¹äº‘æ•°æ®ï¼Œå°†è¾¹ç•Œç»“æœä¿å­˜ä¸ºpcl::PointXYZç±»å‹
 	cloud_seg->points.clear();
 	for (int i = 0; i < cloud_scene_temp->points.size(); i++)
 	{
@@ -70,7 +69,6 @@ bool SegmentationBoundary::SetParameters(const std::string config_file)
 		boundary_radius = json_reader.json_float;
 	else
 		return false;
-	subsampling_leaf_size = Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f);
 	return true;
 }
 ISegmentation* GetSegmentationBoundary()

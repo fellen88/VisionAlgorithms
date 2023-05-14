@@ -50,6 +50,7 @@ class ICameraData
 	virtual void Matrix2EulerAngle(Eigen::Matrix4f& matrix, Eigen::Vector3f& eulerangle) = 0;
 	virtual void VectorPointstoPCL(std::vector<double> points_normals, PointCloud::Ptr pointcloud, PointCloudWithNormals::Ptr pointcloud_normals) = 0;
 	virtual void DownSample(const PointCloud::Ptr cloud, const Eigen::Vector4f subsampling_leaf_size) = 0;
+	virtual void UniformSampling(const PointCloud::Ptr cloud, const float search_radius, PointCloud::Ptr cloud_keypoints) = 0;
 	virtual void CalculateNormals(const PointCloud::Ptr cloud, const float search_radius, PointCloudWithNormals::Ptr cloud_normal) = 0;
 	virtual void CurvaturesEstimation(const PointCloud::Ptr cloud, const float search_radius, PointCloudWithNormals::Ptr cloud_normals, PointCloudWithCurvatures::Ptr cloud_curvatures) = 0;
 	virtual void EdgeWithNormal(const PointCloud::Ptr cloud_in, const float search_radius, const float curvature_thredhold, PointCloudWithNormals::Ptr cloud_normals, PointCloud::Ptr cloud_out) = 0;

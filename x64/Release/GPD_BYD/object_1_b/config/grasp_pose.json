@@ -5,7 +5,7 @@
   "Visualization": true,                     //可视化开关
   "CameraOffline": false,                     //相机离线测试开关
   "InstanceMethod": "CG",                           //实例提取方法  
-  "RefineModelNum": 2,                       //优化模型个数
+  "RefineModelNum": 1,                       //优化模型个数
   "RefineRegistrarion": "ICP",               //配准方法       IA_ICP | ICP
   "ObjectModelPath": "model_3D//model.ply",   //3D模型文件名
   "PointCloudPath": "pointcloud//scene.ply",  //离线测试点云文件名

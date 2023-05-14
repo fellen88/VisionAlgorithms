@@ -15,10 +15,11 @@ int main()
 	pcl::PointCloud<pcl::PointXYZRGBNormal> object_points;
 	std::vector<double> object_pose;
 	//3D视觉算法:获取实例指针
-	//std::string project_name  = "GPD_BYD";
-	std::string project_name  = "GPD_MAHLE";
+	std::string project_name  = "GPD_BYD";
+	//std::string project_name  = "GPD_MAHLE";
 	//std::string project_name  = "GPD_TEST";
-	std::string object_number = "object_1";
+	//std::string object_number = "object_1";
+	std::string object_number = "object_1_b";
 
 	std::string config_object_x = ".\\" + project_name +"\\"+ object_number + "\\config" + "\\grasp_pose.json";
 	std::shared_ptr<gpd::GraspPose> p_object_x_(GetModelBasedPtr(config_object_x));

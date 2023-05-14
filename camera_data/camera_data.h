@@ -5,7 +5,6 @@
 class CameraData :public ICameraData
 {
   public:
-	// π≤œÌƒ⁄¥Ê÷∏’Î
 	LPVOID pcolorBuffer;                                  
 	LPVOID pdepthBuffer;                                  
 	LPVOID mask_buffer;
@@ -58,6 +57,7 @@ class CameraData :public ICameraData
 	void Matrix2EulerAngle(Eigen::Matrix4f& matrix, Eigen::Vector3f& eulerangle);
 	void VectorPointstoPCL(std::vector<double> points_normals, PointCloud::Ptr pointcloud, PointCloudWithNormals::Ptr pointcloud_normals);
 	void DownSample(const PointCloud::Ptr cloud, const Eigen::Vector4f subsampling_leaf_size);
+	void UniformSampling(const PointCloud::Ptr cloud, const float search_radius, PointCloud::Ptr cloud_keypoints);
 	void CalculateNormals(const PointCloud::Ptr cloud, const float search_radius, PointCloudWithNormals::Ptr cloud_normal);
 	void CurvaturesEstimation(const PointCloud::Ptr cloud, const float search_radius, PointCloudWithNormals::Ptr cloud_normals, PointCloudWithCurvatures::Ptr cloud_curvatures);
 	void RemoveInvalidPoints(const PointCloud::Ptr cloud_in, PointCloud::Ptr cloud_out);

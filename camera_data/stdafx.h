@@ -27,6 +27,7 @@
 //pcl滤波
 #include <pcl/filters/filter.h>
 #include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/uniform_sampling.h>
 
 //pcl法向量
 #include <pcl/features/normal_3d.h>
