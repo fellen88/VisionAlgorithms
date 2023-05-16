@@ -20,8 +20,8 @@ public:
 	bool SetParameters(const std::string config_file);
 private:
 	std::shared_ptr<ICameraData> p_obb_cameradata_;
-	float sample_3d;
-	bool debug_visualization;
+	float uniform_sampling;
+	bool visualization;
 	float l_offset;
 	float w_offset;
 	float h_offset;

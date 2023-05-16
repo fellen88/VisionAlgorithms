@@ -39,8 +39,7 @@ unsigned char SegmentationEuclidean::colors[20 * 3] = {
 bool SegmentationEuclidean::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
 {
 	PointCloud::Ptr cloud_scene_temp(new PointCloud());
-	pcl::copyPointCloud(*cloud_scene, *cloud_scene_temp);
-	p_seg_cameradata_->DownSample(cloud_scene_temp, subsampling_leaf_size);
+	p_seg_cameradata_->UniformSampling(cloud_scene, uniform_sampling, cloud_scene_temp);
 	// 创建kd树
 	pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
 	tree->setInputCloud(cloud_scene_temp);
@@ -93,6 +92,8 @@ bool SegmentationEuclidean::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr
 		if (j == 0)
 			pcl::copyPointCloud(*cloud_cluster, *cloud_seg);
 
+		LOG(INFO) << "euclidean: " << cloud_seg->points.size();
+
 		if (true == visualization_eucli)
 		{
 			//-----可视化2/3-----↓
@@ -121,9 +122,14 @@ bool SegmentationEuclidean::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr
 bool SegmentationEuclidean::SetParameters(const std::string config_file)
 {
 	JsonOutType json_reader;
-	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "Sample3D_Euclidean", "float");
+	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "Visualization", "bool");
 	if (json_reader.success)
-		sample_3d = json_reader.json_float;
+		visualization_eucli = json_reader.json_bool;
+	else
+		return false;
+	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "UniformSampling", "float");
+	if (json_reader.success)
+		uniform_sampling = json_reader.json_float;
 	else
 		return false;
 	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "ClusterTolerance", "float");
@@ -141,12 +147,7 @@ bool SegmentationEuclidean::SetParameters(const std::string config_file)
 		max_cluster_size = json_reader.json_float;
 	else
 		return false;
-	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "Visualization_Eucli", "bool");
-	if (json_reader.success)
-		visualization_eucli = json_reader.json_bool;
-	else
-		return false;
-	subsampling_leaf_size = Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f);
+
 	return true;
 }
 

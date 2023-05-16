@@ -13,14 +13,14 @@ RegistrationSACIA::RegistrationSACIA() :
 bool RegistrationSACIA::SetParameters(const std::string config_file)
 {
 	JsonOutType json_reader;
-	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "Sample3D_SAC_IA", "float");
+	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "Visualization", "bool");
 	if (json_reader.success)
-		sample_3d = json_reader.json_float;
+		visualization = json_reader.json_bool;
 	else
 		return false;
-	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "DebugVisualization", "bool");
+	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "UniformSampling", "float");
 	if (json_reader.success)
-		debug_visualization = json_reader.json_bool;
+		uniform_sampling = json_reader.json_float;
 	else
 		return false;
 	return true;
@@ -37,15 +37,10 @@ void RegistrationSACIA::Align(const PointCloud::Ptr cloud_src, const PointCloud:
 	PointCloud::Ptr source_filtered(new PointCloud); //创建点云指针
 	PointCloud::Ptr target_filtered(new PointCloud);
 	pcl::VoxelGrid<PointT> grid; //VoxelGrid 把一个给定的点云，聚集在一个局部的3D网格上,并下采样和滤波点云数据
-	if (sample_3d > 0.00001) //下采样
+	if (uniform_sampling > 0.00001) //下采样
 	{
-		grid.setLeafSize(sample_3d, sample_3d, sample_3d); //设置体元网格的叶子大小
-				//下采样 源点云
-		grid.setInputCloud(cloud_src); //设置输入点云
-		grid.filter(*source_filtered); //下采样和滤波，并存储在src中
-				//下采样 目标点云
-		grid.setInputCloud(cloud_tgt);
-		grid.filter(*target_filtered);
+		p_regist_cameradata_->UniformSampling(cloud_src, uniform_sampling, source_filtered);
+		p_regist_cameradata_->UniformSampling(cloud_tgt, uniform_sampling, target_filtered);
 	}
 	else //不下采样
 	{
@@ -78,7 +73,7 @@ void RegistrationSACIA::Align(const PointCloud::Ptr cloud_src, const PointCloud:
 	sac_transform = sac_ia.getFinalTransformation();
 	pcl::transformPointCloud(*cloud_src, *output, sac_transform);
 	//可视化
-	if (true == debug_visualization)
+	if (true == visualization)
 	{
 		boost::shared_ptr<pcl::visualization::PCLVisualizer> view(new pcl::visualization::PCLVisualizer("fpfh test"));
 		int v1;

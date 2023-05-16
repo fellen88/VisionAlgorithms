@@ -1,8 +1,8 @@
 {
+  "Visualization": false,
+  "UniformSampling": 0.002,
   "L_Offset": 0.02,
   "W_Offset": 0.02,
-  "H_Offset": 0.01,
-  "Sample3D_OBB": 0.002,
-  "DebugVisualization":false 
+  "H_Offset": 0.01
 }
 

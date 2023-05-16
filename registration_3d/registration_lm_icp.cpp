@@ -11,19 +11,19 @@ Registration3D::Registration3D() :
 bool Registration3D::SetParameters(const std::string config_file)
 {
 	JsonOutType json_reader;
-	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "Sample3D_ICP", "float");
+	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "Visualization", "bool");
 	if (json_reader.success)
-		sample_3d = json_reader.json_float;
+		debug_visualization = json_reader.json_bool;
+	else
+		return false;
+	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "UniformSampling", "float");
+	if (json_reader.success)
+		uniform_sampling = json_reader.json_float;
 	else
 		return false;
 	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "MaximumIterations", "float");
 	if (json_reader.success)
 		max_interations = json_reader.json_float;
-	else
-		return false;
-	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "DebugVisualization", "bool");
-	if (json_reader.success)
-		debug_visualization = json_reader.json_bool;
 	else
 		return false;
 	json_reader = p_regist_cameradata_->ReadJsonFile(config_file, "MaxCorrespondenceDistance", "float");
@@ -48,15 +48,10 @@ void Registration3D::Align(const PointCloud::Ptr cloud_src, const PointCloud::Pt
 	PointCloud::Ptr src(new PointCloud); //创建点云指针
 	PointCloud::Ptr tgt(new PointCloud);
 	pcl::VoxelGrid<PointT> grid; //VoxelGrid 把一个给定的点云，聚集在一个局部的3D网格上,并下采样和滤波点云数据
-	if (sample_3d > 0.00001) //下采样
+	if (uniform_sampling > 0.00001) //下采样
 	{
-		grid.setLeafSize(sample_3d, sample_3d, sample_3d); //设置体元网格的叶子大小
-				//下采样 源点云
-		grid.setInputCloud(cloud_src); //设置输入点云
-		grid.filter(*src); //下采样和滤波，并存储在src中
-				//下采样 目标点云
-		grid.setInputCloud(cloud_tgt);
-		grid.filter(*tgt);
+		p_regist_cameradata_->UniformSampling(cloud_src, uniform_sampling, src);
+		p_regist_cameradata_->UniformSampling(cloud_tgt, uniform_sampling, tgt);
 	}
 	else //不下采样
 	{

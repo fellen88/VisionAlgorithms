@@ -20,7 +20,7 @@ public:
 	bool SetParameters(const std::string config_file);
 private:
 	std::shared_ptr<ICameraData> p_seg_cameradata_;
-	float sample_3d;
+	float uniform_sampling;
 	Eigen::Vector4f subsampling_leaf_size;
 	float distance_threshold;
 };

@@ -25,8 +25,8 @@ public:
 	PointCloud::Ptr sac_output;
 
 	ICameraData* p_regist_cameradata_;
-	float sample_3d;
-	bool debug_visualization;
+	float uniform_sampling;
+	bool visualization;
 
 	RegistrationSACIA();
 	bool SetParameters(const std::string config_file);

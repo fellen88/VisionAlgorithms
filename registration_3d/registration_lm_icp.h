@@ -47,7 +47,7 @@ class Registration3D : public IRegistration3D
 	PointCloud::Ptr icp_output;
 
 	ICameraData* p_regist_cameradata_;
-	float sample_3d;
+	float uniform_sampling;
 	int max_interations;
 	bool debug_visualization;
 	float max_correspondence_distance;

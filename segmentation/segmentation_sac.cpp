@@ -15,7 +15,8 @@ SegmentationSAC::~SegmentationSAC()
 bool SegmentationSAC::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
 {
 	//TODO:TEST
-	p_seg_cameradata_->DownSample(cloud_scene, subsampling_leaf_size);
+	PointCloud::Ptr cloud_scene_temp(new PointCloud());
+	p_seg_cameradata_->UniformSampling(cloud_scene, uniform_sampling, cloud_scene_temp);
 	pcl::SACSegmentation<pcl::PointXYZ> seg;
 	pcl::ExtractIndices<pcl::PointXYZ> extract;
 	seg.setOptimizeCoefficients(true);
@@ -43,20 +44,17 @@ bool SegmentationSAC::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud
 
 bool SegmentationSAC::SetParameters(const std::string config_file)
 {
-	LOG(INFO) << "----------> seg_sac parameters:";
-	distance_threshold = 0.005;
 	JsonOutType json_reader;
+	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "UniformSampling", "float");
+	if (json_reader.success)
+		uniform_sampling = json_reader.json_float;
+	else
+		return false;
 	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "DistanceThreshold", "float");
 	if (json_reader.success)
 		distance_threshold = json_reader.json_float;
 	else
 		return false;
-	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "Sample3D", "float");
-	if (json_reader.success)
-		sample_3d = json_reader.json_float;
-	else
-		return false;
-	subsampling_leaf_size = Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f);
 
 	return true;
 }

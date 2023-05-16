@@ -558,6 +558,11 @@ void CameraData::DownSample(const PointCloud::Ptr cloud, const Eigen::Vector4f s
 //UniformSampling
 void CameraData::UniformSampling(const PointCloud::Ptr cloud, const float search_radius, PointCloud::Ptr cloud_keypoints)
 {
+	if (search_radius < 0.000001)
+	{
+		pcl::copyPointCloud(*cloud, *cloud_keypoints);
+		return;
+	}
 	pcl::UniformSampling<pcl::PointXYZ> uniform_sampling_filter;
 	uniform_sampling_filter.setInputCloud(cloud);
 	uniform_sampling_filter.setRadiusSearch(search_radius);

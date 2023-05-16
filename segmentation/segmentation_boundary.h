@@ -19,7 +19,9 @@ public:
 	bool SetParameters(const std::string config_file);
 private:
 	std::shared_ptr<ICameraData> p_seg_cameradata_;
+	pcl::visualization::PCLVisualizer::Ptr viewer;
 	float sample_3d;
+	bool visualization;
 	Eigen::Vector4f subsampling_leaf_size;
 	float angle_threshold;
 	float normal_radius;

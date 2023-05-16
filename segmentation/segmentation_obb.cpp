@@ -17,8 +17,8 @@ bool SegmentationOBB::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud
 {
 	pcl::MomentOfInertiaEstimation <pcl::PointXYZ> feature_extractor;
 	PointCloud::Ptr cloud_model_temp(new PointCloud());
-	pcl::copyPointCloud(*cloud_model, *cloud_model_temp);
-	p_obb_cameradata_->DownSample(cloud_model_temp, subsampling_leaf_size);
+	p_obb_cameradata_->UniformSampling(cloud_model, uniform_sampling, cloud_model_temp);
+
 	feature_extractor.setInputCloud(cloud_model_temp);
 	feature_extractor.compute();
 
@@ -72,7 +72,7 @@ bool SegmentationOBB::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud
 			cloud_seg->points.push_back(cloud_scene->points[i]);
 		}
 	}
-	if (true == debug_visualization)
+	if (true == visualization)
 	{
 		//pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("3D Viewer"));
 		//pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZ> RandomColor(cloud_scene_rotation);//ÉèÖÃËæ»úÑÕÉ«
@@ -101,14 +101,14 @@ bool SegmentationOBB::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud
 bool SegmentationOBB::SetParameters(const std::string config_file)
 {
 	JsonOutType json_reader;
-	json_reader = p_obb_cameradata_->ReadJsonFile(config_file, "Sample3D_OBB", "float");
+	json_reader = p_obb_cameradata_->ReadJsonFile(config_file, "Visualization", "bool");
 	if (json_reader.success)
-		sample_3d = json_reader.json_float;
+		visualization = json_reader.json_bool;
 	else
 		return false;
-	json_reader = p_obb_cameradata_->ReadJsonFile(config_file, "DebugVisualization", "bool");
+	json_reader = p_obb_cameradata_->ReadJsonFile(config_file, "UniformSampling", "float");
 	if (json_reader.success)
-		debug_visualization = json_reader.json_bool;
+		uniform_sampling = json_reader.json_float;
 	else
 		return false;
 	json_reader = p_obb_cameradata_->ReadJsonFile(config_file, "L_Offset", "float");
@@ -126,8 +126,6 @@ bool SegmentationOBB::SetParameters(const std::string config_file)
 		h_offset = json_reader.json_float;
 	else
 		return false;
-
-	subsampling_leaf_size = Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f);
 
 	return true;
 }

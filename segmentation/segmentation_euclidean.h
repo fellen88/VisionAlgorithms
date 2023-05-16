@@ -21,7 +21,7 @@ public:
 
 private:
 	std::shared_ptr<ICameraData> p_seg_cameradata_;
-	float sample_3d;
+	float uniform_sampling;
 	Eigen::Vector4f subsampling_leaf_size;
 	float cluster_tolerance;
 	float min_cluster_size;
