@@ -1,18 +1,17 @@
 {
-  /*Porject  Name: GPD_MAHLE*/
+  /*Porject  Name: GPD_BYD*/
   /*Object Number: object_1*/
   //Pose Estimation
-  "Visualization": false,                     //可视化开关
+  "Visualization": true,                     //可视化开关
   "CameraOffline": false,                     //相机离线测试开关
-  "InstanceSeg": "CG_OBB",                    //实例分割方法   Euclidean | CG_OBB | None
-  "InstanceKeyPoint": "None",                 //实例关键点     Boundary  | ISS | None
-  "Registrarion": "None",                   //配准方法       IA_ICP | IA | ICP | None
-  "RefineModelNum": 1,                           //优化模型个数
-  "ObjectModelPath": "model_3D//model.ply", //3D模型文件名
-  "PointCloudPath": "pointcloud//scene.ply", //离线测试点云文件名
+  "InstanceMethod": "CG",                           //实例提取方法  
+  "RefineModelNum": 0,                       //优化模型个数
+  "RefineRegistrarion": "ICP",               //配准方法       IA_ICP | ICP
+  "ObjectModelPath": "model_3d//model.ply",   //3D模型文件名
+  "PointCloudPath": "pointcloud//scene.ply",  //离线测试点云文件名
   //Grasp Pose of Model
   "UseModelPose": true,
-  "X": -0.138,                                //抓取位姿 X  (毫米)
+  "X": -0.138,                                //抓取位姿 X  (米)
   "Y": -0.031,                                //抓取位姿 Y
   "Z": 0.476,                                 //抓取位姿 Z
   "RX": 0.39,                                 //抓取位姿 RX （度）

@@ -1,8 +1,8 @@
 {
-  "ClusterTolerance": 0.006,
-  "MinClusterSize": 500,
-  "MaxClusterSize": 500000,
-  "Sample3D_Euclidean": 0.002,
-  "Visualization_Eucli": false 
+  "Visualization": false,
+  "UniformSampling": 0.0,
+  "ClusterTolerance": 0.001,
+  "MinClusterSize": 5000,
+  "MaxClusterSize": 6000
 }
 

@@ -6,17 +6,19 @@
   "show_rotated_model": false,
   //Recognition
   "use_hough": false,
-  "sample_3d": 0.0002,
-  "model_ss": 0.01,
-  "scene_ss": 0.01,
+  "sample_3d": 0.002,
+  "model_ss": 0.03,
+  "scene_ss": 0.03,
   "rf_rad": 0.015,
   "descr_rad": 0.02,
   "cg_size": 0.01,
-  "cg_thresh": 10,
+  "cg_thresh": 5,
   //ICP
-  "icp_max_iter": 2,
+  "use_icp": true,
+  "icp_max_iter": 20,
   "icp_corr_distance": 0.02,
   //Hypothesis Verification
+  "use_hv": 1,
   "hv_resolution": 0.005,
   "hv_occupancy_grid_resolution": 0.01,
   "hv_clutter_reg": 5.0,
@@ -25,7 +27,7 @@
   "hv_rad_clutter": 0.03,
   "hv_regularizer": 3.0,
   "hv_rad_normals": 0.05,
-  "hv_detect_clutter": true
+  "hv_detect_clutter": false
 }
 
 //--algorithm (Hough|GC):      Clustering algorithm used

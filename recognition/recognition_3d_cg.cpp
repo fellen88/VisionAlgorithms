@@ -531,15 +531,15 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 				output_number = 1;
 				return true;
 			}
-			else
-			{
-				std::cout << "No Instance Output! <---" << std::endl;
-				std::cout << "-------------------------------" << std::endl;
-				output_transformation = Eigen::Matrix4f::Identity();
-				output_number = 0;
-				return false;
-			}
+		}	
+		{
+			std::cout << "No Instance Output! <---" << std::endl;
+			std::cout << "-------------------------------" << std::endl;
+			output_transformation = Eigen::Matrix4f::Identity();
+			output_number = 0;
+			return false;
 		}
+
 	}
 	else if(rototranslations.size() > 0)
 	{

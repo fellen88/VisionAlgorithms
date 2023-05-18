@@ -1,8 +1,8 @@
 {
-  "NormalRadius": 0.004,
-  "AngleThreshold": 5, // M_PI/AnglThreshold
-  "BoundaryRadius": 0.01,
-  "Sample3D": 0.00,
-  "Visualization_bound":true 
+  "Visualization": false,
+  "UniformSampling": 0.0003,
+  "NormalRadius": 0.0009,
+  "AngleThreshold": 3, // M_PI/AnglThreshold
+  "BoundaryRadius": 0.0009
 }
 
