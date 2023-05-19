@@ -333,20 +333,20 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 		boost::shared_ptr<pcl::visualization::PCLVisualizer> pcl_viewer(new pcl::visualization::PCLVisualizer("pose"));
 		pcl_viewer->setCameraPosition(-0.3, 0, -0.3, 0, 0, 1, -1, 0, 0); //视点 方向 上方向
 		//pcl_viewer->addCoordinateSystem(0.1);
+		pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> color_handler_refine(euclidean_obb, 0, 255, 0);
+		pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> color_handler(object_model, 0, 255, 0);
 		if (nullptr != object_scan)
 		{
 			pcl_viewer->addPointCloud(object_scan);
 			if (refine_model_num > 0)
 			{
 				pcl::transformPointCloud(*euclidean_obb, *euclidean_obb, object_transform_init);
-				pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> color_handler(euclidean_obb, 0, 255, 0);
-				pcl_viewer->addPointCloud(euclidean_obb, color_handler, "object");
+				pcl_viewer->addPointCloud(euclidean_obb, color_handler_refine, "object");
 				pcl_viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "object");
 			}
 			else
 			{
 				pcl::transformPointCloud(*object_model, *object_model, object_transform);
-				pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> color_handler(euclidean_obb, 0, 255, 0);
 				pcl_viewer->addPointCloud(object_model, color_handler, "object");
 				pcl_viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "object");
 			}

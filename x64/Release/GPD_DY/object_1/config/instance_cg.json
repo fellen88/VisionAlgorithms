@@ -18,7 +18,7 @@
   "icp_max_iter": 20,
   "icp_corr_distance": 0.02,
   //Hypothesis Verification
-  "use_hv": 1,
+  "use_hv": false,
   "hv_resolution": 0.005,
   "hv_occupancy_grid_resolution": 0.01,
   "hv_clutter_reg": 5.0,
