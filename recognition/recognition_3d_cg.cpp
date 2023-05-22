@@ -56,9 +56,10 @@
 
 using namespace gpd;
 
-Recognition3DCG::Recognition3DCG()
+Recognition3DCG::Recognition3DCG():
+	key_points_("uniform"),
+	p_dataprocess_ (GetCameraData())
 {
-	p_dataprocess_ = GetCameraData();
 }
 
 Recognition3DCG::~Recognition3DCG()
@@ -82,19 +83,22 @@ bool gpd::Recognition3DCG::SetParameters(const std::string config_file)
 	if (json_reader.success)
 		show_rotated_model_ = json_reader.json_bool;
 	//Recognition
-	json_reader = p_dataprocess_->ReadJsonFile(config_file, "show_rotated_model", "bool");
-	if (json_reader.success)
-		use_hough_ = json_reader.json_bool;
 	json_reader = p_dataprocess_->ReadJsonFile(config_file, "sample_3d", "float");
 	if (json_reader.success)
 		sample_3d = json_reader.json_float;
 	subsampling_leaf_size = Eigen::Vector4f(sample_3d, sample_3d, sample_3d, 0.0f);
+	json_reader = p_dataprocess_->ReadJsonFile(config_file, "key_points", "string");
+	if (json_reader.success)
+		key_points_ = json_reader.json_string;
 	json_reader = p_dataprocess_->ReadJsonFile(config_file, "model_ss", "float");
 	if (json_reader.success)
 		model_ss_ = json_reader.json_float;
 	json_reader = p_dataprocess_->ReadJsonFile(config_file, "scene_ss", "float");
 	if (json_reader.success)
 		scene_ss_ = json_reader.json_float;
+	json_reader = p_dataprocess_->ReadJsonFile(config_file, "use_hough", "bool");
+	if (json_reader.success)
+		use_hough_ = json_reader.json_bool;
 	json_reader = p_dataprocess_->ReadJsonFile(config_file, "rf_rad", "float");
 	if (json_reader.success)
 		rf_rad_ = json_reader.json_float;
@@ -165,16 +169,8 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 	pcl::PointCloud<DescriptorType>::Ptr scene_descriptors(new pcl::PointCloud<DescriptorType>());
 
 	/**
-	 * Load Clouds
+	 * Downsample Clouds
 	 */
-	//if (pcl::io::loadPCDFile(model_filename_, *model) < 0)
-	//{
-	//	std::cout << "Error loading model cloud." << std::endl;
-	//}
-	//if (pcl::io::loadPCDFile(scene_filename_, *scene) < 0)
-	//{
-	//	std::cout << "Error loading scene cloud." << std::endl;
-	//}
 	PointCloud::Ptr cloud_scene_temp(new PointCloud());
 	PointCloud::Ptr cloud_model_temp(new PointCloud());
 	pcl::copyPointCloud(*cloud_scene, *cloud_scene_temp);
@@ -197,18 +193,29 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 	norm_est.compute(*scene_normals);
 
 	/**
-	 *  Downsample Clouds to Extract keypoints
+	 * Extract keypoints
 	 */
-	pcl::UniformSampling<PointType> uniform_sampling;
-	uniform_sampling.setInputCloud(model);
-	uniform_sampling.setRadiusSearch(model_ss_);
-	uniform_sampling.filter(*model_keypoints);
-	std::cout << "Model total points: " << model->size() << "; Selected Keypoints: " << model_keypoints->size() << std::endl;
+	if ("harris" == key_points_)
+	{
 
-	uniform_sampling.setInputCloud(scene);
-	uniform_sampling.setRadiusSearch(scene_ss_);
-	uniform_sampling.filter(*scene_keypoints);
-	std::cout << "Scene total points: " << scene->size() << "; Selected Keypoints: " << scene_keypoints->size() << std::endl;
+	}
+	else if ("uniform" == key_points_)
+	{
+		pcl::UniformSampling<PointType> uniform_sampling;
+		uniform_sampling.setInputCloud(model);
+		uniform_sampling.setRadiusSearch(model_ss_);
+		uniform_sampling.filter(*model_keypoints);
+		std::cout << "Model total points: " << model->size() << "; Selected Keypoints: " << model_keypoints->size() << std::endl;
+
+		uniform_sampling.setInputCloud(scene);
+		uniform_sampling.setRadiusSearch(scene_ss_);
+		uniform_sampling.filter(*scene_keypoints);
+		std::cout << "Scene total points: " << scene->size() << "; Selected Keypoints: " << scene_keypoints->size() << std::endl;
+	}
+	else
+	{
+		LOG(ERROR) << "keypoints config error !";
+	}
 
 	/**
 	 *  Compute Descriptor for keypoints

@@ -58,25 +58,30 @@ namespace gpd
 	
 		std::string model_filename_;
 		std::string scene_filename_;
-		//Algorithm params 
+		/**
+		 * Algorithm params 
+		 */
+		//Visualization
 		bool show_result_;
 		bool show_keypoints_;
 		bool show_correspondences_;
 		bool show_rotated_model_;
-		bool use_hough_;
+		//Recognition
 		float sample_3d;
 		Eigen::Vector4f subsampling_leaf_size;
+		std::string key_points_;
 		float model_ss_;
 		float scene_ss_;
+		bool use_hough_;
 		float rf_rad_;
 		float descr_rad_;
 		float cg_size_;
 		float cg_thresh_;
-
+		//ICP
 		bool use_icp_;
 		int icp_max_iter_;
 		float icp_corr_distance_;
-
+		//Hypothesis Verification
 		bool use_hv_;
 		float hv_resolution_;
 		float hv_occupancy_grid_resolution_;

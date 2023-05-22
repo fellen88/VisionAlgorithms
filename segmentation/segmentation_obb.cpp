@@ -74,24 +74,26 @@ bool SegmentationOBB::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud
 	}
 	if (true == visualization)
 	{
-		//pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("3D Viewer"));
-		//pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZ> RandomColor(cloud_scene_rotation);//设置随机颜色
-		//viewer->addPointCloud<pcl::PointXYZ>(cloud_scene_rotation, RandomColor, "points");
-		//viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "points");
+		pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("3D Viewer"));
+		viewer->setCameraPosition(0, 0, -1, 0, 0, 1, 0, 1, 0); //视点 方向 上方向
+		viewer->addCoordinateSystem(0.1);
 
-		//Eigen::Vector3f position(position_OBB.x, position_OBB.y, position_OBB.z);
-		//Eigen::Quaternionf quat(rotational_matrix_OBB);
-		//viewer->addCube(position, quat, max_point_OBB.x - min_point_OBB.x, max_point_OBB.y - min_point_OBB.y, max_point_OBB.z - min_point_OBB.z, "OBB");
-		//viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, "OBB");
-		//Eigen::Vector3f position1(0, 0, 0);
-		//Eigen::Quaternionf quat1(Eigen::Matrix3f::Identity());
-		//viewer->addCube(position1, quat1, max_point_OBB.x - min_point_OBB.x, max_point_OBB.y - min_point_OBB.y, max_point_OBB.z - min_point_OBB.z, "OBB1");
-		//viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, "OBB1");
+		pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>color_handler_scene(cloud_scene_rotation, 255, 255, 255);
+		viewer->addPointCloud<pcl::PointXYZ>(cloud_scene_rotation, color_handler_scene, "points");
+		viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "points");
 
-		pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("SegOBB"));
-		pcl::visualization::PointCloudColorHandlerRandom<pcl::PointXYZ> RandomColor(cloud_seg);//设置随机颜色
-		viewer->addPointCloud<pcl::PointXYZ>(cloud_seg, RandomColor, "points");
-		viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "points");
+		Eigen::Vector3f position(position_OBB.x, position_OBB.y, position_OBB.z);
+		Eigen::Quaternionf quat(rotational_matrix_OBB);
+		viewer->addCube(position, quat, max_point_OBB.x - min_point_OBB.x, max_point_OBB.y - min_point_OBB.y, max_point_OBB.z - min_point_OBB.z, "OBB");
+		viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, "OBB");
+		Eigen::Vector3f position1(0, 0, 0);
+		Eigen::Quaternionf quat1(Eigen::Matrix3f::Identity());
+		viewer->addCube(position1, quat1, max_point_OBB.x - min_point_OBB.x, max_point_OBB.y - min_point_OBB.y, max_point_OBB.z - min_point_OBB.z, "OBB1");
+		viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, "OBB1");
+
+		pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>color_handler(cloud_seg, 0, 250, 0);
+		viewer->addPointCloud<pcl::PointXYZ>(cloud_seg, color_handler, "seg");
+		viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "seg");
 		viewer->spin();
 	}
 
