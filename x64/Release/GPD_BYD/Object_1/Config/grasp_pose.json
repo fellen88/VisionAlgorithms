@@ -7,8 +7,8 @@
   "InstanceMethod": "CG",                           //实例提取方法  
   "RefineModelNum": 1,                       //优化模型个数
   "RefineRegistrarion": "ICP",               //配准方法       IA_ICP | ICP
-  "ObjectModelPath": "model_3d//model.ply",   //3D模型文件名
-  "PointCloudPath": "pointcloud//scene.ply",  //离线测试点云文件名
+  "ObjectModelPath": "model_3d\\model.ply",   //3D模型文件名
+  "PointCloudPath": "pointcloud\\scene.ply",  //离线测试点云文件名
   //Grasp Pose of Model
   "UseModelPose": true,
   "X": -0.138,                                //抓取位姿 X  (米)

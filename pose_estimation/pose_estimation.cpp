@@ -146,35 +146,7 @@ void PoseEstimation::Init_Compute(std::string config)
 	refine_seg_boundary_config = config_path + "refine_seg_boundary.json";
 	refine_regist_sacia_config = config_path + "refine_regist_sacia.json";
 	refine_regist_lmicp_config = config_path + "refine_regist_lmicp.json";
-
-	//load ply model
-	if (false == p_sensor_->LoadPLY(project_file + "\\" + object_file + "\\" + ModelFileName, object_model))
-	{
-		LOG(ERROR) << "LoadModel Error!";
-	}
-	else
-		p_sensor_->ConvertPointsMMtoM(object_model);
-	if (refine_model_num > 0)
-	{
-		if (false == p_sensor_->LoadPLY(project_file + "\\"+ object_file+"\\" + 
-			ModelFileName.erase(ModelFileName.find("."), 4) + "_refine_a.ply", model_refine_a))
-		{
-			LOG(ERROR) << "Load" + project_file + "\\" + ModelFileName.erase(ModelFileName.find("."), 4) + "_refine_a.ply" + " Error!";
-		}
-		else
-			p_sensor_->ConvertPointsMMtoM(model_refine_a);
-	}
-	if (refine_model_num > 1)
-	{
-		if (false == p_sensor_->LoadPLY(project_file + "\\" + object_file + "\\" + 
-			ModelFileName + "_refine_b.ply", model_refine_b))
-		{
-			LOG(ERROR) << "Load" + project_file + "\\" + ModelFileName + "_refine_b.ply" + "Error!";
-		}
-		else
-			p_sensor_->ConvertPointsMMtoM(model_refine_b);
-	}
-
+	
 	if (use_model_pose)
 	{
 		object_transform_init(0, 3) = X;
@@ -212,6 +184,42 @@ void PoseEstimation::Init_Compute(std::string config)
 		p_refine_regist_sacia_->SetParameters(refine_regist_sacia_config);
 		LOG(INFO) << "---------> lm_icp  parameters:";
 		p_refine_regist_lmicp_->SetParameters(refine_regist_lmicp_config);
+	}
+	//load ply model
+	if (false == p_sensor_->LoadPLY(project_file + "\\" + object_file + "\\" + ModelFileName, object_model))
+	{
+		LOG(ERROR) << "Load " + project_file + "\\" + object_file + "\\" + ModelFileName + " error!";
+	}
+	else
+	{
+		LOG(INFO) << "Load " + project_file + "\\" + object_file + "\\" + ModelFileName + " success!";
+		p_sensor_->ConvertPointsMMtoM(object_model);
+	}
+	if (refine_model_num > 0)
+	{
+		if (false == p_sensor_->LoadPLY(project_file + "\\" + object_file + "\\" +
+			ModelFileName.erase(ModelFileName.find("."), 4) + "_refine_a.ply", model_refine_a))
+		{
+			LOG(ERROR) << "Load " + project_file + "\\" + object_file + "\\" + ModelFileName.erase(ModelFileName.find("."), 4) + "_refine_a.ply" + " error!";
+		}
+		else
+		{
+			LOG(INFO) << "Load " + project_file + "\\" + object_file + "\\" + ModelFileName + "_refine_a.ply" + " success!";
+			p_sensor_->ConvertPointsMMtoM(model_refine_a);
+		}
+	}
+	if (refine_model_num > 1)
+	{
+		if (false == p_sensor_->LoadPLY(project_file + "\\" + object_file + "\\" +
+			ModelFileName + "_refine_b.ply", model_refine_b))
+		{
+			LOG(ERROR) << "Load " + project_file + "\\" + ModelFileName + "_refine_b.ply" + " error!";
+		}
+		else
+		{
+			LOG(INFO) << "Load " + project_file + "\\" + ModelFileName + "_refine_b.ply" + " success!";
+			p_sensor_->ConvertPointsMMtoM(model_refine_b);
+		}
 	}
 }
 
@@ -327,6 +335,7 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 		object_pose = object_transform;
 	}
 	//visulization
+	//TODO: thread 
 	if (debug_visualization)
 	{
 		//p_sensor_->ShowPose(object_scan, object_transform, "pose");
