@@ -5,21 +5,21 @@
   "show_correspondences": false,
   "show_rotated_model": false,
   //Recognition
-  "sample_3d": 0.002,
-  "key_points": "harris", // harris | uniform
-  "model_ss": 0.03,
-  "scene_ss": 0.03,
+  "sample_3d": 0.005,
+  "key_points": "uniform", // harris | uniform
+  "model_ss": 0.02,
+  "scene_ss": 0.02,
   "use_hough": false,
   "rf_rad": 0.015,
   "descr_rad": 0.02,
   "cg_size": 0.01,
-  "cg_thresh": 5,
+  "cg_thresh": 10,
   //ICP
   "use_icp": true,
   "icp_max_iter": 20,
   "icp_corr_distance": 0.02,
   //Hypothesis Verification
-  "use_hv": false,
+  "use_hv": true,
   "hv_resolution": 0.005,
   "hv_occupancy_grid_resolution": 0.01,
   "hv_clutter_reg": 5.0,

@@ -51,6 +51,7 @@
 #include <pcl/kdtree/impl/kdtree_flann.hpp>
 #include <pcl/common/transforms.h> 
 #include <pcl/console/parse.h>
+#include <pcl/keypoints/harris_3d.h>
 
 #include "recognition_3d_cg.h"
 
@@ -160,14 +161,17 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 	Eigen::Matrix4f& output_transformation, size_t& output_number)
 {
 	pcl::PointCloud<PointType>::Ptr model(new pcl::PointCloud<PointType>());
-	pcl::PointCloud<PointType>::Ptr model_keypoints(new pcl::PointCloud<PointType>());
 	pcl::PointCloud<PointType>::Ptr scene(new pcl::PointCloud<PointType>());
-	pcl::PointCloud<PointType>::Ptr scene_keypoints(new pcl::PointCloud<PointType>());
 	pcl::PointCloud<NormalType>::Ptr model_normals(new pcl::PointCloud<NormalType>());
 	pcl::PointCloud<NormalType>::Ptr scene_normals(new pcl::PointCloud<NormalType>());
 	pcl::PointCloud<DescriptorType>::Ptr model_descriptors(new pcl::PointCloud<DescriptorType>());
 	pcl::PointCloud<DescriptorType>::Ptr scene_descriptors(new pcl::PointCloud<DescriptorType>());
-
+	pcl::PointCloud<PointType>::Ptr scene_keypoints(new pcl::PointCloud<PointType>());
+	pcl::PointCloud<PointType>::Ptr model_keypoints(new pcl::PointCloud<PointType>());
+	pcl::PointCloud<PointType>::Ptr scene_uniform_keypoints(new pcl::PointCloud<PointType>());
+	pcl::PointCloud<PointType>::Ptr model_uniform_keypoints(new pcl::PointCloud<PointType>());
+	pcl::PointCloud<pcl::PointXYZI>::Ptr scene_harris_keypoints(new pcl::PointCloud<pcl::PointXYZI>);
+	pcl::PointCloud<pcl::PointXYZI>::Ptr model_harris_keypoints(new pcl::PointCloud<pcl::PointXYZI>);
 	/**
 	 * Downsample Clouds
 	 */
@@ -195,8 +199,27 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 	/**
 	 * Extract keypoints
 	 */
+
 	if ("harris" == key_points_)
 	{
+		/* 声明Harris 关键点 检测 对象  */
+		pcl::HarrisKeypoint3D<PointType, pcl::PointXYZI, pcl::Normal>* harris_detector = new pcl::HarrisKeypoint3D<PointType, pcl::PointXYZI, pcl::Normal>;
+		const float r_normal = 0.01;
+		const float r_keypoint = 0.01;
+		/*设置相关参数*/
+		harris_detector->setRadius(r_normal);
+		harris_detector->setRadiusSearch(r_keypoint);
+		harris_detector->setNonMaxSupression(true);
+		/*计算关键点*/
+		harris_detector->setInputCloud(scene);
+		harris_detector->compute(*scene_harris_keypoints);
+		std::cout << "scene_harris_keypoints number:" << scene_harris_keypoints->size() << std::endl;
+		harris_detector->setInputCloud(model);
+		harris_detector->compute(*model_harris_keypoints);
+		std::cout << "model_harris_keypoints number:" << model_harris_keypoints->size() << std::endl;
+
+		pcl::copyPointCloud(*scene_harris_keypoints, *scene_keypoints);
+		pcl::copyPointCloud(*model_harris_keypoints, *model_keypoints);
 
 	}
 	else if ("uniform" == key_points_)
@@ -204,13 +227,16 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 		pcl::UniformSampling<PointType> uniform_sampling;
 		uniform_sampling.setInputCloud(model);
 		uniform_sampling.setRadiusSearch(model_ss_);
-		uniform_sampling.filter(*model_keypoints);
-		std::cout << "Model total points: " << model->size() << "; Selected Keypoints: " << model_keypoints->size() << std::endl;
+		uniform_sampling.filter(*model_uniform_keypoints);
+		std::cout << "Model total points: " << model->size() << "; Selected Keypoints: " << model_uniform_keypoints->size() << std::endl;
 
 		uniform_sampling.setInputCloud(scene);
 		uniform_sampling.setRadiusSearch(scene_ss_);
-		uniform_sampling.filter(*scene_keypoints);
-		std::cout << "Scene total points: " << scene->size() << "; Selected Keypoints: " << scene_keypoints->size() << std::endl;
+		uniform_sampling.filter(*scene_uniform_keypoints);
+		std::cout << "Scene total points: " << scene->size() << "; Selected Keypoints: " << scene_uniform_keypoints->size() << std::endl;
+		
+		pcl::copyPointCloud(*scene_uniform_keypoints, *scene_keypoints);
+		pcl::copyPointCloud(*model_uniform_keypoints, *model_keypoints);
 	}
 	else
 	{
