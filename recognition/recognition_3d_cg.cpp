@@ -180,8 +180,8 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 	pcl::copyPointCloud(*cloud_scene, *cloud_scene_temp);
 	pcl::copyPointCloud(*cloud_model[0], *cloud_model_temp);
 	
-	p_dataprocess_->DownSample(cloud_scene_temp, subsampling_leaf_size);
-	p_dataprocess_->DownSample(cloud_model_temp, subsampling_leaf_size);
+	p_dataprocess_->UniformSampling(cloud_scene_temp, sample_3d, cloud_scene_temp);
+	p_dataprocess_->UniformSampling(cloud_model_temp, sample_3d, cloud_model_temp);
 	pcl::copyPointCloud(*cloud_scene_temp, *scene);
 	pcl::copyPointCloud(*cloud_model_temp, *model);
 
@@ -348,6 +348,51 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 
 		gc_clusterer.recognize(rototranslations, clustered_corrs);
 	}
+	/**
+	 *  Visualization
+	 */
+	pcl::visualization::PCLVisualizer::Ptr viewer;
+	pcl::PointCloud<PointType>::Ptr off_scene_model(new pcl::PointCloud<PointType>());
+	pcl::PointCloud<PointType>::Ptr off_scene_model_keypoints(new pcl::PointCloud<PointType>());
+	pcl::PointCloud<PointType>::Ptr off_model_good_kp(new pcl::PointCloud<PointType>());
+
+	if (show_result_ && (rototranslations.size() <= 0))
+	{
+		viewer.reset((new pcl::visualization::PCLVisualizer("Recogniton CG")));
+		viewer->setCameraPosition(-0.3, 0, -0.3, 0, 0, 1, -1, 0, 0); //视点 方向 上方向
+		viewer->addCoordinateSystem(0.1);
+
+		pcl::transformPointCloud(*model, *off_scene_model, Eigen::Vector3f(-1, 0, 0), Eigen::Quaternionf(1, 0, 0, 0));
+		pcl::transformPointCloud(*model_keypoints, *off_scene_model_keypoints, Eigen::Vector3f(-1, 0, 0), Eigen::Quaternionf(1, 0, 0, 0));
+		pcl::transformPointCloud(*model_good_kp, *off_model_good_kp, Eigen::Vector3f(-1, 0, 0), Eigen::Quaternionf(1, 0, 0, 0));
+
+		//show scene (red)
+		CloudStyle sceneStyle = style_white;
+		pcl::visualization::PointCloudColorHandlerCustom<PointType> scene_color_handler(scene, sceneStyle.r, sceneStyle.g, sceneStyle.b);
+		viewer->addPointCloud(scene, scene_color_handler, "scene_cloud");
+		viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, sceneStyle.size, "scene_cloud");
+		//show model (green+blue)
+		CloudStyle modelStyle = style_indigo;
+		pcl::visualization::PointCloudColorHandlerCustom<PointType> off_scene_model_color_handler(off_scene_model, modelStyle.r, modelStyle.g, modelStyle.b);
+		viewer->addPointCloud(off_scene_model, off_scene_model_color_handler, "off_scene_model");
+		viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, modelStyle.size, "off_scene_model");
+		//show keypoints of instancs and model
+		if (show_keypoints_)
+		{
+			CloudStyle goodKeypointStyle = style_yellow;
+			pcl::visualization::PointCloudColorHandlerCustom<PointType> model_good_keypoints_color_handler(off_model_good_kp, goodKeypointStyle.r, goodKeypointStyle.g,
+				goodKeypointStyle.b);
+			viewer->addPointCloud(off_model_good_kp, model_good_keypoints_color_handler, "model_good_keypoints");
+			viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, goodKeypointStyle.size, "model_good_keypoints");
+
+			pcl::visualization::PointCloudColorHandlerCustom<PointType> scene_good_keypoints_color_handler(scene_good_kp, goodKeypointStyle.r, goodKeypointStyle.g,
+				goodKeypointStyle.b);
+			viewer->addPointCloud(scene_good_kp, scene_good_keypoints_color_handler, "scene_good_keypoints");
+			viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, goodKeypointStyle.size, "scene_good_keypoints");
+		}
+
+		viewer->spin();
+	}
 
 	/**
 	 * Stop if no instances
@@ -465,46 +510,39 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 		std::cout << "-------------------------------" << std::endl;
 	}
 
-	/**
-	 *  Visualization
-	 */
 	if (show_result_)
 	{
-		pcl::visualization::PCLVisualizer viewer("Hypotheses Verification");
-		viewer.setCameraPosition(0, 0, -1, 0, 0, 1, 0, 1, 0); //视点 方向 上方向
-		viewer.addCoordinateSystem(0.1);
+		viewer.reset(new pcl::visualization::PCLVisualizer("Hypothesis Verification"));
+		viewer->setCameraPosition(-0.3, 0, -0.3, 0, 0, 1, -1, 0, 0); //视点 方向 上方向
+		viewer->addCoordinateSystem(0.1);
 
-		pcl::PointCloud<PointType>::Ptr off_scene_model(new pcl::PointCloud<PointType>());
-		pcl::PointCloud<PointType>::Ptr off_scene_model_keypoints(new pcl::PointCloud<PointType>());
-
-		pcl::PointCloud<PointType>::Ptr off_model_good_kp(new pcl::PointCloud<PointType>());
 		pcl::transformPointCloud(*model, *off_scene_model, Eigen::Vector3f(-1, 0, 0), Eigen::Quaternionf(1, 0, 0, 0));
 		pcl::transformPointCloud(*model_keypoints, *off_scene_model_keypoints, Eigen::Vector3f(-1, 0, 0), Eigen::Quaternionf(1, 0, 0, 0));
 		pcl::transformPointCloud(*model_good_kp, *off_model_good_kp, Eigen::Vector3f(-1, 0, 0), Eigen::Quaternionf(1, 0, 0, 0));
 
 		//show scene (red)
-		CloudStyle sceneStyle = style_red;
+		CloudStyle sceneStyle = style_white;
 		pcl::visualization::PointCloudColorHandlerCustom<PointType> scene_color_handler(scene, sceneStyle.r, sceneStyle.g, sceneStyle.b);
-		viewer.addPointCloud(scene, scene_color_handler, "scene_cloud");
-		viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, sceneStyle.size, "scene_cloud");
+		viewer->addPointCloud(scene, scene_color_handler, "scene_cloud");
+		viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, sceneStyle.size, "scene_cloud");
 		//show model (green+blue)
 		CloudStyle modelStyle = style_indigo;
 		pcl::visualization::PointCloudColorHandlerCustom<PointType> off_scene_model_color_handler(off_scene_model, modelStyle.r, modelStyle.g, modelStyle.b);
-		viewer.addPointCloud(off_scene_model, off_scene_model_color_handler, "off_scene_model");
-		viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, modelStyle.size, "off_scene_model");
+		viewer->addPointCloud(off_scene_model, off_scene_model_color_handler, "off_scene_model");
+		viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, modelStyle.size, "off_scene_model");
 		//show keypoints of instancs and model
 		if (show_keypoints_)
 		{
 			CloudStyle goodKeypointStyle = style_yellow;
 			pcl::visualization::PointCloudColorHandlerCustom<PointType> model_good_keypoints_color_handler(off_model_good_kp, goodKeypointStyle.r, goodKeypointStyle.g,
 				goodKeypointStyle.b);
-			viewer.addPointCloud(off_model_good_kp, model_good_keypoints_color_handler, "model_good_keypoints");
-			viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, goodKeypointStyle.size, "model_good_keypoints");
+			viewer->addPointCloud(off_model_good_kp, model_good_keypoints_color_handler, "model_good_keypoints");
+			viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, goodKeypointStyle.size, "model_good_keypoints");
 
 			pcl::visualization::PointCloudColorHandlerCustom<PointType> scene_good_keypoints_color_handler(scene_good_kp, goodKeypointStyle.r, goodKeypointStyle.g,
 				goodKeypointStyle.b);
-			viewer.addPointCloud(scene_good_kp, scene_good_keypoints_color_handler, "scene_good_keypoints");
-			viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, goodKeypointStyle.size, "scene_good_keypoints");
+			viewer->addPointCloud(scene_good_kp, scene_good_keypoints_color_handler, "scene_good_keypoints");
+			viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, goodKeypointStyle.size, "scene_good_keypoints");
 		}
 
 		for (std::size_t i = 0; i < instances.size(); ++i)
@@ -520,15 +558,15 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 			ss_instance << "_registered" << std::endl;
 			pcl::visualization::PointCloudColorHandlerCustom<PointType> registered_instance_color_handler(registered_instances[i], registeredStyles.r,
 				registeredStyles.g, registeredStyles.b);
-			viewer.addPointCloud(registered_instances[i], registered_instance_color_handler, ss_instance.str());
-			viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, registeredStyles.size, ss_instance.str());
+			viewer->addPointCloud(registered_instances[i], registered_instance_color_handler, ss_instance.str());
+			viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, registeredStyles.size, ss_instance.str());
 			//show rotated_model of each instance
 			if (show_rotated_model_)
 			{
 				CloudStyle clusterStyle = style_blue;
 				pcl::visualization::PointCloudColorHandlerCustom<PointType> instance_color_handler(instances[i], clusterStyle.r, clusterStyle.g, clusterStyle.b);
-				viewer.addPointCloud(instances[i], instance_color_handler, ss_instance.str());
-				viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, clusterStyle.size, ss_instance.str());
+				viewer->addPointCloud(instances[i], instance_color_handler, ss_instance.str());
+				viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, clusterStyle.size, ss_instance.str());
 			}
 			//show correspondences of each instance
 			if (show_correspondences_)
@@ -540,14 +578,14 @@ bool gpd::Recognition3DCG::Recognize(const PointCloud::Ptr cloud_scene, const st
 					PointType& model_point = off_scene_model_keypoints->at(clustered_corrs[i][j].index_query);
 					PointType& scene_point = scene_keypoints->at(clustered_corrs[i][j].index_match);
 					//drawing a line for each pair of clustered correspondences found between the model and the scene
-					viewer.addLine<PointType, PointType>(model_point, scene_point, 0, 255, 0, ss_line.str());
+					viewer->addLine<PointType, PointType>(model_point, scene_point, 0, 255, 0, ss_line.str());
 				}
 			}
 		}
 
-		while (!viewer.wasStopped())
+		while (!viewer->wasStopped())
 		{
-			viewer.spinOnce();
+			viewer->spinOnce();
 		}
 	}
 

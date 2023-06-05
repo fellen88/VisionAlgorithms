@@ -40,8 +40,8 @@ namespace gpd
 	CloudStyle style_blue(0.0, 0.0, 255.0, 2.0);
 	CloudStyle style_cyan(93.0, 200.0, 217.0, 2.0);
 	CloudStyle style_indigo(0.0, 255.0, 255.0, 2.0);
-	CloudStyle style_violet(255.0, 0.0, 255.0, 8.0);
-	CloudStyle style_yellow(255.0, 255.0, 0.0, 8.0);
+	CloudStyle style_violet(255.0, 0.0, 255.0, 6.0);
+	CloudStyle style_yellow(255.0, 255.0, 0.0, 6.0);
 
 	class Recognition3DCG : public Recognition3D
 	{

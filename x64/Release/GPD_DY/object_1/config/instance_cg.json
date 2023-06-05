@@ -5,7 +5,7 @@
   "show_correspondences": false,
   "show_rotated_model": false,
   //Recognition
-  "sample_3d": 0.005,
+  "sample_3d": 0.004,
   "key_points": "uniform", // harris | uniform
   "model_ss": 0.02,
   "scene_ss": 0.02,
