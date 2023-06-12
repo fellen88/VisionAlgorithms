@@ -1,0 +1,6 @@
+{
+  "Visualization": false,
+  "UniformSampling": 0.000,
+  "MaxCorrespondenceDistance": 0.01,
+  "MaximumIterations": 30
+}

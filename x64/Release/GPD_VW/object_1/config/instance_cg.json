@@ -1,25 +1,25 @@
 {
   //Visualization
-  "show_result": false,
+  "show_result": true,
   "show_keypoints": true,
   "show_correspondences": false,
   "show_rotated_model": false,
   //Recognition
-  "sample_3d": 0.002,
+  "sample_3d": 0.0,
   "key_points": "uniform", // harris | uniform
-  "model_ss": 0.01,
-  "scene_ss": 0.01,
+  "model_ss": 0.001,
+  "scene_ss": 0.001,
   "use_hough": false,
-  "rf_rad": 0.015,
-  "descr_rad": 0.02,
-  "cg_size": 0.01,
-  "cg_thresh": 200,
+  "rf_rad": 0.004 ,
+  "descr_rad": 0.004,
+  "cg_size": 0.004,
+  "cg_thresh": 60,
   //ICP
   "use_icp": true,
   "icp_max_iter": 20,
   "icp_corr_distance": 0.02,
   //Hypothesis Verification
-  "use_hv": false,
+  "use_hv": true,
   "hv_resolution": 0.005,
   "hv_occupancy_grid_resolution": 0.01,
   "hv_clutter_reg": 5.0,

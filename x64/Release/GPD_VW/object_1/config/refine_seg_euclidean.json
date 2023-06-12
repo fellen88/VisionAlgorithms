@@ -1,0 +1,8 @@
+{
+  "Visualization": false,
+  "UniformSampling": 0.0,
+  "ClusterTolerance": 0.001,
+  "MinClusterSize": 5000,
+  "MaxClusterSize": 6000
+}
+

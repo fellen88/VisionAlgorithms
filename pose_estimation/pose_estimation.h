@@ -55,11 +55,12 @@ namespace gpd
 		cv::Mat object_mask;
 		std::string object_label;
 
+		std::vector<PointCloud::Ptr> cloud_models;
 		PointCloud::Ptr object_model;
+		PointCloud::Ptr object_model_transformed;
 		PointCloud::Ptr model_refine_a;
 		PointCloud::Ptr model_refine_b;
-		PointCloud::Ptr scene_transformed;
-		PointCloud::Ptr object_scan;
+		PointCloud::Ptr cloud_scene;
 		PointCloud::Ptr sac_output;
 		PointCloud::Ptr icp_output;
 		PointCloud::Ptr object_model_instance;
@@ -96,9 +97,6 @@ namespace gpd
 		std::string refine_seg_obb_config;
 		std::string instance_cg_config;
 		
-
-		std::vector<PointCloud::Ptr> cloud_models;
-
 		std::string ModelFileName;
 		std::string ScanFileName;
 	};

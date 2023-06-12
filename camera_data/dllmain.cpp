@@ -26,7 +26,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 			//FLAGS_max_log_size = 1800;            //最大日志大小（MB）, 如果设置为0将默认为1
 			//FLAGS_stop_logging_if_full_disk = false;            //磁盘满停止记录日志
 			google::InitGoogleLogging("pose_estimation.dll");
-			google::SetLogDestination(google::GLOG_INFO, "Log/PoseEstimation_");
+			google::SetLogDestination(google::GLOG_INFO, "Log/");
 			google::FlushLogFilesUnsafe(google::GLOG_INFO);
 			google::SetStderrLogging(google::GLOG_INFO);
 			google::SetLogFilenameExtension("log_");

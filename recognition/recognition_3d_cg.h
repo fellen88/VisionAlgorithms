@@ -34,14 +34,14 @@ namespace gpd
 		}
 	};
 
-	CloudStyle style_white(255.0, 255.0, 255.0, 2.0);
-	CloudStyle style_red(255.0, 0.0, 0.0, 2.0);
-	CloudStyle style_green(0.0, 255.0, 0.0, 2.0);
-	CloudStyle style_blue(0.0, 0.0, 255.0, 2.0);
-	CloudStyle style_cyan(93.0, 200.0, 217.0, 2.0);
-	CloudStyle style_indigo(0.0, 255.0, 255.0, 2.0);
-	CloudStyle style_violet(255.0, 0.0, 255.0, 6.0);
-	CloudStyle style_yellow(255.0, 255.0, 0.0, 6.0);
+	CloudStyle style_white(255, 255, 255, 2);
+	CloudStyle style_red  (255, 0,   0, 2);
+	CloudStyle style_green(0, 255, 0, 2);
+	CloudStyle style_blue (0, 0, 255, 2);
+	CloudStyle style_cyan(93, 200, 217, 2);
+	CloudStyle style_indigo(0, 255, 255, 2);
+	CloudStyle style_violet(255, 0, 255, 2);
+	CloudStyle style_yellow(255, 255, 0, 6.0);
 
 	class Recognition3DCG : public Recognition3D
 	{
