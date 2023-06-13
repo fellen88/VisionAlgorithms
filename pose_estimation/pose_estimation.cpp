@@ -274,21 +274,20 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 		}
 		else
 		{
-			object_pose = Eigen::Matrix4f::Identity();
-			return false;
+			object_transform = Eigen::Matrix4f::Identity();
 		}
 	}
 	else
 		pcl::copyPointCloud(*cloud_scene, *object_scan_instance);
 
 	//use model pose
-	if (use_model_pose)
+	if (use_model_pose && object_instance_number > 0)
 	{
 		object_transform = object_transform * object_transform_init;
 	}
 
 	//registration refine
-	if (refine_model_num > 0)
+	if (refine_model_num > 0 && object_instance_number > 0)
 	{
 		//OBB Segmentation
 		pcl::transformPointCloud(*model_refine_a, *model_refine_a_transformed, object_transform);
@@ -335,6 +334,7 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 
 	//output
 	object_pose = object_transform;
+
 
 	//visulization
 	//TODO: thread 
