@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <boost/thread/thread.hpp>
 #include "segmentation_euclidean.h"
 #include <pcl/segmentation/extract_clusters.h>
 #include <vector>

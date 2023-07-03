@@ -1,6 +1,7 @@
 ﻿// segmentation.cpp : 定义 DLL 应用程序的导出函数。
 //
 #include "stdafx.h"
+#include <boost/thread/thread.hpp>
 #include "segmentation_sac.h"
 
 SegmentationSAC::SegmentationSAC():

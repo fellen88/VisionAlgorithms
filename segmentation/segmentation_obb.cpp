@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <boost/thread/thread.hpp>
 #include "segmentation_obb.h"
 #include <pcl/features/moment_of_inertia_estimation.h>
 #include <pcl/common/transforms.h>

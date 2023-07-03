@@ -225,7 +225,7 @@ JsonOutType CameraData::ReadJsonFile(const std::string file_name, const std::str
 	JsonOutType json_out_type;
 	Json::Value json_object;
 	Json::Reader reader;
-	ifstream json_file;
+	std::ifstream json_file;
 	json_file.open(file_name, ios::binary);
 
 	if (false == reader.parse(json_file, json_object))

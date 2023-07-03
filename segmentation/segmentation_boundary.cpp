@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <boost/thread/thread.hpp>
 #include "segmentation_boundary.h"
 #include <pcl/features/boundary.h>
 SegmentationBoundary::SegmentationBoundary():

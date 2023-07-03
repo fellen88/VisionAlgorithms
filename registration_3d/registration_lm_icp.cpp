@@ -100,7 +100,7 @@ void Registration3D::Align(const PointCloud::Ptr cloud_src, const PointCloud::Pt
 		//PCL_INFO ("Iteration Nr. %d.\n", i); //命令行显示迭代的次数
 		points_with_normals_src = reg_result; //
 		//估计
-		reg.setInputCloud (points_with_normals_src); //重新设置输入点云（待变换的点云），因为经过上一次迭代，已经发生变换了
+		reg.setInputSource(points_with_normals_src); //重新设置输入点云（待变换的点云），因为经过上一次迭代，已经发生变换了
 		reg.align(*reg_result); //对齐（配准）两个点云
 
 		Ti = reg.getFinalTransformation() * Ti; //累积（每次迭代的）变换矩阵
