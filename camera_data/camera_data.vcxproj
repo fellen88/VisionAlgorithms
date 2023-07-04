@@ -217,7 +217,7 @@
       <PreprocessorDefinitions>NDEBUG;CAMERADATA_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <DisableSpecificWarnings>4819;</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4819;4996;4081;4101</DisableSpecificWarnings>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
