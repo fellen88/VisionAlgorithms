@@ -1,0 +1,20 @@
+{
+  /*Porject  Name: GPD_DY*/
+  /*Object Number: object_1*/
+  //Pose Estimation
+  "Visualization": true,                   
+  "CameraOffline": false,                  
+  "InstanceMethod": "CG",                  
+  "RefineModelNum": 0,                     
+  "RefineRegistrarion": "ICP",             
+  "ObjectModelPath": "model_3d\\model.ply",
+  "PointCloudPath": "pointcloud\\scene.ply",
+  //Grasp Pose of Model
+  "UseModelPose": true,
+  "X": 0.0,                                
+  "Y": -0.0,                               
+  "Z": 0.0,                                
+  "RX": 0.39,                              
+  "RY": 0.04,                              
+  "RZ": 0.0                                
+}

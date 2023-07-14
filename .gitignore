@@ -5,12 +5,15 @@
 
 #$ VisionAlgorithms
 3rdParty/
+model_dl/
 *.ply
 *.pcd
 *.png
+*.jpg
 *.exe
 *.pdf
 *.rar
+*.msi
 #$ End VisionAlgorithms
 
 # User-specific files

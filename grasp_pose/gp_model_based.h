@@ -26,6 +26,7 @@ namespace gpd  //grasp pose detector
 		~GraspPoseModelBased();
 
 		void SetInputPointCloud(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points);
+		void SetInputMask(const std::vector<cv::Mat>& mask) {};
 		void GetGraspPose(std::vector<double>* object_pose);
 
 	private:

@@ -4,6 +4,7 @@
 #include <vector>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
+#include <opencv2/opencv.hpp>
 
 #ifdef GRASPPOSE_EXPORTS
 #define GRASPPOSE_API __declspec(dllexport)
@@ -19,6 +20,7 @@ namespace  gpd  //grasp pose detector
 		virtual ~GraspPose() = 0;
 
 		virtual void SetInputPointCloud(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points) = 0;
+		virtual void SetInputMask(const std::vector<cv::Mat>& mask) = 0;
 		virtual void GetGraspPose(std::vector<double>* object_pose) = 0;
 	};
 }

@@ -1,0 +1,20 @@
+{
+  /*Porject  Name: GPD_BYD*/
+  /*Object Number: object_1*/
+  //Pose Estimation
+  "Visualization": true,                     //可视化开关
+  "CameraOffline": false,                     //相机离线测试开关
+  "InstanceMethod": "CG",                           //实例提取方法  
+  "RefineModelNum": 1,                       //优化模型个数
+  "RefineRegistrarion": "ICP",               //配准方法       IA_ICP | ICP
+  "ObjectModelPath": "model_3d\\model.ply",   //3D模型文件名
+  "PointCloudPath": "pointcloud\\scene.ply",  //离线测试点云文件名
+  //Grasp Pose of Model
+  "UseModelPose": true,
+  "X": -0.138,                                //抓取位姿 X  (米)
+  "Y": -0.031,                                //抓取位姿 Y
+  "Z": 0.476,                                 //抓取位姿 Z
+  "RX": 0.39,                                 //抓取位姿 RX （度）
+  "RY": 0.04,                                 //抓取位姿 RY
+  "RZ": 132.47                                //抓取位姿 RZ
+}
