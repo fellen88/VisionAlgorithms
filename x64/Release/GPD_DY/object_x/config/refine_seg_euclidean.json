@@ -1,4 +1,5 @@
 {
+  "Usage": false,
   "Visualization": false,
   "UniformSampling": 0.0,
   "ClusterTolerance": 0.001,

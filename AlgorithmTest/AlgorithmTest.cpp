@@ -18,7 +18,8 @@ int main()
 	//3D视觉算法：变量定义与初始化
 	pcl::PointCloud<pcl::PointXYZRGBNormal> object_points;
 	std::vector<double> object_pose;
-	cv::Mat image;
+	cv::Mat scene_color;
+	cv::Mat scene_depth;
   std::vector<cv::Mat> object_mask;
 	std::vector<int> object_label;
 
@@ -36,6 +37,9 @@ int main()
 	//2D视觉算法:获取实例指针
 	std::string config_object_instances = ".\\" + project_name +"\\" + "object_instances\\config" + "\\instance_seg.json";
 	IDetection2D *p_detection_2d = GetDetection2DPtr(config_object_instances);
+	//加载测试图像数据
+	scene_color = cv::imread(project_name + "\\object_instances\\image\\color.png");
+	scene_depth = cv::imread(project_name + "\\object_instances\\image\\depth.tif", cv::IMREAD_UNCHANGED);
 
 	while (true)
 	{
@@ -46,7 +50,7 @@ int main()
 		if (input == 's')
 		{
 			//2D视觉算法:检测抓取目标
-			p_detection_2d->SetInputImage(image);
+			p_detection_2d->SetInputImage(scene_color);
 			p_detection_2d->Detect();
 			p_detection_2d->GetMask(object_mask);
 			p_detection_2d->GetLabel(object_label);
@@ -54,15 +58,20 @@ int main()
 			//3D视觉算法:计算目标位姿
 			for (int i = 0; i < object_mask.size(); i++)
 			{
-				p_object_x_->SetInputMask(object_mask[i]);
-				p_object_x_->SetInputPointCloud(object_points);
-				p_object_x_->GetGraspPose(&object_pose);
-				//输出抓取目标位姿计算结果
-				for (auto it = object_pose.begin(); it != object_pose.end(); ++it)
+				std::cout<<object_label[i]<<std::endl;
+				if (0 == object_label[i])
 				{
-					std::cout << *it << " ";
+					p_object_x_->SetInputMask(object_mask[i]);
+					p_object_x_->SetInputDepth(scene_depth);
+					p_object_x_->SetInputPointCloud(object_points);
+					p_object_x_->GetGraspPose(&object_pose);
+					//输出抓取目标位姿计算结果
+					for (auto it = object_pose.begin(); it != object_pose.end(); ++it)
+					{
+						std::cout << *it << " ";
+					}
+					std::cout << std::endl;
 				}
-				std::cout << std::endl;
 			}
 		}
 		else if (input == 'r')

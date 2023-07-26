@@ -39,6 +39,12 @@ unsigned char SegmentationEuclidean::colors[20 * 3] = {
 
 bool SegmentationEuclidean::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
 {
+	if (false == usage)
+	{
+		pcl::copyPointCloud(*cloud_scene, *cloud_seg);
+		LOG(INFO) << "SegmentationEuclidean Usage : False !";
+		return false;
+	}
 	PointCloud::Ptr cloud_scene_temp(new PointCloud());
 	p_seg_cameradata_->UniformSampling(cloud_scene, uniform_sampling, cloud_scene_temp);
 	// ´´½¨kdÊ÷
@@ -123,6 +129,11 @@ bool SegmentationEuclidean::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr
 bool SegmentationEuclidean::SetParameters(const std::string config_file)
 {
 	JsonOutType json_reader;
+	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "Usage", "bool");
+	if (json_reader.success)
+		usage = json_reader.json_bool;
+	else
+		return false;
 	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "Visualization", "bool");
 	if (json_reader.success)
 		visualization_eucli = json_reader.json_bool;

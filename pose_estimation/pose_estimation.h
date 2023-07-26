@@ -18,6 +18,8 @@ namespace gpd
 		void EulerAngle2Matrix(Eigen::Vector3f & euler_angle, Eigen::Matrix4f & transformation_matrix);
 		void UpdateParameters(std::string config);
 		void Init_Compute(std::string config);
+		void SetInputMask(const cv::Mat& mask) { object_mask = mask; };
+		void SetInputDepth(const cv::Mat& depth) { object_depth = depth; };
 		bool Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& object_points, Eigen::Matrix4f & object_pose);
 
 	private:
@@ -64,7 +66,7 @@ namespace gpd
 		PointCloud::Ptr sac_output;
 		PointCloud::Ptr icp_output;
 		PointCloud::Ptr object_model_instance;
-		PointCloud::Ptr object_scan_instance;
+		PointCloud::Ptr cloud_object_instance;
 		//refine
 		PointCloud::Ptr model_refine_a_transformed;
 		PointCloud::Ptr model_refine_b_transformed;

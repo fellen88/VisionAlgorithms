@@ -1,4 +1,5 @@
 {
+  "Usage": false,
   "Visualization": false,
   "UniformSampling": 0.0003,
   "NormalRadius": 0.0009,

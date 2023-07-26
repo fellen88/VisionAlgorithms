@@ -1,4 +1,4 @@
 {
-  "Visualization": false,
-  "UniformSampling": 0.002
+  "Visualization": 1,
+  "UniformSampling": 0.01
 }

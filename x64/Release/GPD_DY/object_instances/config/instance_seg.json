@@ -1,8 +1,8 @@
 {
   /*Porject  Name: GPD_DY*/
-  "Visualization": true,
-  "CameraOffline": true,
-  "OutputMaskNumber": 3,
+  "Visualization": 1,
+  "CameraOffline": false,
+  "OutputMaskNumber": 2,
   "ScoreThreshold": 0.8
 }
 

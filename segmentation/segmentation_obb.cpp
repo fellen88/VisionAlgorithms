@@ -16,6 +16,12 @@ SegmentationOBB::~SegmentationOBB()
 
 bool SegmentationOBB::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
 {
+	if (false == usage)
+	{
+		pcl::copyPointCloud(*cloud_scene, *cloud_seg);
+		LOG(INFO) << "SegmentationOBB Usage : False !";
+		return false;
+	}
 	pcl::MomentOfInertiaEstimation <pcl::PointXYZ> feature_extractor;
 	PointCloud::Ptr cloud_model_temp(new PointCloud());
 	p_obb_cameradata_->UniformSampling(cloud_model, uniform_sampling, cloud_model_temp);
@@ -104,6 +110,11 @@ bool SegmentationOBB::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud
 bool SegmentationOBB::SetParameters(const std::string config_file)
 {
 	JsonOutType json_reader;
+	json_reader = p_obb_cameradata_->ReadJsonFile(config_file, "Usage", "bool");
+	if (json_reader.success)
+		usage = json_reader.json_bool;
+	else
+		return false;
 	json_reader = p_obb_cameradata_->ReadJsonFile(config_file, "Visualization", "bool");
 	if (json_reader.success)
 		visualization = json_reader.json_bool;

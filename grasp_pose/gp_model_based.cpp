@@ -23,6 +23,16 @@ void GraspPoseModelBased::SetInputPointCloud(const pcl::PointCloud<pcl::PointXYZ
 	pcl::copyPointCloud(object_points, object_point_cloud);
 }
 
+void gpd::GraspPoseModelBased::SetInputMask(const cv::Mat& mask)
+{
+	p_pose_estimation_->SetInputMask(mask);
+}
+
+void gpd::GraspPoseModelBased::SetInputDepth(const cv::Mat& depth)
+{
+	p_pose_estimation_->SetInputDepth(depth);
+}
+
 void GraspPoseModelBased::GetGraspPose(std::vector<double>* object_pose)
 {
 	p_pose_estimation_->Compute(object_point_cloud, object_pose_matrix);

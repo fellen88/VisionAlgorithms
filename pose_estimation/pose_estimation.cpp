@@ -14,7 +14,7 @@ PoseEstimation::PoseEstimation(std::string config_file) :
 	cloud_scene(new pcl::PointCloud<pcl::PointXYZ>),
 	sac_output(new pcl::PointCloud<pcl::PointXYZ>),
 	icp_output(new pcl::PointCloud<pcl::PointXYZ>),
-	object_scan_instance(new pcl::PointCloud<pcl::PointXYZ>),
+	cloud_object_instance(new pcl::PointCloud<pcl::PointXYZ>),
 	object_model_instance(new pcl::PointCloud<pcl::PointXYZ>),
 	model_refine_a_transformed(new pcl::PointCloud<pcl::PointXYZ>),
 	model_refine_b_transformed(new pcl::PointCloud<pcl::PointXYZ>),
@@ -209,6 +209,12 @@ void PoseEstimation::Init_Compute(std::string config)
 		//p_recog_ppf_->TrainModel(cloud_models);
 		pcl::copyPointCloud(*object_model, *object_model_instance);
 	}
+	else if ("Mask" == instance_method)
+	{
+		LOG(INFO) << "---------> instance mask parameters:";
+		p_sensor_->SetParameters(config);
+		pcl::copyPointCloud(*object_model, *object_model_instance);
+	}
 	else
 	{
 		pcl::copyPointCloud(*object_model, *object_model_instance);
@@ -268,6 +274,7 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 		{
 			LOG(INFO) << "transformation matrix after cg: \n " << object_transform;
 			cout << endl << object_transform << endl;
+			pcl::copyPointCloud(*cloud_scene, *cloud_object_instance);
 			//PointCloud::Ptr model_instance_transformed(new PointCloud());
 			//pcl::transformPointCloud(*object_model_instance, *model_instance_transformed, object_transform);
 			//p_seg_obb_instance_->Segment(scene_transformed, model_instance_transformed, object_scan_instance);
@@ -277,8 +284,16 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 			object_transform = Eigen::Matrix4f::Identity();
 		}
 	}
+	else if ("Mask" == instance_method)
+	{
+		cv::imshow("output_mask", object_mask);
+		cv::waitKey(0);
+		object_instance_number = 1;
+		p_sensor_->DepthtoPointCloud(object_depth, object_mask, cloud_object_instance);
+		p_sensor_->ShowPointCloud(cloud_object_instance, "object_instance");
+	}
 	else
-		pcl::copyPointCloud(*cloud_scene, *object_scan_instance);
+		pcl::copyPointCloud(*cloud_scene, *cloud_object_instance);
 
 	//use model pose
 	if (use_model_pose && object_instance_number > 0)
@@ -291,11 +306,11 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 	{
 		//OBB Segmentation
 		pcl::transformPointCloud(*model_refine_a, *model_refine_a_transformed, object_transform);
-		p_refine_seg_obb_->Segment(cloud_scene, model_refine_a_transformed, obb_a);
+		p_refine_seg_obb_->Segment(cloud_object_instance, model_refine_a_transformed, obb_a);
 		if (refine_model_num > 1)
 		{
 			pcl::transformPointCloud(*model_refine_b, *model_refine_b_transformed, object_transform);
-			p_refine_seg_obb_->Segment(cloud_scene, model_refine_b_transformed, obb_b);
+			p_refine_seg_obb_->Segment(cloud_object_instance, model_refine_b_transformed, obb_b);
 		}
 		//Boundary  
 		p_refine_seg_bound_->Segment(obb_a, nullptr, boundary_obb_a);
@@ -319,7 +334,7 @@ bool PoseEstimation::Compute(const pcl::PointCloud<pcl::PointXYZRGBNormal>& obje
 		if ("IA_ICP" == refine_registration)
 		{
 			p_refine_regist_sacia_->Align(euclidean_refine, euclidean_obb, sac_output, sac_transform);
-			p_refine_regist_lmicp_->Align(sac_output, euclidean_refine, icp_output, object_transform_refine);
+			p_refine_regist_lmicp_->Align(sac_output, euclidean_obb, icp_output, object_transform_refine);
 			object_transform = object_transform_refine * sac_transform * object_transform;
 		}
 		else if("ICP" == refine_registration)

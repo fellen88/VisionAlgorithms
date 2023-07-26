@@ -13,6 +13,13 @@ SegmentationBoundary::~SegmentationBoundary()
 
 bool SegmentationBoundary::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr cloud_model, PointCloud::Ptr cloud_seg)
 {
+	if (false == usage)
+	{
+		pcl::copyPointCloud(*cloud_scene, *cloud_seg);
+		LOG(INFO) << "SegmentationBoundary Usage : False !";
+		return false;
+	}
+
 	PointCloud::Ptr cloud_scene_temp(new PointCloud());
 	p_seg_cameradata_->UniformSampling(cloud_scene, sample_3d, cloud_scene_temp);
 
@@ -75,6 +82,11 @@ bool SegmentationBoundary::Segment(PointCloud::Ptr cloud_scene, PointCloud::Ptr 
 bool SegmentationBoundary::SetParameters(const std::string config_file)
 {
 	JsonOutType json_reader;
+	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "Usage", "bool");
+	if (json_reader.success)
+		usage = json_reader.json_bool;
+	else
+		return false;
 	json_reader = p_seg_cameradata_->ReadJsonFile(config_file, "Visualization", "bool");
 	if (json_reader.success)
 		visualization = json_reader.json_bool;

@@ -47,7 +47,8 @@ void Detection2D::SetInputImage(const cv::Mat& image)
 {
   if (sensor_offline)
   {
-    path_image = project_file + "\\object_instances\\image\\demo.jpg"; image_scene = cv::imread(path_image);
+    path_image = project_file + "\\object_instances\\image\\demo.png"; 
+    image_scene = cv::imread(path_image);
 		if (image_scene.empty()) {
 			fprintf(stderr, "failed to load image: %s\n", path_image.c_str());
 			return;

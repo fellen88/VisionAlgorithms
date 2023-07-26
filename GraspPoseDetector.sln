@@ -27,6 +27,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "segmentation", "segmentatio
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AlgorithmTest", "AlgorithmTest\AlgorithmTest.vcxproj", "{FCD365B8-64DB-4216-AB4E-91D3C965AE81}"
 	ProjectSection(ProjectDependencies) = postProject
+		{1E71546D-08BE-4023-90FF-C8129DA572C8} = {1E71546D-08BE-4023-90FF-C8129DA572C8}
 		{E1B88C1D-F319-47CC-99AD-6C0207A89A3B} = {E1B88C1D-F319-47CC-99AD-6C0207A89A3B}
 	EndProjectSection
 EndProject
